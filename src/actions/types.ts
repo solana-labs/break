@@ -1,1 +1,1 @@
-export const GET_PEOPLE = 'GET_PEOPLE';
+export const ADD_TRANSACTION = 'ADD_TRANSACTION';

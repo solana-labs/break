@@ -1,5 +1,5 @@
-import IPeople from "../reducers/people/model";
+import ITransaction from "../reducers/transactions/model";
 
 export interface IRootAppReducerState {
-    people: IPeople.Model,
+    transactionState: ITransaction.ModelState,
 }
