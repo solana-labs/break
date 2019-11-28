@@ -1,0 +1,14 @@
+.home-scene-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10rem;
+
+  h2 {
+    margin-bottom: 4rem;
+  }
+
+  img {
+    margin-top: 4rem;
+  }
+}

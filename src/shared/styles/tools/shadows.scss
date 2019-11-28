@@ -1,0 +1,32 @@
+//shadows
+
+//example
+// @include box-shadow(3);
+
+@mixin box-shadow ($level) {
+
+  @if $level == 1 {
+    box-shadow: 1px 1px 8px rgba(0, 7, 43, 0.04);
+  } @else if $level == 2 {
+    box-shadow: 4px 8px 24px rgba(0, 7, 43, 0.04);
+  } @else if $level == 3 {
+    box-shadow: 8px 24px 48px rgba(0, 7, 43, 0.08);
+  } @else if $level == 4 {
+    box-shadow: 40px 40px 96px rgba(0, 7, 43, 0.08);
+  }
+}
+
+//Modal Overlay
+@mixin modal-overlay {
+  background: rgba(0, 7, 43, 0.4);
+}
+
+//Active Inputs Shadow
+@mixin active-input-shadow{
+  box-shadow: 1px 1px 4px rgba(0, 85, 255, 0.08);
+}
+
+//Avatar Inner Shadow
+@mixin avatar-inner-shadow {
+  box-shadow: inset 0px 4px 4px rgba(0, 7, 43, 0.25);
+}

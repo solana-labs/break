@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "rootDirs": [
+            "./",
+            "./src"
+        ],
+        "allowJs": true,
+        "strict": true,
+        "esModuleInterop": true,
+        "sourceMap": true,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "noEmit": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowSyntheticDefaultImports": true,
+        "jsx": "preserve",
+        "baseUrl": "./",
+        "paths": {
+            "@fonts/*": [
+                "./src/shared/fonts/*"
+            ],
+            "@styles/*": [
+                "./src/shared/styles/*"
+            ],
+            "@images/*": [
+                "./src/shared/images/*"
+            ]
+        }
+    },
+    "include": [
+        "src"
+    ]
+}
