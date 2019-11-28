@@ -9,7 +9,7 @@ export default class HomeScene extends React.Component {
         return (
             <React.Fragment>
                 <Helmet>
-                    <title>Break Solana</title>
+                    <title>Break Solana - Home</title>
                 </Helmet>
                 <Home/>
             </React.Fragment>
