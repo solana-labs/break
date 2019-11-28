@@ -2,16 +2,16 @@ import * as React from 'react';
 import {Helmet} from 'react-helmet';
 
 import './index.scss';
-import Home from "../../containers/home";
+import Game from "../../containers/game";
 
-export default class HomeScene extends React.Component {
+export default class GameScene extends React.Component {
     render() {
         return (
             <React.Fragment>
                 <Helmet>
-                    <title>Break Solana - Home</title>
+                    <title>Break Solana - Game</title>
                 </Helmet>
-                <Home/>
+                <Game/>
             </React.Fragment>
         );
     }

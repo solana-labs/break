@@ -1,0 +1,26 @@
+@import '~@styles/variables/colors';
+
+.game-wrapper{
+    margin-top: 12rem;
+
+    .square-container{
+        border: 1px solid black;
+        padding: 1.2rem;
+        width: 80%;
+        height: 50vh;
+        max-height: 50vh;
+        margin: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, 5rem);
+        grid-template-rows: repeat(auto-fit, 5rem);
+        grid-gap: 1.2rem;
+    }
+
+    .square{
+        width: 5rem;
+        height: 5rem;
+        background-color: green;
+    }
+}

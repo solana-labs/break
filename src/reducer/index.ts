@@ -1,9 +1,9 @@
 import {IRootAppReducerState} from "./model";
-import peopleReducer from "../reducers/people";
+import transactionReducer from "../reducers/transactions";
 
 const rootAppReducer = (state: IRootAppReducerState = {} as IRootAppReducerState, action: any) => {
     return {
-        people: peopleReducer(state.people, action),
+        transactionState: transactionReducer(state.transactionState, action),
     }
 };
 
