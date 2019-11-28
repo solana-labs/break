@@ -1,0 +1,50 @@
+* {
+    font-family: 'OpenSans', sans-serif;
+    color: $dark;
+    text-decoration: none;
+    font-size: 1.4rem;
+}
+
+h1 {
+    font-family: 'OpenSans', sans-serif;
+    font-size: 2.4rem;
+    line-height: 3.2rem;
+    font-weight: 700;
+    color: $dark;
+}
+
+p {
+    color: $dark;
+    font-size: 1.4rem;
+    line-height: 2.2rem;
+}
+
+.p2 {
+    font-size: 1.4rem;
+    line-height: 2rem;
+}
+
+.p3 {
+    font-size: 1.2rem;
+    line-height: 1.5rem;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.regular {
+    font-weight: 400;
+}
+
+.medium {
+    font-weight: 500;
+}
+
+.semibold {
+    font-weight: 600;
+}
+
+.bold {
+    font-weight: 700;
+}

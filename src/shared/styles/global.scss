@@ -1,0 +1,96 @@
+@import "./variables/colors.scss";
+@import "./tools/transitions.scss";
+@import "./typography/typography.scss";
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('~@fonts/OpenSans-Light.ttf') format('truetype');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('~@fonts/OpenSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('~@fonts/OpenSans-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('~@fonts/OpenSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: none;
+    outline: none;
+}
+
+html{
+    font-size: 10px;
+}
+
+html, body {
+    overflow-x: hidden;
+}
+
+input, textarea {
+    &::-webkit-input-placeholder {
+        color: $dark-30;
+        @include transition();
+    }
+
+    &:-moz-placeholder {
+        color: $dark-30;
+        @include transition();
+    }
+
+    &:-moz-placeholder {
+        color: $dark-30;
+        @include transition();
+    }
+
+    &:-ms-input-placeholder {
+        color: $dark-30;
+        @include transition();
+    }
+
+    &:focus::-webkit-input-placeholder {
+        color: transparent;
+        @include transition();
+
+    }
+
+    &:focus::-moz-placeholder {
+        color: transparent;
+    }
+
+    &:focus:-moz-placeholder {
+        color: transparent;
+        @include transition();
+    }
+
+    &:focus:-ms-input-placeholder {
+        color: transparent;
+        @include transition();
+    }
+}
+
+/* clears the 'X' from Internet Explorer */
+input[type=search]::-ms-clear {  display: none; width : 0; height: 0; }
+input[type=search]::-ms-reveal {  display: none; width : 0; height: 0; }
+
+/* clears the 'X' from Chrome */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { display: none; }

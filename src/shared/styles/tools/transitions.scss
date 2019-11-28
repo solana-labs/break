@@ -1,0 +1,22 @@
+@mixin transition(){
+  transition: 0.2s ease-in-out;
+}
+
+@mixin transition-input(){
+  transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin transition-card(){
+  transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin transition-dnd(){
+  transition: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@mixin transition-hover(){
+  transition: 0.15s ease-in-out;
+}
+@mixin transition-hover05(){
+  transition: 0.05s cubic-bezier(0.4, 0, 0.2, 1);
+}
