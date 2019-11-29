@@ -1,0 +1,12 @@
+@import '~@styles/variables/colors';
+
+.square{
+    width: 5rem;
+    height: 5rem;
+    background-color: $green;
+    animation-duration: 0.4s;
+}
+
+.completed{
+    background-color: red;
+}
