@@ -1,12 +1,19 @@
 @import '~@styles/variables/colors';
 
 .game-wrapper{
-    margin-top: 12rem;
+    margin-top: 15.8rem;
+
+    .head-block{
+        display: flex;
+        background-color: #242424;
+        padding: 7rem;
+        justify-content: space-between;
+    }
 
     .square-container{
-        border: 1px solid $white;
+        border: 1px solid #979797;
         padding: 1.2rem;
-        width: 80%;
+        width: 100%;
         height: 50vh;
         max-height: 50vh;
         margin: auto;
