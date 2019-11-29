@@ -19,10 +19,10 @@ export default class Home extends React.Component {
                             At the end, we will show you how close you came to overhelm the system.</p>
                         <Button name={'Play the game'} linkTo={'/game'}/>
                         <div className={'padding-b'}/>
-                        <Button name={'Read how it works'} linkTo={'/'}/>
+                        <Button typeALink={true} name={'Read how it works'} linkTo={'https://solana.com/category/blog/'}/>
                     </div>
                     <div className={'hero-illustration'}>
-                        <object id={'hero'} data={heroImage} type={'image/svg+xml'}></object>
+                        <object id={'hero'} data={heroImage} type={'image/svg+xml'}/>
                     </div>
                 </div>
             </div>
