@@ -1,11 +1,16 @@
 import * as React from 'react';
 
 import './index.scss';
+import {Link} from "react-router-dom";
 
-const Button: React.FC = () => {
-    return(
-        <a href="https://redux.js.org/" target="_blank" className='button-component'>Redux documentation</a>
-    )
+interface IProps {
+    name: string
+    linkTo: string
+}
+
+export const Button = ({name, linkTo}: IProps) => {
+
+    return (
+        <Link to={linkTo} className={'button-component'}>{name}</Link>
+    );
 };
-
-export default Button;
