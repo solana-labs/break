@@ -16,6 +16,7 @@ import IGame from "../../../reducers/game/model";
 import {setStatisticsGame} from "../../../actions/set-statistics-game";
 import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
 import {resetTransactions} from "../../../actions/reset-tarnsactions";
+import TransactionSquare from "../transaction-square";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -124,7 +125,6 @@ class Game extends React.Component<IProps, {}> {
                             </>
                       }
                   </div>
-
                   {
                       status === 'unstarted' ?
                         <div className={'start-button-block'}>
@@ -132,7 +132,7 @@ class Game extends React.Component<IProps, {}> {
                         </div> :
                         <div className={'square-container'} onClick={this.makeTransaction}>
                             {transactions && transactions.map((item: ITransaction.Model) => (
-                              <div key={item.id} className={`square ${item.status} animated zoomInRight`}/>
+                              <TransactionSquare status={item.status} key={item.id} information={item.info}/>
                             ))}
                         </div>
                   }
