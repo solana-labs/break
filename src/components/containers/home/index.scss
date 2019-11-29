@@ -2,4 +2,35 @@
 
 .home-wrapper{
     margin-top: 12rem;
+
+    .container{
+        display: flex;
+    }
+
+    .main-info{
+        display: flex;
+        flex-direction: column;
+        padding: 3.8rem 0;
+        max-width: 50%;
+        h1{
+            padding-bottom: 3rem;
+        }
+
+        p{
+            padding-bottom: 6rem;
+            padding-right: 10rem;
+        }
+
+        .padding-b{
+            height: 1.8rem;
+        }
+    }
+
+    .hero-illustration{
+        width: 50%;
+        padding-top: 5rem;
+        #hero{
+            width: 100%;
+        }
+    }
 }

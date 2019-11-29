@@ -3,26 +3,26 @@
 @import "./typography/typography.scss";
 
 @font-face {
-    font-family: 'OpenSans';
-    src: url('~@fonts/OpenSans-Light.ttf') format('truetype');
+    font-family: 'Exo';
+    src: url('~@fonts/Exo-Light.ttf') format('truetype');
     font-weight: 300;
 }
 
 @font-face {
-    font-family: 'OpenSans';
-    src: url('~@fonts/OpenSans-Regular.ttf') format('truetype');
+    font-family: 'Exo';
+    src: url('~@fonts/Exo-Regular.ttf') format('truetype');
     font-weight: 400;
 }
 
 @font-face {
-    font-family: 'OpenSans';
-    src: url('~@fonts/OpenSans-SemiBold.ttf') format('truetype');
+    font-family: 'Exo';
+    src: url('~@fonts/Exo-SemiBold.ttf') format('truetype');
     font-weight: 600;
 }
 
 @font-face {
-    font-family: 'OpenSans';
-    src: url('~@fonts/OpenSans-Bold.ttf') format('truetype');
+    font-family: 'Exo';
+    src: url('~@fonts/Exo-Bold.ttf') format('truetype');
     font-weight: 700;
 }
 
@@ -43,24 +43,28 @@ html, body {
     overflow-x: hidden;
 }
 
+body{
+    background-color: black;
+}
+
 input, textarea {
     &::-webkit-input-placeholder {
-        color: $dark-30;
+        color: $white;
         @include transition();
     }
 
     &:-moz-placeholder {
-        color: $dark-30;
+        color: $white;
         @include transition();
     }
 
     &:-moz-placeholder {
-        color: $dark-30;
+        color: $white;
         @include transition();
     }
 
     &:-ms-input-placeholder {
-        color: $dark-30;
+        color: $white;
         @include transition();
     }
 
@@ -94,3 +98,15 @@ input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration { display: none; }
+
+
+.container{
+    max-width: 194.8rem;
+    width: 100%;
+    margin: auto;
+    padding: 0 2.4rem;
+
+    @media (max-width: 1980px) {
+       max-width: 144.8rem;
+    }
+}

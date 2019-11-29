@@ -4,7 +4,7 @@
     margin-top: 12rem;
 
     .square-container{
-        border: 1px solid black;
+        border: 1px solid $white;
         padding: 1.2rem;
         width: 80%;
         height: 50vh;
@@ -21,6 +21,10 @@
     .square{
         width: 5rem;
         height: 5rem;
-        background-color: green;
+        background-color: $green;
+    }
+
+    .completed{
+        background-color: red;
     }
 }
