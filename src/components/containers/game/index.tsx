@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {Dispatch} from "redux";
 import {connect} from "react-redux";
+
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
 import {IRootAppReducerState} from "../../../reducer/model";
@@ -47,11 +48,20 @@ class Game extends React.Component<IProps, {}> {
 
         return (
             <div className={'game-wrapper'}>
-                <h1>Game</h1>
-                <div className={'square-container'} onClick={this.handlerClick}>
-                    {transactions && transactions.map((item: ITransaction.Model) => (
-                        <div key={item.id} className={`square ${item.status}`}/>
-                    ))}
+                <div className={'container'}>
+                    <div className={'head-block'}>
+                        <div className={'timer'}>
+                            <p>15 seconds</p>
+                        </div>
+                        <div className={'counter'}>
+                            <p>Total amount of transactions: {transactions.length}</p>
+                        </div>
+                    </div>
+                    <div className={'square-container'} onClick={this.handlerClick}>
+                        {transactions && transactions.map((item: ITransaction.Model) => (
+                            <div key={item.id} className={`square ${item.status}`}/>
+                        ))}
+                    </div>
                 </div>
             </div>
         )
