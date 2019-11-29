@@ -1,5 +1,5 @@
 import ITransaction from "./model";
-import {ADD_TRANSACTION, SET_INFO} from "../../actions/types";
+import {ADD_TRANSACTION, RESET_TRANSACTIONS, SET_INFO} from "../../actions/types";
 
 const initState: ITransaction.ModelState = {
     transactions: [],
@@ -16,8 +16,6 @@ const transactionReducer = (state = initState, action: any) => {
                     description: ''
                 }
             };
-
-            console.log('id - ', newTransaction.id);
 
             return {
                 ...state,
@@ -39,6 +37,11 @@ const transactionReducer = (state = initState, action: any) => {
                     }
                     return item;
                 })
+            }
+        }
+        case RESET_TRANSACTIONS: {
+            return {
+                transactions: []
             }
         }
         default:
