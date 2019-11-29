@@ -10,6 +10,7 @@ import {setTransactionInfo} from "../../../actions/set-transaction-info";
 import {IService} from "../../../services/model";
 import {withService} from "../../hoc-helpers/with-service";
 import {ITransactionsService, TransactionInfoService} from "../../../services/transactions-service/model";
+import {ButtonAnimate} from "../../ui/button-animate";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -57,9 +58,12 @@ class Game extends React.Component<IProps, {}> {
                             <p>Total amount of transactions: {transactions.length}</p>
                         </div>
                     </div>
+                    {/*<div className={'start-button-block'}>*/}
+                    {/*    <ButtonAnimate name={'Begin'}/>*/}
+                    {/*</div>*/}
                     <div className={'square-container'} onClick={this.handlerClick}>
                         {transactions && transactions.map((item: ITransaction.Model) => (
-                            <div key={item.id} className={`square ${item.status}`}/>
+                            <div key={item.id} className={`square ${item.status} animated zoomInRight`}/>
                         ))}
                     </div>
                 </div>
