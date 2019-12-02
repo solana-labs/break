@@ -1,4 +1,5 @@
 @import '~@styles/variables/colors';
+@import '~@styles/tools/transitions';
 
 .game-wrapper{
     margin-top: 15.8rem;
@@ -6,8 +7,87 @@
     .head-block{
         display: flex;
         background-color: #242424;
-        padding: 7rem;
-        justify-content: space-between;
+        padding: 2.4rem;
+
+        .unstarted-head{
+            p{
+                font-size: 1.8rem;
+                line-height: 3.2rem;
+            }
+
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .finished-head{
+            width: 100%;
+            display: flex;
+
+            p{
+                font-size: 1.8rem;
+                line-height: 3.2rem;
+            }
+
+            &>*:not(:last-child){
+                margin-right: 3.6rem;
+            }
+
+            .stats-block{
+                min-width: 30rem;
+                display: flex;
+                flex-direction: column;
+                &>*:not(:last-child){
+                    margin-bottom: 0.8rem;
+                }
+            }
+
+            .share-block{
+                min-width: 30rem;
+                display: flex;
+                flex-direction: column;
+                &>*:not(:last-child){
+                    margin-bottom: 0.8rem;
+                }
+
+                .share-buttons-wrapper{
+                    display: flex;
+                    padding-bottom: 1.6rem;
+                    &>*:not(:last-child){
+                        margin-right: 1.2rem;
+                    }
+                }
+
+                .share-button{
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 4.8rem;
+                    height: 4.8rem;
+                    background-color: $green;
+                    border: 1px solid $green;
+                    cursor: pointer;
+                    @include transition-hover;
+
+                    &>img{
+                        width: 3rem;
+                        height: 3rem;
+                        filter: brightness(0%);
+                        @include transition-hover;
+                    }
+
+                    &:hover{
+                        background-color: transparent;
+                        @include transition-hover;
+                        &>img{
+                            filter: none;
+                            @include transition-hover;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     .start-button-block{
@@ -32,17 +112,7 @@
         grid-template-columns: repeat(auto-fit, 5rem);
         grid-template-rows: repeat(auto-fit, 5rem);
         grid-gap: 1.2rem;
-    }
-
-    .btn{
-        background-color: #008CBA;
-        border: none;
-        border-radius: 5px;
-        color: white;
-        padding: 15px 32px;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
-        font-size: 16px;
+        -moz-user-select: none;
+        user-select: none;
     }
 }

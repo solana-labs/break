@@ -9,14 +9,20 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.25rem;
-    color: $black;
     text-decoration: none;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2.5rem 2rem 2.1rem 2rem;
     border: 1px solid rgba(0, 255, 173, 0.5);
+    background-color: transparent;
+    cursor: pointer;
     @include transition-hover;
+
+    &>span{
+        z-index: 3;
+        color: $black;
+    }
 
     &:before{
         content: '';
@@ -27,14 +33,16 @@
         top: 0.5rem;
         background-color: $green;
         border: 1px solid $green;
-        z-index: -1;
+        z-index: 2;
         @include transition-hover;
 
     }
 
     &:hover{
-        color: $green;
-        @include transition-hover;
+        &>span{
+            color: $green;
+            @include transition-hover;
+        }
 
         &:before{
             background-color: transparent;
