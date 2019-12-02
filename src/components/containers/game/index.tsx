@@ -44,7 +44,7 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 
 class Game extends React.Component<IProps, {}> {
     state: IState = {
-        secondsCount: 5,
+        secondsCount: 15,
     };
 
     private makeTransaction = async () => {
@@ -75,7 +75,7 @@ class Game extends React.Component<IProps, {}> {
         setTimeout(() => {
             clearInterval(timerId);
             this.finishGame();
-        }, 5000);
+        }, 15000);
     };
 
     private finishGame = () => {
@@ -98,7 +98,7 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 5,
+            secondsCount: 15,
         })
     };
 
