@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {Dispatch} from "redux";
 import {connect} from "react-redux";
+import {FacebookShareButton, TwitterShareButton} from 'react-share';
 
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
@@ -17,6 +18,10 @@ import {setStatisticsGame} from "../../../actions/set-statistics-game";
 import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
 import {resetTransactions} from "../../../actions/reset-tarnsactions";
 import TransactionSquare from "../transaction-square";
+import {Button} from "../../ui/button";
+
+const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
+const shareFacebookIcon = require('../../../shared/images/share-facebook.svg');
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -39,7 +44,7 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 
 class Game extends React.Component<IProps, {}> {
     state: IState = {
-        secondsCount: 15,
+        secondsCount: 5,
     };
 
     private makeTransaction = async () => {
@@ -70,7 +75,7 @@ class Game extends React.Component<IProps, {}> {
         setTimeout(() => {
             clearInterval(timerId);
             this.finishGame();
-        }, 15000);
+        }, 5000);
     };
 
     private finishGame = () => {
@@ -93,13 +98,13 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 15,
+            secondsCount: 5,
         })
     };
 
     render() {
         const transactions = this.props.transactionState.transactions;
-        const status = this.props.gameState.status;
+        const gameStatus = this.props.gameState.status;
         const {totalCount, percentCapacity} = this.props.gameState.statistics;
         const {secondsCount} = this.state;
 
@@ -107,32 +112,53 @@ class Game extends React.Component<IProps, {}> {
           <div className={'game-wrapper'}>
               <div className={'container'}>
                   <div className={'head-block'}>
-                      {
-                          status === 'finished' ?
-                            <div>
-                                <p>Stats: </p>
-                                <p>{`${totalCount} transactions`}</p>
-                                <p>{`${percentCapacity}% of Solana capacity used`}</p>
-                                <button className={'btn'} onClick={this.tryAgain}>Try Again</button>
+                      {gameStatus === 'finished' ?
+                            <div className={'finished-head'}>
+                                <div className={'stats-block'}>
+                                    <p>Stats: </p>
+                                    <p>{`${totalCount} transaction(s)`}</p>
+                                    <p>{`${percentCapacity}% of Solana capacity used`}</p>
+                                    <Button typeButton={true} name={'Try Again'} onClick={this.tryAgain}/>
+                                </div>
+                                <div className={'info-block'}>
+                                    <p>Solana has built an exceptionally fast, secure, and scalable blockchain network—that functions at 50k transactions per second—for decentralized apps and companies.</p>
+                                </div>
+                                <div className={'share-block'}>
+                                    <p>Share your result:</p>
+                                    <div className={'share-buttons-wrapper'}>
+                                        <TwitterShareButton
+                                            className={'share-button'}
+                                            title={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
+                                            url={'https://break.solana.com/'}>
+                                            <img src={shareTwitterIcon}/>
+                                        </TwitterShareButton>
+                                        <FacebookShareButton
+                                            className={'share-button'}
+                                            quote={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
+                                            url={'https://break.solana.com/'}>
+                                            <img src={shareFacebookIcon}/>
+                                        </FacebookShareButton>
+                                    </div>
+                                    <Button typeButton={true} name={'Build on Solana'}/>
+                                </div>
                             </div> :
-                            <>
+                            <div className={'unstarted-head'}>
                                 <div className={'timer'}>
                                     <p>{`${secondsCount} seconds`}</p>
                                 </div>
                                 <div className={'counter'}>
                                     <p>Total amount of transactions: {transactions.length}</p>
                                 </div>
-                            </>
+                            </div>
                       }
                   </div>
-                  {
-                      status === 'unstarted' ?
+                  {gameStatus === 'unstarted' ?
                         <div className={'start-button-block'}>
                             <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
                         </div> :
                         <div className={'square-container'} onClick={this.makeTransaction}>
                             {transactions && transactions.map((item: ITransaction.Model) => (
-                              <TransactionSquare status={item.status} key={item.id} information={item.info}/>
+                              <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id} information={item.info}/>
                             ))}
                         </div>
                   }
