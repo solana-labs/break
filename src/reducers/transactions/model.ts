@@ -13,7 +13,8 @@ namespace ITransaction {
     }
 
     export interface ModelState {
-        transactions: Model[]
+        transactions: Model[],
+        countCompletedTransactions: number
     }
 }
 
