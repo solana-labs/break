@@ -1,7 +1,9 @@
 export interface ITransactionsService {
     makeTransaction(id: string): Promise<TransactionInfoService>,
+    setConnection(): void
 }
 
 export interface TransactionInfoService {
-    description: string
+    signature: string
+    confirmationTime: number
 }

@@ -8,7 +8,8 @@ namespace ITransaction {
     }
 
     export interface TransactionInfo {
-        description: string
+        signature: string
+        confirmationTime: number
     }
 
     export interface ModelState {
