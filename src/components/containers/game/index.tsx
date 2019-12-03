@@ -49,8 +49,7 @@ class Game extends React.Component<IProps, {}> {
     };
 
     private makeTransaction = async () => {
-        const status = this.props.gameState.status;
-
+        let status = this.props.gameState.status;
         if (status !== 'started') return;
 
         const countOfTransactions = this.props.transactionState.transactions.length;
@@ -62,6 +61,9 @@ class Game extends React.Component<IProps, {}> {
         const updatedTransaction: ITransaction.Model = {
             id, info, status: 'completed',
         };
+
+        status = this.props.gameState.status;
+        if (status !== 'started') return;
 
         this.props.dispatch(setTransactionInfo(updatedTransaction));
     };
@@ -87,9 +89,11 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(setStatusGame('finished'));
 
         const totalCount = this.props.transactionState.transactions.length;
-        const percentCapacity = parseFloat((totalCount / 50000).toFixed(3));
+        const completedCount = this.props.transactionState.countCompletedTransactions;
 
-        this.props.dispatch(setStatisticsGame({totalCount, percentCapacity}))
+        const percentCapacity = parseFloat((completedCount / 50000).toFixed(3));
+
+        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}))
     };
 
     private startGame = async () => {
@@ -121,7 +125,7 @@ class Game extends React.Component<IProps, {}> {
     render() {
         const transactions = this.props.transactionState.transactions;
         const gameStatus = this.props.gameState.status;
-        const {totalCount, percentCapacity} = this.props.gameState.statistics;
+        const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
         const {secondsCount} = this.state;
 
         return (
@@ -132,7 +136,7 @@ class Game extends React.Component<IProps, {}> {
                         <div className={'finished-head'}>
                             <div className={'stats-block'}>
                                 <p>Stats: </p>
-                                <p>{`${totalCount} transaction(s)`}</p>
+                                <p>{`Transaction(s) processed: ${completedCount} of ${totalCount}`}</p>
                                 <p>{`${percentCapacity}% of Solana capacity used`}</p>
                                 <Button typeButton={true} name={'Try Again'} onClick={this.tryAgain}/>
                             </div>
@@ -164,7 +168,7 @@ class Game extends React.Component<IProps, {}> {
                                 <p>{`${secondsCount} seconds`}</p>
                             </div>
                             <div className={'counter'}>
-                                <p>Total amount of transactions: {transactions.length}</p>
+                                <p>Transactions created: {transactions.length}</p>
                             </div>
                         </div>
                       }

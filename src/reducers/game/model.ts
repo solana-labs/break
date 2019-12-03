@@ -1,6 +1,7 @@
 namespace IGame {
     export interface ModelStatistics {
         totalCount: number
+        completedCount: number
         percentCapacity: number
     }
 

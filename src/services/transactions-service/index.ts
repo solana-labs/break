@@ -34,7 +34,7 @@ export default class TransactionsService implements ITransactionsService {
               this.account.publicKey,
               //SYSVAR_RENT_PUBKEY,
               this.keypair.publicKey,
-              50000
+              1488
             );
 
             const t1 = performance.now();

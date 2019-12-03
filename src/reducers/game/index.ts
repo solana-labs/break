@@ -5,6 +5,7 @@ const initState: IGame.ModelState = {
     status: 'unstarted',
     statistics: {
         totalCount: 0,
+        completedCount: 0,
         percentCapacity: 0
     }
 };
