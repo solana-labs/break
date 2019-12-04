@@ -3,9 +3,7 @@ const required = (value: string) => {
 };
 
 const email = (value: string) => {
-    const reg = /^([\w-]+\.)*[\w-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/;
-
-    return !!value.match(reg);
+    return value.toLowerCase().match(/^([\w-]+\.)*[\w-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/)
 };
 
 const minLength = (value: string, min: number) => {

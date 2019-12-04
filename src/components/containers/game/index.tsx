@@ -18,6 +18,8 @@ import {setStatisticsGame} from "../../../actions/set-statistics-game";
 import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
 import {resetTransactions} from "../../../actions/reset-tarnsactions";
 import {Button} from "../../ui/button";
+import ModalPortal from "../../ui/modal-portal";
+import BuildOnSolanaPopup from "../build-on-solana-popup";
 
 const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
 const shareFacebookIcon = require('../../../shared/images/share-facebook.svg');
@@ -36,7 +38,8 @@ interface IServiceProps {
 }
 
 interface IState {
-    secondsCount: number
+    secondsCount: number,
+    buildPopupIsOpen: boolean
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -46,6 +49,7 @@ class Game extends React.Component<IProps, {}> {
 
     state: IState = {
         secondsCount: 15,
+        buildPopupIsOpen: false,
     };
 
     private makeTransaction = async () => {
@@ -111,6 +115,18 @@ class Game extends React.Component<IProps, {}> {
         });
     };
 
+    private openPopup = () => {
+        this.setState({
+            buildPopupIsOpen: true
+        })
+    };
+
+    private closePopup = () => {
+        this.setState({
+            buildPopupIsOpen: false
+        })
+    };
+
     componentDidMount() {
         this._isMounted = true;
 
@@ -160,7 +176,7 @@ class Game extends React.Component<IProps, {}> {
                                         <img src={shareFacebookIcon}/>
                                     </FacebookShareButton>
                                 </div>
-                                <Button typeButton={true} name={'Build on Solana'}/>
+                                <Button typeButton={true} name={'Build on Solana'} onClick={this.openPopup}/>
                             </div>
                         </div> :
                         <div className={'unstarted-head'}>
@@ -185,6 +201,11 @@ class Game extends React.Component<IProps, {}> {
                     </div>
                   }
               </div>
+
+
+              <ModalPortal isOpenProps={this.state.buildPopupIsOpen} onClose={this.closePopup}>
+                  <BuildOnSolanaPopup onClose={this.closePopup}/>
+              </ModalPortal>
           </div>
         )
     }

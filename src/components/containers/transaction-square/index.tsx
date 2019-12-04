@@ -45,7 +45,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     };
 
     private setAnimation = () => {
-        const animatedArray = ['zoomInRight', 'zoomInUp', 'fadeInRight', 'slideInUp', 'fadeInUp', 'bounceInRight'];
+        const animatedArray = ['zoomInRight', 'zoomInUp', 'fadeInRight', 'slideInUp', 'fadeInUp', 'lightSpeedIn'];
         const index = Math.floor(Math.random() * Math.floor(6));
 
         this.animatedClass = animatedArray[index];
