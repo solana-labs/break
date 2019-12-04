@@ -51,6 +51,13 @@ export default class BuildOnSolanaPopup extends React.Component<IProps, IState> 
         }
     };
 
+    componentWillUnmount(): void {
+        this.setState({
+            email: '',
+            isValid: true
+        });
+    }
+
     render() {
         return (
             <div className={'build-on-solana-popup-popup'}>
