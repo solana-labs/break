@@ -157,8 +157,7 @@ class Game extends React.Component<IProps, {}> {
                                 <Button typeButton={true} name={'Try Again'} onClick={this.tryAgain}/>
                             </div>
                             <div className={'info-block'}>
-                                <p>Solana has built an exceptionally fast, secure, and scalable blockchain network—that
-                                    functions at 50k transactions per second—for decentralized apps and companies.</p>
+                                <p>{`Well, perhaps if you invited a fem more friends... With ${completedCount} transactions in 15 seconds you took up ${percentCapacity}% of our blockchain's network capabilities. If you invited couple more people our decentralized database would start to slow down. You can review every transaction with stats on confirmation and signatures hovering it.`}</p>
                             </div>
                             <div className={'share-block'}>
                                 <p>Share your result:</p>
