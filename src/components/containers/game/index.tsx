@@ -95,7 +95,7 @@ class Game extends React.Component<IProps, {}> {
         const totalCount = this.props.transactionState.transactions.length;
         const completedCount = this.props.transactionState.countCompletedTransactions;
 
-        const percentCapacity = parseFloat((completedCount / 50000).toFixed(3));
+        const percentCapacity = parseFloat((completedCount / 50000).toFixed(4));
 
         this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}))
     };
