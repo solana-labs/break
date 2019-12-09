@@ -130,8 +130,18 @@ class Game extends React.Component<IProps, {}> {
 
     componentDidMount() {
         this._isMounted = true;
-
         this.props.transactionsService.setConnection();
+    }
+
+    private updateScroll = () =>{
+        const scrollSquareContainer: HTMLElement | null = document.getElementById("scroll-square-container");
+        if(scrollSquareContainer){
+            scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
+        }
+    };
+
+    componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<{}>, snapshot?: any): void {
+        this.updateScroll()
     }
 
     componentWillUnmount() {
@@ -194,7 +204,7 @@ class Game extends React.Component<IProps, {}> {
                           <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
                       </div> :
                       <div className={'square-container-wrapper'}>
-                          <div className={`square-container`} onClick={this.makeTransaction}>
+                          <div id={'scroll-square-container'} className={`square-container`} onClick={this.makeTransaction}>
                               {transactions && transactions.map((item: ITransaction.Model) => (
                                   <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
                                                      information={item.info}/>

@@ -9,6 +9,7 @@ export const HelmetSet = () => {
     return (
         <React.Fragment>
             <Helmet
+
                 link={[
                     {
                         rel: "apple-touch-icon",
@@ -81,8 +82,11 @@ export const HelmetSet = () => {
                     },
                 ]}
                 meta={[
-                    {name: "msapplication-TileColor", content: "#ffffff"},
-                    {name: "msapplication-TileImage", content: "../../../shared/images/favicon/ms-icon-144x144.png"},
+                    {name: "msapplication-TileColor", content: "#000000"},
+                    {name: "msapplication-TileImage", content: require('../../../shared/images/favicon/ms-icon-144x144.png')},
+                    {name: "og:image", content: require('../../../shared/images/SOLANA-preview.png')},
+                    {name: "og:image:width", content: "1200"},
+                    {name: "og:image:height", content: "600"},
                 ]}/>
         </React.Fragment>
 
