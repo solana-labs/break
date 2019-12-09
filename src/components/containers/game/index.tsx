@@ -49,7 +49,7 @@ class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
     state: IState = {
-        secondsCount: 1,
+        secondsCount: 15,
         buildPopupIsOpen: false,
     };
 
@@ -87,7 +87,7 @@ class Game extends React.Component<IProps, {}> {
             if (this._isMounted) {
                 this.finishGame();
             }
-        }, 1000);
+        }, 15000);
     };
 
     private finishGame = () => {
@@ -112,7 +112,7 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 1,
+            secondsCount: 15,
         });
     };
 
@@ -190,18 +190,19 @@ class Game extends React.Component<IProps, {}> {
                       }
                   </div>
                   {gameStatus === 'unstarted' ?
-                    <div className={'start-button-block'}>
-                        <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
-                    </div> :
-                    <div className={'square-container'} onClick={this.makeTransaction}>
-                        {transactions && transactions.map((item: ITransaction.Model) => (
-                          <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
-                                             information={item.info}/>
-                        ))}
-                    </div>
+                      <div className={'start-button-block'}>
+                          <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
+                      </div> :
+                      <div className={'square-container-wrapper'}>
+                          <div className={`square-container ${gameStatus === 'finished' ? 'center':''}`} onClick={this.makeTransaction}>
+                              {transactions && transactions.map((item: ITransaction.Model) => (
+                                  <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
+                                                     information={item.info}/>
+                              ))}
+                          </div>
+                      </div>
                   }
               </div>
-
 
               <ModalPortal isOpenProps={this.state.buildPopupIsOpen} onClose={this.closePopup}>
                   <BuildOnSolanaPopup onClose={this.closePopup}/>
