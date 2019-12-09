@@ -194,7 +194,7 @@ class Game extends React.Component<IProps, {}> {
                           <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
                       </div> :
                       <div className={'square-container-wrapper'}>
-                          <div className={`square-container ${gameStatus === 'finished' ? 'center':''}`} onClick={this.makeTransaction}>
+                          <div className={`square-container`} onClick={this.makeTransaction}>
                               {transactions && transactions.map((item: ITransaction.Model) => (
                                   <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
                                                      information={item.info}/>

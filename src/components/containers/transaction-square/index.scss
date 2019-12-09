@@ -32,15 +32,17 @@
       position: absolute;
       z-index: 2;
     }
-  }
 
-  &.hovered{
-    opacity: 0.8;
-    @include transition;
+    &.hovered{
+      opacity: 0.8;
+      @include transition;
+    }
   }
 }
 
 .square-info-container {
+  max-width: 32rem;
+  overflow: hidden;
   padding: 1.6rem;
   background-color: #505050;
   border-radius: 0.2rem;
@@ -50,6 +52,9 @@
   }
 
   p{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: 1.6rem;
     line-height: 2.4rem;
   }

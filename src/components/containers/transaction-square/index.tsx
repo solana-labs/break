@@ -45,7 +45,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     };
 
     private setAnimation = () => {
-        const animatedArray = ['zoomInRight', 'zoomInRight', 'fadeInRight', 'fadeInRight', 'lightSpeedIn', 'lightSpeedIn'];
+        const animatedArray = ['zoomInRight', 'slideInRight', 'fadeInRight', 'slideInRight', 'bounceInRight', 'lightSpeedIn'];
         const index = Math.floor(Math.random() * Math.floor(6));
 
         this.animatedClass = animatedArray[index];
@@ -61,7 +61,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
               key={0}
               onMouseOver={() => this.toggle(true)}
               onMouseOut={() => this.toggle(false)}
-              className={`square ${this.props.status} ${hovered} animated ${this.animatedClass}`}
+              className={`square ${this.props.status} ${hovered} ${this.animatedClass}`}
             />}
             isOpen={this.state.popoverOpen}
             enterExitTransitionDurationMs={5}
