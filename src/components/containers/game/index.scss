@@ -2,7 +2,7 @@
 @import '~@styles/tools/transitions';
 
 .game-wrapper{
-    margin-top: 15.8rem;
+    margin: 15.8rem 0 10rem 0;
 
     .head-block{
         display: flex;
@@ -87,6 +87,16 @@
                     }
                 }
             }
+
+            @media (max-width: 1023px) {
+                flex-direction: column;
+
+                &>*:not(:last-child){
+                    margin-right: 0;
+                    margin-bottom: 2.4rem;
+                }
+
+            }
         }
     }
 
@@ -101,7 +111,7 @@
 
     .square-container{
         border: 1px solid $green;
-        padding: 1.2rem;
+        padding: 2.4rem;
         width: 100%;
         height: 50vh;
         max-height: 50vh;

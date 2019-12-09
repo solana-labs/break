@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Dispatch} from "redux";
 import {connect} from "react-redux";
 import {FacebookShareButton, TwitterShareButton} from 'react-share';
+
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
 import IGame from "../../../reducers/game/model";
@@ -48,7 +49,7 @@ class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
     state: IState = {
-        secondsCount: 15,
+        secondsCount: 1,
         buildPopupIsOpen: false,
     };
 
@@ -86,7 +87,7 @@ class Game extends React.Component<IProps, {}> {
             if (this._isMounted) {
                 this.finishGame();
             }
-        }, 15000);
+        }, 1000);
     };
 
     private finishGame = () => {
@@ -111,7 +112,7 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 15,
+            secondsCount: 1,
         });
     };
 
