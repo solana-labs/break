@@ -5,6 +5,10 @@
 
     .container{
         display: flex;
+
+        @media (max-width: 1023px) {
+            font-size: 10px;
+        }
     }
 
     .main-info{
@@ -24,12 +28,39 @@
         .padding-b{
             height: 1.8rem;
         }
+
+        @media (max-width: 1023px) {
+            max-width: 100%;
+
+            p{
+                padding-bottom: 6rem;
+                padding-right: 0;
+            }
+        }
     }
 
     .hero-illustration{
         width: 50%;
         padding-top: 5rem;
         #hero{
+            width: 100%;
+        }
+
+        @media (max-width: 1023px) {
+            position: absolute;
+            left: 0;
+            transform: translate(20%, 20%);
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            position: absolute;
+            transform: translate(20%, 30%);
+            width: 90%;
+        }
+        @media (max-width: 767px) {
+            position: absolute;
+            transform: translate(0, 70%);
             width: 100%;
         }
     }

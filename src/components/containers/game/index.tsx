@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Dispatch} from "redux";
 import {connect} from "react-redux";
 import {FacebookShareButton, TwitterShareButton} from 'react-share';
+
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
 import IGame from "../../../reducers/game/model";
@@ -129,8 +130,18 @@ class Game extends React.Component<IProps, {}> {
 
     componentDidMount() {
         this._isMounted = true;
-
         this.props.transactionsService.setConnection();
+    }
+
+    private updateScroll = () =>{
+        const scrollSquareContainer: HTMLElement | null = document.getElementById("scroll-square-container");
+        if(scrollSquareContainer){
+            scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
+        }
+    };
+
+    componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<{}>, snapshot?: any): void {
+        this.updateScroll()
     }
 
     componentWillUnmount() {
@@ -189,18 +200,19 @@ class Game extends React.Component<IProps, {}> {
                       }
                   </div>
                   {gameStatus === 'unstarted' ?
-                    <div className={'start-button-block'}>
-                        <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
-                    </div> :
-                    <div className={'square-container'} onClick={this.makeTransaction}>
-                        {transactions && transactions.map((item: ITransaction.Model) => (
-                          <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
-                                             information={item.info}/>
-                        ))}
-                    </div>
+                      <div className={'start-button-block'}>
+                          <ButtonAnimate name={'Begin'} onClick={this.startGame}/>
+                      </div> :
+                      <div className={'square-container-wrapper'}>
+                          <div id={'scroll-square-container'} className={`square-container`} onClick={this.makeTransaction}>
+                              {transactions && transactions.map((item: ITransaction.Model) => (
+                                  <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
+                                                     information={item.info}/>
+                              ))}
+                          </div>
+                      </div>
                   }
               </div>
-
 
               <ModalPortal isOpenProps={this.state.buildPopupIsOpen} onClose={this.closePopup}>
                   <BuildOnSolanaPopup onClose={this.closePopup}/>
