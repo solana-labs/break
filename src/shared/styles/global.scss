@@ -2,6 +2,7 @@
 @import "./tools/transitions.scss";
 @import "./typography/typography.scss";
 @import "/animate.scss";
+@import "/glitch.scss";
 
 @font-face {
     font-family: 'Exo';
@@ -140,3 +141,5 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
        max-width: 140.8rem;
     }
 }
+
+

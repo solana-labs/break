@@ -9,7 +9,7 @@ export default class TransactionsService implements ITransactionsService {
     keypair: any;
 
     setConnection = async () => {
-        const url = 'http://testnet.solana.com:8899';
+        const url = 'http://edge.testnet.solana.com:8899';
         const {Account, Connection} = solanaWeb3;
 
         try {
