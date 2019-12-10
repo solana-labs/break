@@ -2,7 +2,11 @@
 @import '~@styles/tools/transitions';
 
 .game-wrapper{
-    margin: 15.8rem 0 10rem 0;
+    margin: 10rem 0;
+
+    @media (max-width: 1023px) {
+        margin: 2.8rem 0;
+    }
 
     .head-block{
         display: flex;

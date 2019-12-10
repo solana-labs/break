@@ -3,6 +3,10 @@
 .home-wrapper{
     margin-top: 10rem;
 
+    @media (max-width: 1023px) {
+        margin-top: 2.8rem;
+    }
+
     .container{
         display: flex;
 
