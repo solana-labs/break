@@ -40,7 +40,7 @@
     "@types/enzyme": "^3.9.1",
     "@types/enzyme-adapter-react-16": "^1.0.5",
     "@types/gsap": "^1.20.2",
-    "@types/jest": "^23.3.9",
+    "@types/jest": "^24.0.23",
     "@types/jsdom": "^12.2.4",
     "@types/lodash": "^4.14.144",
     "@types/moment": "^2.13.0",
