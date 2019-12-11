@@ -2,3 +2,5 @@
 build/
 *.iml
 *.log
+/coverage/
+/node_modules/
