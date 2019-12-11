@@ -1,0 +1,80 @@
+@import '~@styles/variables/colors';
+@import '~@styles/tools/transitions';
+
+.finish-head-wrapper{
+    width: 100%;
+    display: flex;
+
+    p{
+        font-size: 1.8rem;
+        line-height: 3.2rem;
+    }
+
+    &>*:not(:last-child){
+        margin-right: 3.6rem;
+    }
+
+    .stats-block{
+        min-width: 30rem;
+        display: flex;
+        flex-direction: column;
+        &>*:not(:last-child){
+            margin-bottom: 0.8rem;
+        }
+    }
+
+    .share-block{
+        min-width: 30rem;
+        display: flex;
+        flex-direction: column;
+        &>*:not(:last-child){
+            margin-bottom: 0.8rem;
+        }
+
+        .share-buttons-wrapper{
+            display: flex;
+            padding-bottom: 1.6rem;
+            &>*:not(:last-child){
+                margin-right: 1.2rem;
+            }
+        }
+
+        .share-button{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 4.8rem;
+            height: 4.8rem;
+            background-color: $green;
+            border: 1px solid $green;
+            cursor: pointer;
+            @include transition-hover;
+
+            &>img{
+                width: 3rem;
+                height: 3rem;
+                filter: brightness(0%);
+                @include transition-hover;
+            }
+
+            &:hover{
+                background-color: transparent;
+                @include transition-hover;
+                &>img{
+                    filter: none;
+                    @include transition-hover;
+                }
+            }
+        }
+    }
+
+    @media (max-width: 1023px) {
+        flex-direction: column;
+
+        &>*:not(:last-child){
+            margin-right: 0;
+            margin-bottom: 2.4rem;
+        }
+
+    }
+}

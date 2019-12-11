@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {Dispatch} from "redux";
 import {connect} from "react-redux";
-import {FacebookShareButton, TwitterShareButton} from 'react-share';
 
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
@@ -20,9 +19,8 @@ import {resetTransactions} from "../../../actions/reset-tarnsactions";
 import {Button} from "../../ui/button";
 import ModalPortal from "../../ui/modal-portal";
 import BuildOnSolanaPopup from "../build-on-solana-popup";
-
-const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
-const shareFacebookIcon = require('../../../shared/images/share-facebook.svg');
+import {StartHead} from "../../presentational/start-head";
+import {FinishHead} from "../../presentational/finish-head";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -48,7 +46,7 @@ class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
     state: IState = {
-        secondsCount: 15,
+        secondsCount: 1,
         buildPopupIsOpen: false,
     };
 
@@ -86,7 +84,7 @@ class Game extends React.Component<IProps, {}> {
             if (this._isMounted) {
                 this.finishGame();
             }
-        }, 15000);
+        }, 1000);
     };
 
     private finishGame = () => {
@@ -111,7 +109,7 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 15,
+            secondsCount: 1,
         });
     };
 
@@ -157,72 +155,40 @@ class Game extends React.Component<IProps, {}> {
         return (
             <div className={'game-wrapper'}>
                 <div className={'container'}>
-                    <div className={'head-block'}>
-                        {gameStatus === 'finished' ?
-                            <div className={'finished-head'}>
-                                <div className={'stats-block'}>
-                                    <p>Stats: </p>
-                                    <p>{`Transaction(s) processed: ${completedCount} of ${totalCount}`}</p>
-                                    <p>{`${percentCapacity}% of Solana capacity used`}</p>
-                                    <Button typeButton={true} name={'Try Again'} onClick={this.tryAgain}/>
-                                </div>
-                                <div className={'info-block'}>
-                                    <p>Well, perhaps if you invited a fem more friends... With <span className={'green-text semibold'}>{completedCount}</span> transactions
-                                        in 15 seconds you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of
-                                        our blockchain's network capabilities. If you invited couple more people our
-                                        decentralized database would start to slow down. You can review every
-                                        transaction with stats on confirmation and signatures hovering it.</p>
-                                </div>
-                                <div className={'share-block'}>
-                                    <p>Share your result:</p>
-                                    <div className={'share-buttons-wrapper'}>
-                                        <TwitterShareButton
-                                            className={'share-button'}
-                                            title={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
-                                            url={'https://break.solana.com/'}>
-                                            <img src={shareTwitterIcon}/>
-                                        </TwitterShareButton>
-                                        <FacebookShareButton
-                                            className={'share-button'}
-                                            quote={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
-                                            url={'https://break.solana.com/'}>
-                                            <img src={shareFacebookIcon}/>
-                                        </FacebookShareButton>
-                                    </div>
-                                    <Button typeButton={true} name={'Build on Solana'} onClick={this.openPopup}/>
-                                </div>
-                            </div> :
-                            <div className={'unstarted-head'}>
-                                <div className={'timer'}>
-                                    <p>Time Left</p>
-                                    <p>{`${secondsCount} sec`}</p>
-                                </div>
-                                <div className={'counter'}>
-                                    <p>Transactions Created</p>
-                                    <p>{transactions.length}</p>
-                                </div>
-                                <div className={'processing'}>
-                                    <p>Avg. Transactions Proccessing Time</p>
-                                    <p>0.5 sec</p>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                    {gameStatus === 'finished' ?
+                        <FinishHead
+                            completedCount={completedCount}
+                            totalCount={totalCount}
+                            percentCapacity={percentCapacity}
+                            tryAgain={this.tryAgain}
+                            openPopup={this.openPopup}
+                        /> :
+                        <StartHead
+                            secondsCount={secondsCount}
+                            transactionsCreated={transactions.length}
+                            processingTime={5}
+                        />
+                    }
                     <div className={`square-container-wrapper ${gameStatus}`}>
                         {gameStatus === 'unstarted' ? <div>
-                                <Button typeButton={true} name={'Begin'} onClick={this.startGame}
+                                <Button typeButton={true} name={'Begin'}
+                                        onClick={this.startGame}
                                         animate={'animated infinite pulse'}/>
                             </div> :
-                            <div id={'scroll-square-container'} className={`square-container`}
+                            <div id={'scroll-square-container'}
+                                 className={`square-container`}
                                  onClick={this.makeTransaction}>
                                 {transactions && transactions.map((item: ITransaction.Model) => (
-                                    <TransactionSquare gameStatus={gameStatus} status={item.status} key={item.id}
-                                                       information={item.info}/>
+                                    <TransactionSquare
+                                        key={item.id}
+                                        gameStatus={gameStatus}
+                                        status={item.status}
+                                        information={item.info}
+                                    />
                                 ))}
                             </div>
                         }
                     </div>
-
                 </div>
 
                 <ModalPortal isOpenProps={this.state.buildPopupIsOpen} onClose={this.closePopup}>
