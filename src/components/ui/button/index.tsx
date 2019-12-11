@@ -8,15 +8,16 @@ interface IProps {
     linkTo?: string
     typeButton?: boolean
     typeALink?: boolean
+    animate?: string
     onClick?(): void
 }
 
-export const Button = ({name, linkTo, typeButton,typeALink,onClick}: IProps) => {
+export const Button = ({name, linkTo, typeButton,typeALink,onClick, animate}: IProps) => {
     return (
         <React.Fragment>
-            {!typeButton && !typeALink && <Link to={linkTo ? linkTo : '#'} className={'button-component'}><span>{name}</span></Link>}
-            {typeButton && <button onClick={onClick} className={'button-component'}><span>{name}</span></button>}
-            {typeALink && <a href={linkTo} className={'button-component'}><span>{name}</span></a>}
+            {!typeButton && !typeALink && <Link to={linkTo ? linkTo : '#'} className={`button-component ${animate}`}><span>{name}</span></Link>}
+            {typeButton && <button onClick={onClick} className={`button-component ${animate}`}><span>{name}</span></button>}
+            {typeALink && <a href={linkTo} className={`button-component ${animate}`}><span>{name}</span></a>}
         </React.Fragment>
     );
 };

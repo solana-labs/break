@@ -10,19 +10,52 @@
 
     .head-block{
         display: flex;
-        background-color: #242424;
-        padding: 2.4rem;
 
         .unstarted-head{
-            p{
-                font-size: 1.8rem;
-                line-height: 3.2rem;
-            }
-
             width: 100%;
-            display: flex;
             justify-content: space-between;
             align-items: center;
+            display: grid;
+            grid-template-columns: 2fr 2fr 3fr;
+            grid-template-rows: auto;
+            grid-column-gap: 2rem;
+            padding-bottom: 2rem;
+
+            &>div{
+                height: 100%;
+                width: 100%;
+                background-color: #1B1B1B;
+                padding: 2.4rem;
+                border-top: 1px solid #007C54;
+                background-repeat: no-repeat;
+                background-position: right;
+                background-size: contain;
+
+
+                &>*:nth-child(1){
+                    font-size: 1.8rem;
+                    line-height: 2.4rem;
+                    padding-bottom: 1.6rem;
+                }
+
+                &>*:nth-child(2){
+                    font-size: 4.8rem;
+                    line-height: 4.8rem;
+                    font-weight: 600;
+                }
+            }
+
+            .timer{
+                background-image: url("../../../shared/images/icons/timer.svg");
+            }
+
+            .counter{
+                background-image: url("../../../shared/images/icons/arrows.svg");
+            }
+
+            .processing{
+                background-image: url("../../../shared/images/icons/processing.svg");
+            }
         }
 
         .finished-head{
@@ -114,23 +147,49 @@
     }
 
     .square-container-wrapper{
+        display: flex;
+        align-items: center;
+        justify-content: center;
         border: 1px solid #007C54;
-        padding: 2.4rem;
+        padding: 2.4rem 1.2rem 2.4rem 2.4rem;
         width: 100%;
         height: 50vh;
         max-height: 50vh;
+        @include transition;
+
+        &.started:hover{
+            background-color: rgba(0, 255, 173, 0.08);
+            cursor: pointer;
+            @include transition;
+        }
 
         .square-container{
             width: 100%;
             height: 100%;
+            padding-right: 1.2rem;
             overflow-x: hidden;
             overflow-y: auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, 5rem);
-            grid-template-rows: repeat(auto-fit, 5rem);
+            grid-template-columns: repeat(auto-fit, 3.2rem);
+            grid-template-rows: repeat(auto-fit, 3.2rem);
             grid-gap: 0.8rem;
             -moz-user-select: none;
             user-select: none;
+
+            scrollbar-color: rgba(0, 255, 173, 0.4) transparent;
+            scrollbar-width: thin;
+
+            &::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: rgba(0, 255, 173, 0.4);
+            }
         }
     }
 }

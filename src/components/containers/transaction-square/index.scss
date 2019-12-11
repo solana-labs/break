@@ -14,15 +14,17 @@
 }
 
 .square {
-  width: 5rem;
-  height: 5rem;
-  background-color: #505050;
+  width: 3.2rem;
+  height: 3.2rem;
+  background-color: #3D3D3D;
+  border: 1px solid #3D3D3D;
   animation-duration: 0.4s;
   opacity: 1;
   @include transition;
 
   &.completed {
     background-color: $green;
+    border: 1px solid #007C54;
     @include transition;
 
     &.hovered{

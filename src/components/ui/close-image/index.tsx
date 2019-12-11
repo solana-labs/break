@@ -1,7 +1,7 @@
 import * as React from 'react';
 import './index.scss';
 
-const closeImg = require('../../../shared/images/close.svg');
+const closeImg = require('@images/icons/close.svg');
 
 interface Props{
   className?: string;
