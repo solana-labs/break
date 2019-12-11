@@ -1,3 +1,7 @@
+[![Build status][travis-image]][travis-url]
+
+[travis-image]: https://api.travis-ci.org/solana-labs/break.svg?branch=master
+[travis-url]: https://travis-ci.org/solana-labs/break
 ## Break Solana Game
 
 ### Prerequisites
