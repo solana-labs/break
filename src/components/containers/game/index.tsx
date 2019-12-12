@@ -58,7 +58,7 @@ class Game extends React.Component<IProps, {}> {
         const countOfTransactions = transactions.length;
         const id = 'transaction' + countOfTransactions;
 
-        this.props.dispatch(addTransaction());
+        this.props.dispatch(addTransaction())
 
         const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(id);
 
