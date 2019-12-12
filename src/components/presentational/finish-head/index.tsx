@@ -100,19 +100,22 @@ export default class HomeScene extends React.Component<IProps, IState> {
                     <Button typeButton={true} name={'Try Again'} onClick={tryAgain}/>
                     <Button typeButton={true} name={'Build on Solana'} onClick={openPopup}/>
                 </div>
-                <div className={'share-block'}>
-                    <TwitterShareButton
-                        className={'share-button'}
-                        title={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
-                        url={'https://break.solana.com/'}>
-                        <img src={shareTwitterIcon}/>
-                    </TwitterShareButton>
-                    <FacebookShareButton
-                        className={'share-button'}
-                        quote={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
-                        url={'https://break.solana.com/'}>
-                        <img src={shareFacebookIcon}/>
-                    </FacebookShareButton>
+                <div className={'share-block-wrapper'}>
+                    <p>Share your result:</p>
+                    <div className={'share-block'}>
+                        <TwitterShareButton
+                            className={'share-button'}
+                            title={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
+                            url={'https://break.solana.com/'}>
+                            <img src={shareTwitterIcon}/>
+                        </TwitterShareButton>
+                        <FacebookShareButton
+                            className={'share-button'}
+                            quote={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
+                            url={'https://break.solana.com/'}>
+                            <img src={shareFacebookIcon}/>
+                        </FacebookShareButton>
+                    </div>
                 </div>
             </div>
         );

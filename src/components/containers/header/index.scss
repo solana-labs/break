@@ -10,10 +10,15 @@
     z-index: 1000;
     padding: 0 2.4rem;
 
+    @media (max-width: 700px) {
+        height: 9rem;
+    }
+
     .logo{
         background-color: $black;
+        height: 100%;
         img{
-            height: 10.8rem;
+            height: 100%;
         }
     }
 }

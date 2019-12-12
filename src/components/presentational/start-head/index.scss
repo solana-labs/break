@@ -11,6 +11,11 @@
     grid-column-gap: 2rem;
     padding-bottom: 2rem;
 
+    @media (max-width: 700px) {
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 1.2rem;
+    }
+
     &>div{
         height: 100%;
         width: 100%;
@@ -21,17 +26,32 @@
         background-position: right;
         background-size: contain;
 
+        @media (max-width: 700px) {
+            padding: 1.2rem;
+        }
+
 
         &>*:nth-child(1){
             font-size: 1.8rem;
             line-height: 2.4rem;
             padding-bottom: 1.6rem;
+
+            @media (max-width: 700px) {
+                font-size: 1.6rem;
+                line-height: 2.4rem;
+                padding-bottom: 0.8rem;
+            }
         }
 
         &>*:nth-child(2){
             font-size: 4.8rem;
             line-height: 4.8rem;
             font-weight: 600;
+
+            @media (max-width: 700px) {
+                font-size: 2rem;
+                line-height: 2.8rem;
+            }
         }
     }
 
@@ -45,5 +65,9 @@
 
     .processing{
         background-image: url("../../../shared/images/icons/processing.svg");
+        @media (max-width: 700px) {
+            grid-column-start: 1;
+            grid-column-end: 3;
+        }
     }
 }
