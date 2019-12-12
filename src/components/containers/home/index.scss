@@ -1,7 +1,11 @@
 @import '~@styles/variables/colors';
 
 .home-wrapper{
-    margin-top: 12rem;
+    margin-top: 10rem;
+
+    @media (max-width: 1023px) {
+        margin-top: 2.8rem;
+    }
 
     .container{
         display: flex;
@@ -25,8 +29,12 @@
             padding-right: 10rem;
         }
 
-        .padding-b{
-            height: 1.8rem;
+        .buttons-block{
+            display: flex;
+            flex-direction: column;
+            &>*:not(:last-child){
+                margin-bottom: 1.8rem;
+            }
         }
 
         @media (max-width: 1023px) {
@@ -36,12 +44,21 @@
                 padding-bottom: 6rem;
                 padding-right: 0;
             }
+
+        }
+
+        @media (max-width: 700px) {
+            .buttons-block{
+                align-items: center;
+                &>*{
+                    width: 100%;
+                }
+            }
         }
     }
 
     .hero-illustration{
         width: 50%;
-        padding-top: 5rem;
         #hero{
             width: 100%;
         }

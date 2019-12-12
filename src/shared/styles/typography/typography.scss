@@ -9,7 +9,7 @@ h1 {
     font-family: 'Exo', sans-serif;
     font-size: 5.8rem;
     line-height: 6.6rem;
-    font-weight: 400;
+    font-weight: 600;
     color: #FCFFFE;
 }
 
@@ -17,6 +17,11 @@ p {
     color: #FFFFFF;
     font-size: 2.3rem;
     line-height: 3.7rem;
+
+    span{
+        font-size: inherit;
+        line-height: inherit;
+    }
 }
 
 
@@ -38,4 +43,8 @@ ul {
 
 .bold {
     font-weight: 700;
+}
+
+.green-text{
+    color: $green;
 }

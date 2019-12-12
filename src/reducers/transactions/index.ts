@@ -4,6 +4,7 @@ import {ADD_TRANSACTION, RESET_TRANSACTIONS, SET_INFO} from "../../actions/types
 const initState: ITransaction.ModelState = {
     transactions: [],
     countCompletedTransactions: 0,
+    averageTransactionsTime: 0,
 };
 
 const transactionReducer = (state = initState, action: any) => {
@@ -28,24 +29,39 @@ const transactionReducer = (state = initState, action: any) => {
             }
         }
         case SET_INFO: {
-            const { id, status, info } = action.payload;
+            const {id, status, info} = action.payload;
+
+            const newTransactions: ITransaction.Model[] = state.transactions.map((item: ITransaction.Model) => {
+                if (item.id === id) {
+                    return {
+                        ...item,
+                        status,
+                        info
+                    }
+                }
+                return item;
+            });
+
+            const newCountCompletedTransactions = state.countCompletedTransactions + 1;
+
+            const timeSum = newTransactions.reduce((prev: number, elem: ITransaction.Model) => {
+                return prev + elem.info.confirmationTime
+            }, 0);
+
+            const newAverageTransactionsTime = Number((timeSum / newCountCompletedTransactions).toFixed(3));
+
             return {
                 ...state,
-                transactions: state.transactions.map((item: ITransaction.Model) => {
-                    if (item.id === id) {
-                        return {
-                            id, status, info
-                        }
-                    }
-                    return item;
-                }),
-                countCompletedTransactions: state.countCompletedTransactions + 1,
+                transactions: newTransactions,
+                countCompletedTransactions: newCountCompletedTransactions,
+                averageTransactionsTime: newAverageTransactionsTime
             }
         }
         case RESET_TRANSACTIONS: {
             return {
                 transactions: [],
-                countCompletedTransactions: 0
+                countCompletedTransactions: 0,
+                averageTransactionsTime: 0
             }
         }
         default:
