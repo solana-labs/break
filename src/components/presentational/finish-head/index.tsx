@@ -11,6 +11,7 @@ interface IProps {
     completedCount: number
     totalCount: number
     percentCapacity: number
+    averageTransactionsTime: number
     tryAgain(): void
     openPopup(): void
 }
@@ -34,7 +35,7 @@ export default class HomeScene extends React.Component<IProps, IState> {
     }
 
     render() {
-        const {completedCount, totalCount, percentCapacity, tryAgain, openPopup} = this.props;
+        const {completedCount, totalCount, percentCapacity, tryAgain, openPopup, averageTransactionsTime} = this.props;
         const disabledStatus = this.state.disableWrapper ? 'disabled' : '';
 
         return (
@@ -83,7 +84,7 @@ export default class HomeScene extends React.Component<IProps, IState> {
                             />
                         </svg>
                         <div className={'info'}>
-                            <p>0.7 sec</p>
+                            <p>{averageTransactionsTime} sec</p>
                             <p>avg. transactions <br/> proccessing time</p>
                         </div>
                     </div>

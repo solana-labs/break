@@ -31,42 +31,37 @@ const transactionReducer = (state = initState, action: any) => {
         case SET_INFO: {
             const {id, status, info} = action.payload;
 
-            let newTransactions: ITransaction.Model[] = [];
-            let newArrayConfirmationTime: number[] = [];
-            let newAverageTransactionsTime: number = 0;
-
-            newTransactions = state.transactions.map((item: ITransaction.Model) => {
+            const newTransactions: ITransaction.Model[] = state.transactions.map((item: ITransaction.Model) => {
                 if (item.id === id) {
                     return {
-                        id, status, info
+                        ...item,
+                        status,
+                        info
                     }
                 }
                 return item;
             });
 
-            newArrayConfirmationTime = state.transactions.map((item: ITransaction.Model) => {
-                console.log(item.status);
-                return item.info.confirmationTime;
+            const newCountCompletedTransactions = state.countCompletedTransactions + 1;
 
-            });
+            const timeSum = newTransactions.reduce((prev: number, elem: ITransaction.Model) => {
+                return prev + elem.info.confirmationTime
+            }, 0);
 
-            newAverageTransactionsTime = newArrayConfirmationTime.reduce((accumulator, currentValue) => accumulator + currentValue) / newArrayConfirmationTime.length;
-
-            console.log('newArrayConfirmationTime', newArrayConfirmationTime)
-            console.log('newAverageTransactionsTime', newAverageTransactionsTime)
-
+            const newAverageTransactionsTime = (timeSum / newCountCompletedTransactions).toFixed(3);
 
             return {
                 ...state,
                 transactions: newTransactions,
-                countCompletedTransactions: state.countCompletedTransactions + 1,
+                countCompletedTransactions: newCountCompletedTransactions,
                 averageTransactionsTime: newAverageTransactionsTime
             }
         }
         case RESET_TRANSACTIONS: {
             return {
                 transactions: [],
-                countCompletedTransactions: 0
+                countCompletedTransactions: 0,
+                averageTransactionsTime: 0
             }
         }
         default:

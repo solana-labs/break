@@ -51,23 +51,24 @@ class Game extends React.Component<IProps, {}> {
     };
 
     private makeTransaction = async () => {
+        const transactions = this.props.transactionState.transactions;
         let status = this.props.gameState.status;
         if (status !== 'started') return;
 
-        const countOfTransactions = this.props.transactionState.transactions.length;
+        const countOfTransactions = transactions.length;
         const id = 'transaction' + countOfTransactions;
 
         this.props.dispatch(addTransaction());
 
         const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(id);
-        const updatedTransaction: ITransaction.Model = {
-            id, info, status: 'completed',
-        };
 
-        status = this.props.gameState.status;
-        if (status !== 'started') return;
+        if(this.props.gameState.status === 'started') {
+            const updatedTransaction: ITransaction.Model = {
+                id, info, status: 'completed',
+            };
 
-        this.props.dispatch(setTransactionInfo(updatedTransaction));
+            this.props.dispatch(setTransactionInfo(updatedTransaction));
+        }
     };
 
     private timer = async () => {
@@ -148,6 +149,7 @@ class Game extends React.Component<IProps, {}> {
 
     render() {
         const transactions = this.props.transactionState.transactions;
+        const averageTransactionsTime = this.props.transactionState.averageTransactionsTime;
         const gameStatus = this.props.gameState.status;
         const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
         const {secondsCount} = this.state;
@@ -160,13 +162,14 @@ class Game extends React.Component<IProps, {}> {
                             completedCount={completedCount}
                             totalCount={totalCount}
                             percentCapacity={percentCapacity}
+                            averageTransactionsTime={averageTransactionsTime}
                             tryAgain={this.tryAgain}
                             openPopup={this.openPopup}
                         /> :
                         <StartHead
                             secondsCount={secondsCount}
                             transactionsCreated={transactions.length}
-                            processingTime={5}
+                            averageTransactionsTime={averageTransactionsTime}
                         />
                     }
                     <div className={`square-container-wrapper ${gameStatus}`}>

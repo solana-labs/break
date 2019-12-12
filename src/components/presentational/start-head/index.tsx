@@ -5,10 +5,10 @@ import './index.scss';
 interface IProps {
     secondsCount: number
     transactionsCreated: number
-    processingTime: number
+    averageTransactionsTime: number
 }
 
-export const StartHead = ({secondsCount, transactionsCreated, processingTime}: IProps) => {
+export const StartHead = ({secondsCount, transactionsCreated, averageTransactionsTime}: IProps) => {
     return (
         <div className={'start-head-wrapper'}>
             <div className={'timer'}>
@@ -21,7 +21,7 @@ export const StartHead = ({secondsCount, transactionsCreated, processingTime}: I
             </div>
             <div className={'processing'}>
                 <p>Avg. Transactions Processing Time</p>
-                <p>{processingTime} sec</p>
+                <p>{averageTransactionsTime} sec</p>
             </div>
         </div>
     );
