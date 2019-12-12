@@ -20,7 +20,7 @@ import {Button} from "../../ui/button";
 import ModalPortal from "../../ui/modal-portal";
 import BuildOnSolanaPopup from "../build-on-solana-popup";
 import {StartHead} from "../../presentational/start-head";
-import {FinishHead} from "../../presentational/finish-head";
+import FinishHead from "../../presentational/finish-head";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -46,7 +46,7 @@ class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
     state: IState = {
-        secondsCount: 1,
+        secondsCount: 5,
         buildPopupIsOpen: false,
     };
 
@@ -84,7 +84,7 @@ class Game extends React.Component<IProps, {}> {
             if (this._isMounted) {
                 this.finishGame();
             }
-        }, 1000);
+        }, 5000);
     };
 
     private finishGame = () => {
@@ -109,7 +109,7 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 1,
+            secondsCount: 5,
         });
     };
 

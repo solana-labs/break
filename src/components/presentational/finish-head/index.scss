@@ -4,39 +4,118 @@
 .finish-head-wrapper{
     width: 100%;
     display: flex;
+    flex-direction: column;
+
+    &.disabled{
+        pointer-events: none;
+    }
 
     p{
         font-size: 1.8rem;
         line-height: 3.2rem;
     }
 
-    &>*:not(:last-child){
-        margin-right: 3.6rem;
+    .diagrams-wrapper{
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
     }
 
-    .stats-block{
-        min-width: 30rem;
+    .single-chart {
+        width: 100%;
+        justify-content: space-around;
+
+        .info{
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            &>*{
+                display: block;
+                max-width: 18rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                text-align: center;
+            }
+
+            &>*:nth-child(1){
+                font-size: 2.4rem;
+                line-height: 3.6rem;
+                font-weight: 600;
+                padding-bottom: 0.6rem;
+            }
+
+            &>*:nth-child(2){
+                text-transform: uppercase;
+                font-size: 1rem;
+                line-height: 1.6rem;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.7);
+            }
+        }
+    }
+
+    .circular-chart {
+        display: block;
+        max-width: 100%;
+        max-height: 23rem;
+    }
+
+    .circle-bg {
+        fill: none;
+        stroke: #2D2D2D;
+        stroke-width: 1.6;
+    }
+
+    .circle {
+        fill: none;
+        stroke-width: 1.6;
+        animation: progress 1s ease-out forwards;
+        stroke: $green;
+    }
+
+    .circle-dash{
+        fill: none;
+        stroke-width: 1.6;
+        stroke-dasharray: 0.8;
+        animation: progress 1s ease-out forwards;
+        stroke: $green;
+    }
+
+    @keyframes progress {
+        0% {
+            stroke-dasharray: 0 100;
+        }
+    }
+
+    .info-block{
+        text-align: center;
+        width: 90%;
+        margin: auto;
+        padding: 4.8rem 0 4rem 0;
+    }
+
+    .buttons-block{
+        margin: auto;
         display: flex;
-        flex-direction: column;
+        padding-bottom: 4.8rem;
         &>*:not(:last-child){
-            margin-bottom: 0.8rem;
+            margin-right: 2.4rem;
         }
     }
 
     .share-block{
-        min-width: 30rem;
+        margin: auto;
         display: flex;
-        flex-direction: column;
+        padding-bottom: 5.6rem;
         &>*:not(:last-child){
-            margin-bottom: 0.8rem;
-        }
-
-        .share-buttons-wrapper{
-            display: flex;
-            padding-bottom: 1.6rem;
-            &>*:not(:last-child){
-                margin-right: 1.2rem;
-            }
+            margin-right: 1.6rem;
         }
 
         .share-button{
@@ -66,15 +145,5 @@
                 }
             }
         }
-    }
-
-    @media (max-width: 1023px) {
-        flex-direction: column;
-
-        &>*:not(:last-child){
-            margin-right: 0;
-            margin-bottom: 2.4rem;
-        }
-
     }
 }

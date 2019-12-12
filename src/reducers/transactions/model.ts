@@ -15,6 +15,7 @@ namespace ITransaction {
     export interface ModelState {
         transactions: Model[],
         countCompletedTransactions: number
+        averageTransactionsTime: number
     }
 }
 
