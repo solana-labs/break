@@ -46,7 +46,7 @@ class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
     state: IState = {
-        secondsCount: 5,
+        secondsCount: 15,
         buildPopupIsOpen: false,
     };
 
@@ -85,7 +85,7 @@ class Game extends React.Component<IProps, {}> {
             if (this._isMounted) {
                 this.finishGame();
             }
-        }, 5000);
+        }, 15000);
     };
 
     private finishGame = () => {
@@ -110,7 +110,7 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(resetTransactions());
 
         this.setState({
-            secondsCount: 5,
+            secondsCount: 15,
         });
     };
 

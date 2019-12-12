@@ -48,7 +48,7 @@ const transactionReducer = (state = initState, action: any) => {
                 return prev + elem.info.confirmationTime
             }, 0);
 
-            const newAverageTransactionsTime = (timeSum / newCountCompletedTransactions).toFixed(3);
+            const newAverageTransactionsTime = Number((timeSum / newCountCompletedTransactions).toFixed(3));
 
             return {
                 ...state,
