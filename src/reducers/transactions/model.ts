@@ -10,6 +10,7 @@ namespace ITransaction {
     export interface TransactionInfo {
         signature: string
         confirmationTime: number
+        lamportsCount: number
     }
 
     export interface ModelState {

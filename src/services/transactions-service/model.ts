@@ -6,4 +6,5 @@ export interface ITransactionsService {
 export interface TransactionInfoService {
     signature: string
     confirmationTime: number
+    lamportsCount: number
 }

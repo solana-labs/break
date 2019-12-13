@@ -16,7 +16,8 @@ const transactionReducer = (state = initState, action: any) => {
                 status: 'default',
                 info: {
                     signature: '',
-                    confirmationTime: 0
+                    confirmationTime: 0,
+                    lamportsCount: 0
                 }
             };
 
