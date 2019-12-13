@@ -34,12 +34,13 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
         const {gameStatus, status} = this.props;
 
         if (gameStatus === 'finished' && status === 'completed') {
-            const {confirmationTime, signature} = this.props.information;
+            const {confirmationTime, signature, lamportsCount} = this.props.information;
+            const solCount = lamportsCount / 1000000000;
 
             return <div className={'square-info-container'}>
-                <p>{`Confirmation Time: ${confirmationTime} sec`}</p>
-                <p>{`Lamports: `}</p>
-                <p>{`Signature: ${signature}`}</p>
+                <p>Confirmation Time: {confirmationTime} sec</p>
+                <p>SOL: {solCount}</p>
+                <p>Signature: {signature}</p>
             </div>
         } else return <div/>
     };

@@ -1,6 +1,7 @@
 import {ITransactionsService, TransactionInfoService} from "./model";
 
 import * as solanaWeb3 from '@solana/web3.js';
+import {sendAndConfirmRecentTransaction} from '@solana/web3.js';
 
 export default class TransactionsService implements ITransactionsService {
     account: any;
@@ -25,18 +26,22 @@ export default class TransactionsService implements ITransactionsService {
         const {SystemProgram, Account} = solanaWeb3;
         const transactionInfo: TransactionInfoService = {
             signature: '',
-            confirmationTime: 0
+            confirmationTime: 0,
+            lamportsCount: 1000
         };
 
         try {
             this.keypair = new Account();
 
             const transaction = await SystemProgram.transfer(
-              this.account.publicKey,
-              //SYSVAR_RENT_PUBKEY,
-              this.keypair.publicKey,
-              1000
+                this.account.publicKey,
+                //SYSVAR_RENT_PUBKEY,
+                this.keypair.publicKey,
+                transactionInfo.lamportsCount
             );
+
+
+
 
             const t1 = performance.now();
             const response = await this.connection.sendTransaction(transaction, this.keypair);
