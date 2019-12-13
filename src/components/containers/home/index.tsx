@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {TimelineMax, Power0, Cubic} from 'gsap'
+import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
+import CSSPlugin from 'gsap'
 
 import './index.scss';
 import {Button} from "../../ui/button";
