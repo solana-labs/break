@@ -41,11 +41,16 @@ export default class TransactionsService implements ITransactionsService {
             );
 
 
-
-
             const t1 = performance.now();
             const response = await this.connection.sendTransaction(transaction, this.keypair);
+            const confirm = await this.connection.confirmTransaction(response)
             const t2 = performance.now();
+
+            console.log(response)
+            console.log('confirm', confirm)
+
+            //sendAndConfirmRecentTransaction method
+            const response2 = await solanaWeb3.sendAndConfirmRecentTransaction(this.connection, transaction, this.keypair)
 
             const time = parseFloat(((t2 - t1) / 1000).toFixed(3));
 
