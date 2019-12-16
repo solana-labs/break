@@ -1,6 +1,5 @@
 {
-  "root": "/",
-  "clean_urls": false,
+  "root": "dist/",
   "routes": {
     "/**": "index.html"
   }
