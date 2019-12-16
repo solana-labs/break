@@ -1,6 +1,5 @@
 import * as React from 'react';
 import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
-import CSSPlugin from 'gsap'
 
 import './index.scss';
 import {Button} from "../../ui/button";
@@ -11,6 +10,7 @@ const heroImage = require('../../../shared/images/hero.svg')
 export default class Home extends React.Component {
 
     private startAnimation = () => {
+        gsap.registerPlugin();
         const hero : any = document.getElementById("hero");
         if (hero) {
             const svgDocHero = hero.contentDocument;
