@@ -165,7 +165,8 @@ class Game extends React.Component<IProps, {}> {
                             averageTransactionsTime={averageTransactionsTime}
                             tryAgain={this.tryAgain}
                             openPopup={this.openPopup}
-                        /> :
+                        />
+                        :
                         <StartHead
                             secondsCount={secondsCount}
                             transactionsCreated={transactions.length}
