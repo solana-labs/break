@@ -157,21 +157,30 @@ class Game extends React.Component<IProps, {}> {
         return (
             <div className={'game-wrapper'}>
                 <div className={'container'}>
-                    {gameStatus === 'finished' ?
-                        <FinishHead
-                            completedCount={completedCount}
-                            totalCount={totalCount}
-                            percentCapacity={percentCapacity}
-                            averageTransactionsTime={averageTransactionsTime}
-                            tryAgain={this.tryAgain}
-                            openPopup={this.openPopup}
-                        /> :
-                        <StartHead
-                            secondsCount={secondsCount}
-                            transactionsCreated={transactions.length}
-                            averageTransactionsTime={averageTransactionsTime}
-                        />
-                    }
+                    <FinishHead
+                        completedCount={completedCount}
+                        totalCount={totalCount}
+                        percentCapacity={percentCapacity}
+                        averageTransactionsTime={averageTransactionsTime}
+                        tryAgain={this.tryAgain}
+                        openPopup={this.openPopup}
+                    />
+                    {/*{gameStatus === 'finished' ?*/}
+                    {/*    <FinishHead*/}
+                    {/*        completedCount={completedCount}*/}
+                    {/*        totalCount={totalCount}*/}
+                    {/*        percentCapacity={percentCapacity}*/}
+                    {/*        averageTransactionsTime={averageTransactionsTime}*/}
+                    {/*        tryAgain={this.tryAgain}*/}
+                    {/*        openPopup={this.openPopup}*/}
+                    {/*    /> */}
+                    {/*    :*/}
+                    {/*    <StartHead*/}
+                    {/*        secondsCount={secondsCount}*/}
+                    {/*        transactionsCreated={transactions.length}*/}
+                    {/*        averageTransactionsTime={averageTransactionsTime}*/}
+                    {/*    />*/}
+                    {/*}*/}
                     <div className={`square-container-wrapper ${gameStatus}`}>
                         {gameStatus === 'unstarted' ? <div>
                                 <Button typeButton={true} name={'Begin'}

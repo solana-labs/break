@@ -23,7 +23,6 @@
         @media (max-width: 700px) {
             grid-template-columns: repeat(2, 1fr);
             align-items: center;
-
         }
 
         &>*:nth-child(3){
@@ -37,6 +36,10 @@
     .single-chart {
         width: 100%;
         justify-content: space-around;
+
+        .circular-chart{
+            margin: auto;
+        }
 
         .info{
             position: absolute;
