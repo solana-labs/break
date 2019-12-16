@@ -44,7 +44,7 @@ module.exports = function (webpackEnv, argv) {
                         ecma: 5
                     }
                 }),
-                new OptimizeCSSAssetsPlugin()
+                // new OptimizeCSSAssetsPlugin()
             ],
             splitChunks: {
                 chunks: 'all'

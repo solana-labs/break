@@ -25,7 +25,6 @@ module.exports = {
     },
     resolve: resolveAlias.resolve,
     module: {
-        // Делает отсутствующий экспорт ошибкой
         strictExportPresence: true,
         rules: [
             {
