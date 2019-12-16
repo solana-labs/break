@@ -30,6 +30,7 @@ const gameReducer = (state = initState, action: any) => {
                 status: 'unstarted',
                 statistics: {
                     totalCount: 0,
+                    completedCount: 0,
                     percentCapacity: 0
                 }
             }
