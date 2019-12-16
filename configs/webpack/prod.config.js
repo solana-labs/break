@@ -39,7 +39,7 @@ module.exports = function (webpackEnv, argv) {
                 new TerserPlugin({
                     sourceMap: true,
                     cache: true,
-                    parallel: true, // Для увелечения скорости сборки,
+                    parallel: true,
                     terserOptions: {
                         ecma: 5
                     }
