@@ -97,7 +97,7 @@ export default class HomeScene extends React.Component<IProps, IState> {
                 </div>
                 <div className={'buttons-block'}>
                     <Button typeButton={true} name={'Try Again'} onClick={tryAgain}/>
-                    <Button typeButton={true} name={'Build on Solana'} onClick={openPopup}/>
+                    <Button typeALink={true} linkTo={'https://solana.com/developers/'} name={'Build on Solana'}/>
                 </div>
                 <div className={'share-block-wrapper'}>
                     <p>Share your result:</p>
