@@ -20,8 +20,12 @@ export const StartHead = ({secondsCount, transactionsCreated, averageTransaction
                 <p>{transactionsCreated}</p>
             </div>
             <div className={'processing'}>
-                <p>Avg. Transactions Processing Time</p>
+                <p>Avg. Transactions Time</p>
                 <p>{averageTransactionsTime} sec</p>
+            </div>
+            <div className={'top'}>
+                <p>My Top Result</p>
+                <p>123</p>
             </div>
         </div>
     );

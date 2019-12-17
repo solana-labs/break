@@ -2,55 +2,63 @@
 @import '~@styles/tools/transitions';
 
 .game-wrapper{
-    margin: 10rem 0;
+    padding: 3.2rem 0 10rem 0;
+
+    min-height: calc(100vh - 7rem);
+    display: flex;
+    align-items: center;
 
     @media (max-width: 1023px) {
         margin: 2.8rem 0;
     }
 
-    .square-container-wrapper{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #007C54;
-        padding: 2.4rem 1.2rem 2.4rem 2.4rem;
-        width: 100%;
-        height: 50vh;
-        max-height: 50vh;
-        @include transition;
+    .play-zone-wrapper{
+        display: grid;
+        grid-template-columns: auto 39rem;
+        grid-column-gap: 2rem;
 
-        &.started:hover{
-            background-color: rgba(0, 255, 173, 0.08);
-            cursor: pointer;
-            @include transition;
-        }
-
-        .square-container{
+        .square-container-wrapper{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #007C54;
+            padding: 2.4rem 1.2rem 2.4rem 2.4rem;
             width: 100%;
-            height: 100%;
-            padding-right: 1.2rem;
-            overflow-x: hidden;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, 3.2rem);
-            grid-template-rows: repeat(auto-fit, 3.2rem);
-            grid-gap: 0.8rem;
-            -moz-user-select: none;
-            user-select: none;
+            @include transition;
 
-            scrollbar-color: rgba(0, 255, 173, 0.4) transparent;
-            scrollbar-width: thin;
-
-            &::-webkit-scrollbar {
-                width: 8px;
+            &.started:hover{
+                background-color: rgba(0, 255, 173, 0.08);
+                cursor: pointer;
+                @include transition;
             }
 
-            &::-webkit-scrollbar-track {
-                background: transparent;
-            }
+            .square-container{
+                width: 100%;
+                height: 100%;
+                padding-right: 1.2rem;
+                overflow-x: hidden;
+                overflow-y: auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, 3.2rem);
+                grid-template-rows: repeat(auto-fit, 3.2rem);
+                grid-gap: 0.8rem;
+                -moz-user-select: none;
+                user-select: none;
 
-            &::-webkit-scrollbar-thumb {
-                background: rgba(0, 255, 173, 0.4);
+                scrollbar-color: rgba(0, 255, 173, 0.4) transparent;
+                scrollbar-width: thin;
+
+                &::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                &::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: rgba(0, 255, 173, 0.4);
+                }
             }
         }
     }

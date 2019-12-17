@@ -57,11 +57,9 @@
         }
     }
 
-    .hero-illustration{
-        width: 50%;
-        #hero{
-            width: 100%;
-        }
+    .leader-board-wrapper{
+        width: 40%;
+
 
         @media (max-width: 1023px) {
             position: absolute;
@@ -80,5 +78,15 @@
             transform: translate(0, 70%);
             width: 100%;
         }
+    }
+
+    #hero{
+        height: 100vh;
+        margin: auto;
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0.15;
     }
 }
