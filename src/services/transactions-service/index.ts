@@ -40,9 +40,6 @@ export default class TransactionsService implements ITransactionsService {
                 transactionInfo.lamportsCount
             );
 
-
-
-
             const t1 = performance.now();
             const response = await this.connection.sendTransaction(transaction, this.keypair);
             const t2 = performance.now();
