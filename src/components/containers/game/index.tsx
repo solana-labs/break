@@ -37,7 +37,7 @@ interface IServiceProps {
 
 interface IState {
     secondsCount: number,
-    buildPopupIsOpen: boolean
+    buildPopupIsOpen: boolean,
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -45,9 +45,11 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
+    private refSquareContainer = React.createRef<HTMLDivElement>();
+
     state: IState = {
         secondsCount: 15,
-        buildPopupIsOpen: false,
+        buildPopupIsOpen: false
     };
 
     private makeTransaction = async () => {
@@ -129,6 +131,10 @@ class Game extends React.Component<IProps, {}> {
     componentDidMount() {
         this._isMounted = true;
         this.props.transactionsService.setConnection();
+
+        document.addEventListener('keyup', (event) => {
+            this.makeTransaction();
+        });
     }
 
     private updateScroll = () => {
@@ -181,7 +187,9 @@ class Game extends React.Component<IProps, {}> {
                             </div> :
                             <div id={'scroll-square-container'}
                                  className={`square-container`}
-                                 onClick={this.makeTransaction}>
+                                 onClick={this.makeTransaction}
+                                 tabIndex={0}
+                            >
                                 {transactions && transactions.map((item: ITransaction.Model) => (
                                     <TransactionSquare
                                         key={item.id}
