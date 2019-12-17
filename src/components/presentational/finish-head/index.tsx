@@ -90,15 +90,14 @@ export default class HomeScene extends React.Component<IProps, IState> {
                     </div>
                 </div>
                 <div className={'info-block'}>
-                    <p>Well, perhaps if you invited a fem more friends... With <span className={'green-text semibold'}>{completedCount}</span> transactions
-                        in 15 seconds you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of
-                        our blockchain's network capabilities. If you invited couple more people our
-                        decentralized database would start to slow down. You can review every
-                        transaction with stats on confirmation and signatures hovering it.</p>
+                    <p>With <span className={'green-text semibold'}>{completedCount}</span> transactions in
+                        15 seconds you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of Solana's network bandwidth.
+                        If you invited more people, maybe you'd stand a better chance.
+                        Review every transaction with stats on confirmation and signatures by hovering over it below.</p>
                 </div>
                 <div className={'buttons-block'}>
                     <Button typeButton={true} name={'Try Again'} onClick={tryAgain}/>
-                    <Button typeButton={true} name={'Build on Solana'} onClick={openPopup}/>
+                    <Button typeALink={true} linkTo={'https://solana.com/developers/'} name={'Build on Solana'}/>
                 </div>
                 <div className={'share-block-wrapper'}>
                     <p>Share your result:</p>

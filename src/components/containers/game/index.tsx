@@ -21,6 +21,7 @@ import ModalPortal from "../../ui/modal-portal";
 import BuildOnSolanaPopup from "../build-on-solana-popup";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
+import LeaderBoard from "../leader-board";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -37,7 +38,7 @@ interface IServiceProps {
 
 interface IState {
     secondsCount: number,
-    buildPopupIsOpen: boolean
+    buildPopupIsOpen: boolean,
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -45,9 +46,11 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
+    private refSquareContainer = React.createRef<HTMLDivElement>();
+
     state: IState = {
         secondsCount: 15,
-        buildPopupIsOpen: false,
+        buildPopupIsOpen: false
     };
 
     private makeTransaction = async () => {
@@ -129,6 +132,10 @@ class Game extends React.Component<IProps, {}> {
     componentDidMount() {
         this._isMounted = true;
         this.props.transactionsService.setConnection();
+
+        document.addEventListener('keyup', (event) => {
+            this.makeTransaction();
+        });
     }
 
     private updateScroll = () => {
@@ -173,25 +180,30 @@ class Game extends React.Component<IProps, {}> {
                             averageTransactionsTime={averageTransactionsTime}
                         />
                     }
-                    <div className={`square-container-wrapper ${gameStatus}`}>
-                        {gameStatus === 'unstarted' ? <div>
-                                <Button typeButton={true} name={'Begin'}
-                                        onClick={this.startGame}
-                                        animate={'animated infinite pulse'}/>
-                            </div> :
-                            <div id={'scroll-square-container'}
-                                 className={`square-container`}
-                                 onClick={this.makeTransaction}>
-                                {transactions && transactions.map((item: ITransaction.Model) => (
-                                    <TransactionSquare
-                                        key={item.id}
-                                        gameStatus={gameStatus}
-                                        status={item.status}
-                                        information={item.info}
-                                    />
-                                ))}
-                            </div>
-                        }
+                    <div className={'play-zone-wrapper'}>
+                        <div className={`square-container-wrapper ${gameStatus}`}>
+                            {gameStatus === 'unstarted' ? <div>
+                                    <Button typeButton={true} name={'Begin'}
+                                            onClick={this.startGame}
+                                            animate={'animated infinite pulse'}/>
+                                </div> :
+                                <div id={'scroll-square-container'}
+                                     className={`square-container`}
+                                     onClick={this.makeTransaction}
+                                     tabIndex={0}
+                                >
+                                    {transactions && transactions.map((item: ITransaction.Model) => (
+                                        <TransactionSquare
+                                            key={item.id}
+                                            gameStatus={gameStatus}
+                                            status={item.status}
+                                            information={item.info}
+                                        />
+                                    ))}
+                                </div>
+                            }
+                        </div>
+                        <LeaderBoard/>
                     </div>
                 </div>
 

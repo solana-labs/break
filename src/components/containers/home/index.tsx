@@ -3,6 +3,7 @@ import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
 
 import './index.scss';
 import {Button} from "../../ui/button";
+import LeaderBoard from "../leader-board";
 
 const heroImage = require('../../../shared/images/hero.svg')
 
@@ -11,7 +12,7 @@ export default class Home extends React.Component {
 
     private startAnimation = () => {
         gsap.registerPlugin();
-        const hero : any = document.getElementById("hero");
+        const hero: any = document.getElementById("hero");
         if (hero) {
             const svgDocHero = hero.contentDocument;
             if (svgDocHero) {
@@ -98,18 +99,18 @@ export default class Home extends React.Component {
                 <div className={'container'}>
                     <div className={'main-info'}>
                         <h1 className={'glitch'} data-text="Break Solana">Break Solana</h1>
-                        <p>This quick game gives you the chance to break the most performant blockhain in the world.
-                            Simply use your keyboard to input as many transactions in a 15 second period.
-                            At the end, we will show you how close you came to overhelm the system.</p>
+                        <p>This quick game gives you the chance to break the most performant blockchain in the world.
+                            Every click submits a transaction. At the end, we will show you how close you came to
+                            overwhelming the system.</p>
                         <div className={'buttons-block'}>
                             <Button name={'Play the game'} linkTo={'/game'}/>
-                            <Button typeALink={true} name={'Read how it works'} linkTo={'https://solana.com/category/blog/'}/>
+                            <Button typeALink={true} name={'Read how it works'}
+                                    linkTo={'https://solana.com/category/blog/'}/>
                         </div>
                     </div>
-                    <div className={'hero-illustration'}>
-                        <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
-                    </div>
+                    <LeaderBoard/>
                 </div>
+                <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
             </div>
         )
     }
