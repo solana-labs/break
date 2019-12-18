@@ -6,6 +6,17 @@
     display: flex;
     flex-direction: column;
 
+    .title{
+        text-align: center;
+        padding-bottom: 6.4rem;
+
+        @media (max-width: 1023px) {
+            font-size: 2.8rem;
+            line-height: 3.6rem;
+            padding-bottom: 2.4rem;
+        }
+    }
+
     &.disabled{
         pointer-events: none;
     }

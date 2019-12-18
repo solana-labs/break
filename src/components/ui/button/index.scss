@@ -2,13 +2,7 @@
 @import '~@styles/tools/transitions';
 
 .button-component {
-    width: 29rem;
     min-width: 29rem;
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.25rem;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -20,6 +14,11 @@
     @include transition-hover;
 
     &>span{
+        font-size: 1.5rem;
+        line-height: 2rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.25rem;
         z-index: 3;
         color: $black;
     }

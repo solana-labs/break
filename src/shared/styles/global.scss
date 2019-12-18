@@ -80,22 +80,18 @@ body{
 
 input, textarea {
     &::-webkit-input-placeholder {
-        color: $white;
         @include transition();
     }
 
     &:-moz-placeholder {
-        color: $white;
         @include transition();
     }
 
     &:-moz-placeholder {
-        color: $white;
         @include transition();
     }
 
     &:-ms-input-placeholder {
-        color: $white;
         @include transition();
     }
 

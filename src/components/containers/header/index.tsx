@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import './index.scss';
 import {Link} from "react-router-dom";
+import {PlayerSticker} from "../../presentational/player-sticker";
 const logo = require('../../../shared/images/logo.svg');
 
 export default class Header extends React.Component {
@@ -13,6 +14,7 @@ export default class Header extends React.Component {
                     <Link to={'/'} className={'logo'}>
                         <img src={logo} alt="solana"/>
                     </Link>
+                    {/*<PlayerSticker name={'Justin'}/>*/}
                 </div>
             </header>
         );

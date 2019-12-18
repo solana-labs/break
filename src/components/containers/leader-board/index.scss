@@ -2,10 +2,12 @@
 
 .leader-board-wrapper{
     width: 100%;
-    min-height: 49.2rem;
+    height: 54.1rem;
     border: 1px solid #007C54;
     background-color: $black;
     z-index: 2;
+    overflow: hidden;
+    overflow-y: auto;
 
     &>*{
         border-bottom: 1px solid #007C54;

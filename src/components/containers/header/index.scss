@@ -11,11 +11,14 @@
 
     .container{
         height: 100%;
+        display: flex;
+        align-items: center;
     }
 
     .logo{
         background-color: $black;
         height: 100%;
+        margin-right: 2.1rem;
         img{
             height: 100%;
         }
