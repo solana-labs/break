@@ -3,19 +3,27 @@
 
 .game-wrapper{
     padding: 3.2rem 0 10rem 0;
-
     min-height: calc(100vh - 7rem);
     display: flex;
     align-items: center;
 
     @media (max-width: 1023px) {
-        margin: 2.8rem 0;
+        padding: 2.8rem 0;
     }
 
     .play-zone-wrapper{
         display: grid;
         grid-template-columns: auto 39rem;
         grid-column-gap: 2rem;
+
+        @media (max-width: 1024px) {
+            grid-template-columns: 1fr;
+            grid-row-gap: 2rem;
+
+            .square-container-wrapper{
+                height: 40rem;
+            }
+        }
 
         .square-container-wrapper{
             display: flex;

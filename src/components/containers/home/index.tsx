@@ -4,11 +4,29 @@ import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
 import './index.scss';
 import {Button} from "../../ui/button";
 import LeaderBoard from "../leader-board";
+import InputComponent from "../../ui/input";
 
-const heroImage = require('../../../shared/images/hero.svg')
+const heroImage = require('../../../shared/images/hero.svg');
 
+interface IProps {
 
-export default class Home extends React.Component {
+}
+
+interface IState {
+    nickName: string
+}
+
+export default class Home extends React.Component<IProps, IState> {
+
+    state: IState = {
+        nickName: ''
+    };
+
+    private inputValueFunc = (value: string) => {
+        this.setState({
+            nickName: value
+        });
+    };
 
     private startAnimation = () => {
         gsap.registerPlugin();
@@ -103,9 +121,15 @@ export default class Home extends React.Component {
                             Every click submits a transaction. At the end, we will show you how close you came to
                             overwhelming the system.</p>
                         <div className={'buttons-block'}>
+                            <InputComponent
+                                color={'white'}
+                                isValid={true}
+                                placeholder={'YOUR NICKNAME'}
+                                value={this.state.nickName}
+                                inputValueFunc={this.inputValueFunc}
+                            />
                             <Button name={'Play the game'} linkTo={'/game'}/>
-                            <Button typeALink={true} name={'Read how it works'}
-                                    linkTo={'https://solana.com/category/blog/'}/>
+                            <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
                     <LeaderBoard/>

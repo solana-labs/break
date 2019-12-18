@@ -66,7 +66,6 @@ export default class BuildOnSolanaPopup extends React.Component<IProps, IState> 
                 <p className={'input-title'}>Your Email</p>
                 <div className={'input-button-block'}>
                     <InputComponent
-                        title={'Your Email'}
                         inputValueFunc={this.inputValueFunc}
                         value={this.state.email}
                         isValid={this.state.isValid}
