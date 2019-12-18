@@ -3,7 +3,10 @@ import {configuration} from "../config";
 const base = (rest: string) => `${configuration.remoteApi}/${rest}`;
 
 export default class Paths {
-    static Swapi = class {
-        static GetPeople = (id: number) => base(`people/${id}`);
+
+    static Users = class {
+        static GetUserRecord = (nickName: string) => base(`users/${nickName}/record`);
+        static GetLeaderboard = () => base(`users/leaderboard`);
+        static SaveRecord = () => base(`users/record`);
     };
 }

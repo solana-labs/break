@@ -3,7 +3,7 @@ import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
 
 import './index.scss';
 import {Button} from "../../ui/button";
-import LeaderBoard from "../leader-board";
+import LeaderBoard from "../leaderboard";
 import InputComponent from "../../ui/input";
 
 const heroImage = require('../../../shared/images/hero.svg');

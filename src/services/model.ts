@@ -1,7 +1,7 @@
-import {ISwapiService} from "./swapi-service/model";
 import {ITransactionsService} from "./transactions-service/model";
+import {IUsersService} from "./users-service/model";
 
 export interface IService {
-    swapiService: ISwapiService,
     transactionsService: ITransactionsService
+    usersService: IUsersService
 }

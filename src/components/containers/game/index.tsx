@@ -21,7 +21,7 @@ import ModalPortal from "../../ui/modal-portal";
 import BuildOnSolanaPopup from "../build-on-solana-popup";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
-import LeaderBoard from "../leader-board";
+import LeaderBoard from "../leaderboard";
 
 interface IDispatchProps {
     dispatch: Dispatch
