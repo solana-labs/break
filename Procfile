@@ -1,1 +1,1 @@
-web: http-server-spa dist
+web: http-server dist
