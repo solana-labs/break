@@ -3,7 +3,6 @@ import {Route, Switch, Redirect} from 'react-router-dom';
 import {connect} from "react-redux";
 import {Dispatch} from "redux";
 
-import Header from "./components/containers/header";
 import HomeScene from "./components/scenes/home-scene";
 import GameScene from "./components/scenes/game-scene";
 import {IUsersService} from "./services/users-service/model";
@@ -12,6 +11,7 @@ import {IMapServicesToProps, withService} from "./components/hoc-helpers/with-se
 import {IRootAppReducerState} from "./reducer/model";
 import IUsers from "./reducers/users/model";
 import {getLeaderboard} from "./actions/get-leaderboard";
+import Header from "./components/containers/header";
 
 interface IProps{
     usersService: IUsersService;
@@ -20,7 +20,6 @@ interface IProps{
 }
 
 class App extends React.Component<IProps, {}> {
-
     componentDidMount(): void {
         this.getLeaderboard()
     }
@@ -35,13 +34,15 @@ class App extends React.Component<IProps, {}> {
     };
 
     render() {
+        const nickname = this.props.usersState.userRecord && this.props.usersState.userRecord.nickname;
+
         return(
             <div>
-                <Header/>
+                <Header userName={nickname? nickname : ''}/>
                 <Switch>
                     <Route path="/" exact component={HomeScene}/>
                     <Route path="/game" exact component={GameScene}/>
-                    <Redirect from="*" to="/" exact/>
+                    <Redirect from="*" to="/" exact />
                 </Switch>
             </div>
         )

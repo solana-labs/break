@@ -18,6 +18,7 @@ namespace IUsers {
 
     export interface ModelState {
         leaderboard: Maybe<Leaderboard>
+        userRecord: Maybe<ModelAPI>
     }
 }
 

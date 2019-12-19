@@ -1,6 +1,8 @@
+import IUsers from "../../reducers/users/model";
+
 export interface IUsersService {
-    getUserRecord(nickName: string): any
+    getUserRecord(nickname: string): any
     getLeaderboard(limit: number): any
-    saveRecord(): any
+    saveRecord(record: IUsers.ModelAPI): any
 }
 

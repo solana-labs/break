@@ -1,31 +1,56 @@
 import * as React from 'react';
 import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
+import {Dispatch} from "redux";
+import {connect} from "react-redux";
+import * as H from "history";
+import {withRouter} from "react-router";
 
 import './index.scss';
 import {Button} from "../../ui/button";
 import LeaderBoard from "../leaderboard";
 import InputComponent from "../../ui/input";
+import {IMapServicesToProps, withService} from "../../hoc-helpers/with-service";
+import {IService} from "../../../services/model";
+import {IRootAppReducerState} from "../../../reducer/model";
+import {IUsersService} from "../../../services/users-service/model";
+import IUsers from "../../../reducers/users/model";
+import {setUserRecord} from "../../../actions/set-user-record";
 
 const heroImage = require('../../../shared/images/hero.svg');
 
 interface IProps {
-
+    usersService: IUsersService;
+    usersState: IUsers.ModelState;
+    dispatch: Dispatch
+    history: H.History
 }
 
 interface IState {
-    nickName: string
+    nickname: string
 }
 
-export default class Home extends React.Component<IProps, IState> {
+class Home extends React.Component<IProps, IState> {
 
     state: IState = {
-        nickName: ''
+        nickname: ''
     };
 
     private inputValueFunc = (value: string) => {
         this.setState({
-            nickName: value
+            nickname: value
         });
+    };
+
+    private goToPlay = () => {
+        const { nickname } = this.state;
+
+        const userRecord: IUsers.ModelAPI = {
+            nickname,
+            record: 0,
+        };
+
+        this.props.dispatch(setUserRecord(userRecord));
+        this.props.history.push(`/game`);
     };
 
     private startAnimation = () => {
@@ -125,10 +150,10 @@ export default class Home extends React.Component<IProps, IState> {
                                 color={'white'}
                                 isValid={true}
                                 placeholder={'YOUR NICKNAME'}
-                                value={this.state.nickName}
+                                value={this.state.nickname}
                                 inputValueFunc={this.inputValueFunc}
                             />
-                            <Button name={'Play the game'} linkTo={'/game'}/>
+                            <Button typeButton={true} onClick={this.goToPlay} name={'Play the game'}/>
                             <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
@@ -140,4 +165,11 @@ export default class Home extends React.Component<IProps, IState> {
     }
 }
 
+const mapServicesToProps: IMapServicesToProps = ({ usersService }: IService) => ({ usersService });
+
+const mapStateToProps = ({usersState}: IRootAppReducerState) => ({usersState});
+
+export default connect(mapStateToProps)(
+    withRouter(withService(mapServicesToProps)(Home))
+);
 

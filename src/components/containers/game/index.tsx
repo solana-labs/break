@@ -22,6 +22,9 @@ import BuildOnSolanaPopup from "../build-on-solana-popup";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
 import LeaderBoard from "../leaderboard";
+import IUsers from "../../../reducers/users/model";
+import {IUsersService} from "../../../services/users-service/model";
+import {setUserRecord} from "../../../actions/set-user-record";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -30,15 +33,18 @@ interface IDispatchProps {
 interface IStateProps {
     transactionState: ITransaction.ModelState;
     gameState: IGame.ModelState;
+    usersState: IUsers.ModelState;
 }
 
 interface IServiceProps {
     transactionsService: ITransactionsService
+    usersService: IUsersService
 }
 
 interface IState {
     secondsCount: number,
     buildPopupIsOpen: boolean,
+    recordNumber: number
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -50,7 +56,76 @@ class Game extends React.Component<IProps, {}> {
 
     state: IState = {
         secondsCount: 15,
-        buildPopupIsOpen: false
+        buildPopupIsOpen: false,
+        recordNumber: 0,
+    };
+
+    // private setUserInfo = () => {
+    //     const user = this.props.usersState.userRecord;
+    //
+    //     const randomName = 'randomName';
+    //     const localNickname = localStorage.getItem('nickname');
+    //
+    //     const localOrRandom = localNickname ? localNickname : randomName;
+    //     const nickname = user && user.nickname ? user.nickname : localOrRandom;
+    //
+    //     const userRecord: IUsers.Model = {
+    //         nickname: nickname,
+    //         record: 0
+    //     };
+    //     this.props.dispatch(setUserRecord(userRecord));
+    // };
+    //
+    // private getUserRecord = async () => {
+    //     let name = this.props.usersState.userRecord && this.props.usersState.userRecord.nickname;
+    //
+    //     if (!name) {
+    //         name = localStorage.getItem('nickname');
+    //     }
+    //
+    //     if (!name) return;
+    //
+    //     try {
+    //         const response = await this.props.usersService.getUserRecord(name);
+    //         const userRecord: IUsers.Model = {
+    //             nickname: name,
+    //             record: response
+    //         };
+    //         this.props.dispatch(setUserRecord(userRecord))
+    //     } catch (err) {
+    //         console.error(err);
+    //     }
+    // };
+
+    private getUserInfo = async () => {
+        let nickname = this.props.usersState.userRecord && this.props.usersState.userRecord.nickname;
+
+        if (!nickname) {
+            nickname = localStorage.getItem('nickname');
+        }
+
+        if (!nickname) {
+            nickname = 'RandomName';
+        }
+
+        const userRecord: IUsers.Model = {
+            nickname,
+            record: 0,
+        };
+
+        try {
+            const newRecord = await this.props.usersService.getUserRecord(nickname);
+            userRecord.record = newRecord;
+
+            this.setState({
+                recordNumber: newRecord
+            });
+        }
+        catch (err) {
+            console.log('error - ', err);
+        }
+
+        this.props.dispatch(setUserRecord(userRecord))
     };
 
     private makeTransaction = async () => {
@@ -99,7 +174,24 @@ class Game extends React.Component<IProps, {}> {
 
         const percentCapacity = parseFloat((completedCount / 50000).toFixed(4));
 
-        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}))
+        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
+
+        this.saveRecord(completedCount);
+    };
+
+    private saveRecord = async (newRecord: number) => {
+        const { recordNumber } = this.state;
+        const nickname = localStorage.getItem('nickname');
+
+        if (!nickname || newRecord <= recordNumber) return;
+
+        const userRecord: IUsers.ModelAPI = {
+            nickname: nickname,
+            record: newRecord,
+        };
+
+        this.props.usersService.saveRecord(userRecord);
+        this.props.dispatch(setUserRecord(userRecord))
     };
 
     private startGame = async () => {
@@ -129,21 +221,24 @@ class Game extends React.Component<IProps, {}> {
         })
     };
 
-    componentDidMount() {
-        this._isMounted = true;
-        this.props.transactionsService.setConnection();
-
-        document.addEventListener('keyup', (event) => {
-            this.makeTransaction();
-        });
-    }
-
     private updateScroll = () => {
         const scrollSquareContainer: HTMLElement | null = document.getElementById("scroll-square-container");
         if (scrollSquareContainer) {
             scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
         }
     };
+
+    componentDidMount() {
+        this._isMounted = true;
+        // this.setUserInfo();
+        // this.getUserRecord();
+        this.getUserInfo();
+        this.props.transactionsService.setConnection();
+
+        document.addEventListener('keyup', (event) => {
+            this.makeTransaction();
+        });
+    }
 
     componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<{}>, snapshot?: any): void {
         this.updateScroll()
@@ -160,6 +255,9 @@ class Game extends React.Component<IProps, {}> {
         const gameStatus = this.props.gameState.status;
         const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
         const {secondsCount} = this.state;
+        const userRecord = this.props.usersState.userRecord;
+
+        // console.log('userRecord', userRecord)
 
         return (
             <div className={'game-wrapper'}>
@@ -178,6 +276,7 @@ class Game extends React.Component<IProps, {}> {
                             secondsCount={secondsCount}
                             transactionsCreated={transactions.length}
                             averageTransactionsTime={averageTransactionsTime}
+                            myTopResult={userRecord ? userRecord.record : 0}
                         />
                     }
                     <div className={'play-zone-wrapper'}>
@@ -215,9 +314,9 @@ class Game extends React.Component<IProps, {}> {
     }
 }
 
-const mapServicesToProps = ({transactionsService}: IService) => ({transactionsService});
+const mapServicesToProps = ({transactionsService, usersService}: IService) => ({transactionsService, usersService});
 
-const mapStateToProps = ({transactionState, gameState}: IRootAppReducerState) => ({transactionState, gameState});
+const mapStateToProps = ({transactionState, gameState, usersState}: IRootAppReducerState) => ({transactionState, gameState, usersState});
 
 export default connect<IStateProps, IDispatchProps, {}>(mapStateToProps as any)(
     withService(mapServicesToProps)(Game)

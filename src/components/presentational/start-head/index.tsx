@@ -6,9 +6,10 @@ interface IProps {
     secondsCount: number
     transactionsCreated: number
     averageTransactionsTime: number
+    myTopResult: number
 }
 
-export const StartHead = ({secondsCount, transactionsCreated, averageTransactionsTime}: IProps) => {
+export const StartHead = ({secondsCount, transactionsCreated, averageTransactionsTime, myTopResult}: IProps) => {
     return (
         <div className={'start-head-wrapper'}>
             <div className={'timer'}>
@@ -25,7 +26,7 @@ export const StartHead = ({secondsCount, transactionsCreated, averageTransaction
             </div>
             <div className={'top'}>
                 <p>My Top Result</p>
-                <p>123</p>
+                <p>{myTopResult}</p>
             </div>
         </div>
     );
