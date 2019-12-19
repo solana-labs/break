@@ -154,6 +154,7 @@ class Home extends React.Component<IProps, IState> {
 
     render() {
         const {dayTransactionCounts, gameTransactionCounts} = this.state;
+        const percentCapacity = (dayTransactionCounts / 50000).toFixed(4);
 
         return (
             <div className={'home-wrapper'}>
@@ -169,8 +170,13 @@ class Home extends React.Component<IProps, IState> {
                         </div>
                     </div>
                     <div>
-                        <p>Day count: {dayTransactionCounts}</p>
-                        <p>last 15 sec count: {gameTransactionCounts}</p>
+                        <p>Transactions created for the last 24h: <span>{dayTransactionCounts}</span> if
+                            these transactions were created in 1 second,
+                            people from all around the world would
+                            use <span>{percentCapacity}%</span> of
+                            Solana capacity.</p>
+                        <br/>
+                        <p>Transactions created for the last 15 seconds: {gameTransactionCounts} you may try to collaborate with people from around the world to break Solana.</p>
                     </div>
                 </div>
                 <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
