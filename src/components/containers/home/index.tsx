@@ -1,32 +1,22 @@
 import * as React from 'react';
 import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
+import {Dispatch} from "redux";
+import {connect} from "react-redux";
+import {withRouter} from "react-router";
 
 import './index.scss';
 import {Button} from "../../ui/button";
-import LeaderBoard from "../leader-board";
-import InputComponent from "../../ui/input";
+import {IMapServicesToProps, withService} from "../../hoc-helpers/with-service";
+import {IService} from "../../../services/model";
+import {IRootAppReducerState} from "../../../reducer/model";
 
 const heroImage = require('../../../shared/images/hero.svg');
 
 interface IProps {
-
+    dispatch: Dispatch
 }
 
-interface IState {
-    nickName: string
-}
-
-export default class Home extends React.Component<IProps, IState> {
-
-    state: IState = {
-        nickName: ''
-    };
-
-    private inputValueFunc = (value: string) => {
-        this.setState({
-            nickName: value
-        });
-    };
+class Home extends React.Component<IProps, {}> {
 
     private startAnimation = () => {
         gsap.registerPlugin();
@@ -121,18 +111,10 @@ export default class Home extends React.Component<IProps, IState> {
                             Every click submits a transaction. At the end, we will show you how close you came to
                             overwhelming the system.</p>
                         <div className={'buttons-block'}>
-                            <InputComponent
-                                color={'white'}
-                                isValid={true}
-                                placeholder={'YOUR NICKNAME'}
-                                value={this.state.nickName}
-                                inputValueFunc={this.inputValueFunc}
-                            />
-                            <Button name={'Play the game'} linkTo={'/game'}/>
+                            <Button linkTo={'/game'} name={'Play the game'}/>
                             <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
-                    <LeaderBoard/>
                 </div>
                 <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
             </div>
@@ -140,4 +122,11 @@ export default class Home extends React.Component<IProps, IState> {
     }
 }
 
+const mapServicesToProps: IMapServicesToProps = ({  }: IService) => ({  });
+
+const mapStateToProps = ({}: IRootAppReducerState) => ({});
+
+export default connect(mapStateToProps)(
+    withRouter(withService(mapServicesToProps)(Home))
+);
 

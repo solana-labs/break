@@ -17,11 +17,8 @@ import {setStatisticsGame} from "../../../actions/set-statistics-game";
 import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
 import {resetTransactions} from "../../../actions/reset-tarnsactions";
 import {Button} from "../../ui/button";
-import ModalPortal from "../../ui/modal-portal";
-import BuildOnSolanaPopup from "../build-on-solana-popup";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
-import LeaderBoard from "../leader-board";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -38,7 +35,6 @@ interface IServiceProps {
 
 interface IState {
     secondsCount: number,
-    buildPopupIsOpen: boolean,
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -46,11 +42,8 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 class Game extends React.Component<IProps, {}> {
     _isMounted = false;
 
-    private refSquareContainer = React.createRef<HTMLDivElement>();
-
     state: IState = {
         secondsCount: 15,
-        buildPopupIsOpen: false
     };
 
     private makeTransaction = async () => {
@@ -99,7 +92,7 @@ class Game extends React.Component<IProps, {}> {
 
         const percentCapacity = parseFloat((completedCount / 50000).toFixed(4));
 
-        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}))
+        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
     };
 
     private startGame = async () => {
@@ -117,16 +110,11 @@ class Game extends React.Component<IProps, {}> {
         });
     };
 
-    private openPopup = () => {
-        this.setState({
-            buildPopupIsOpen: true
-        })
-    };
-
-    private closePopup = () => {
-        this.setState({
-            buildPopupIsOpen: false
-        })
+    private updateScroll = () => {
+        const scrollSquareContainer: HTMLElement | null = document.getElementById("scroll-square-container");
+        if (scrollSquareContainer) {
+            scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
+        }
     };
 
     componentDidMount() {
@@ -137,13 +125,6 @@ class Game extends React.Component<IProps, {}> {
             this.makeTransaction();
         });
     }
-
-    private updateScroll = () => {
-        const scrollSquareContainer: HTMLElement | null = document.getElementById("scroll-square-container");
-        if (scrollSquareContainer) {
-            scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
-        }
-    };
 
     componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<{}>, snapshot?: any): void {
         this.updateScroll()
@@ -171,7 +152,6 @@ class Game extends React.Component<IProps, {}> {
                             percentCapacity={percentCapacity}
                             averageTransactionsTime={averageTransactionsTime}
                             tryAgain={this.tryAgain}
-                            openPopup={this.openPopup}
                         />
                         :
                         <StartHead
@@ -203,13 +183,8 @@ class Game extends React.Component<IProps, {}> {
                                 </div>
                             }
                         </div>
-                        <LeaderBoard/>
                     </div>
                 </div>
-
-                <ModalPortal isOpenProps={this.state.buildPopupIsOpen} onClose={this.closePopup}>
-                    <BuildOnSolanaPopup onClose={this.closePopup}/>
-                </ModalPortal>
             </div>
         )
     }
