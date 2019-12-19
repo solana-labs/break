@@ -10,6 +10,7 @@ import {IMapServicesToProps, withService} from "../../hoc-helpers/with-service";
 import {IService} from "../../../services/model";
 import {IRootAppReducerState} from "../../../reducer/model";
 import {IGameService} from "../../../services/game-service/model";
+import {StatisticsBoard} from "../../presentational/statistics-board";
 
 const heroImage = require('../../../shared/images/hero.svg');
 
@@ -169,15 +170,11 @@ class Home extends React.Component<IProps, IState> {
                             <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
-                    <div>
-                        <p>Transactions created for the last 24h: <span>{dayTransactionCounts}</span> if
-                            these transactions were created in 1 second,
-                            people from all around the world would
-                            use <span>{percentCapacity}%</span> of
-                            Solana capacity.</p>
-                        <br/>
-                        <p>Transactions created for the last 15 seconds: {gameTransactionCounts} you may try to collaborate with people from around the world to break Solana.</p>
-                    </div>
+                    <StatisticsBoard
+                        dayTransactionCounts={dayTransactionCounts}
+                        percentCapacity={percentCapacity}
+                        gameTransactionCounts={gameTransactionCounts}
+                    />
                 </div>
                 <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
             </div>
