@@ -19,6 +19,7 @@ import {resetTransactions} from "../../../actions/reset-tarnsactions";
 import {Button} from "../../ui/button";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
+import {IGameService} from "../../../services/game-service/model";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -31,6 +32,7 @@ interface IStateProps {
 
 interface IServiceProps {
     transactionsService: ITransactionsService
+    gameService: IGameService
 }
 
 interface IState {
@@ -93,6 +95,10 @@ class Game extends React.Component<IProps, {}> {
         const percentCapacity = parseFloat((completedCount / 50000).toFixed(4));
 
         this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
+
+        this.props.gameService.saveGame({
+            transactions: completedCount
+        })
     };
 
     private startGame = async () => {
@@ -190,7 +196,7 @@ class Game extends React.Component<IProps, {}> {
     }
 }
 
-const mapServicesToProps = ({transactionsService}: IService) => ({transactionsService});
+const mapServicesToProps = ({transactionsService, gameService}: IService) => ({transactionsService, gameService});
 
 const mapStateToProps = ({transactionState, gameState}: IRootAppReducerState) => ({transactionState, gameState});
 
