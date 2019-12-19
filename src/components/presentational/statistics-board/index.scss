@@ -9,6 +9,10 @@
     background-color: $black;
     max-width: 49rem;
 
+    @media (max-width: 900px) {
+        max-width: 100%;
+    }
+
     &>*:not(:last-child){
         border-bottom: 1px dashed #006A48;
     }
