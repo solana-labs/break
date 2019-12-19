@@ -17,6 +17,7 @@ export default class TransactionsService implements ITransactionsService {
             this.connection = new Connection(url);
             this.keypair = new Account();
 
+            await this.connection.requestAirdrop(this.account.publicKey, 100000000000); // about 8 - 10 sec
         } catch (e) {
             console.log('error - ', e);
         }
@@ -27,7 +28,7 @@ export default class TransactionsService implements ITransactionsService {
         const transactionInfo: TransactionInfoService = {
             signature: '',
             confirmationTime: 0,
-            lamportsCount: 1000
+            lamportsCount: 10
         };
 
         try {
@@ -35,13 +36,12 @@ export default class TransactionsService implements ITransactionsService {
 
             const transaction = await SystemProgram.transfer(
                 this.account.publicKey,
-                //SYSVAR_RENT_PUBKEY,
                 this.keypair.publicKey,
                 transactionInfo.lamportsCount
             );
 
             const t1 = performance.now();
-            const response = await this.connection.sendTransaction(transaction, this.keypair);
+            const response = await sendAndConfirmRecentTransaction(this.connection, transaction, this.account);
             const t2 = performance.now();
 
             const time = parseFloat(((t2 - t1) / 1000).toFixed(3));
