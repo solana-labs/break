@@ -9,14 +9,27 @@ import {Button} from "../../ui/button";
 import {IMapServicesToProps, withService} from "../../hoc-helpers/with-service";
 import {IService} from "../../../services/model";
 import {IRootAppReducerState} from "../../../reducer/model";
+import {IGameService} from "../../../services/game-service/model";
 
 const heroImage = require('../../../shared/images/hero.svg');
 
 interface IProps {
     dispatch: Dispatch
+    gameService: IGameService
 }
 
-class Home extends React.Component<IProps, {}> {
+interface IState {
+    dayTransactionCounts: number,
+    gameTransactionCounts: number
+}
+
+class Home extends React.Component<IProps, IState> {
+    _isMounted = false;
+
+    state: IState = {
+        dayTransactionCounts: 0,
+        gameTransactionCounts: 0
+    };
 
     private startAnimation = () => {
         gsap.registerPlugin();
@@ -101,7 +114,47 @@ class Home extends React.Component<IProps, {}> {
         }
     };
 
+    private getDayTransactionCounts = async() => {
+        const response = await this.props.gameService.getDailyTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                dayTransactionCounts: response
+            })
+        }
+    };
+
+    private getGameTransactionCounts = async () => {
+        const response = await this.props.gameService.getGameTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                gameTransactionCounts: response
+            });
+        }
+    };
+
+    private startGetGameTransactionCounts = async () => {
+        this.getGameTransactionCounts();
+
+        setInterval(async() => {
+            this.getGameTransactionCounts()
+        }, 15000)
+    };
+
+    componentDidMount(): void {
+        this._isMounted = true;
+        this.getDayTransactionCounts();
+        this.startGetGameTransactionCounts();
+    }
+
+    componentWillUnmount(): void {
+        this._isMounted = false;
+    }
+
     render() {
+        const {dayTransactionCounts, gameTransactionCounts} = this.state;
+
         return (
             <div className={'home-wrapper'}>
                 <div className={'container'}>
@@ -115,6 +168,10 @@ class Home extends React.Component<IProps, {}> {
                             <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
+                    <div>
+                        <p>Day count: {dayTransactionCounts}</p>
+                        <p>last 15 sec count: {gameTransactionCounts}</p>
+                    </div>
                 </div>
                 <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
             </div>
@@ -122,7 +179,7 @@ class Home extends React.Component<IProps, {}> {
     }
 }
 
-const mapServicesToProps: IMapServicesToProps = ({  }: IService) => ({  });
+const mapServicesToProps: IMapServicesToProps = ({ gameService }: IService) => ({ gameService });
 
 const mapStateToProps = ({}: IRootAppReducerState) => ({});
 
