@@ -13,7 +13,6 @@ interface IProps {
     percentCapacity: number
     averageTransactionsTime: number
     tryAgain(): void
-    openPopup(): void
 }
 
 interface IState {
@@ -35,12 +34,11 @@ export default class HomeScene extends React.Component<IProps, IState> {
     }
 
     render() {
-        const {completedCount, totalCount, percentCapacity, tryAgain, openPopup, averageTransactionsTime} = this.props;
+        const {completedCount, totalCount, percentCapacity, tryAgain, averageTransactionsTime} = this.props;
         const disabledStatus = this.state.disableWrapper ? 'disabled' : '';
 
         return (
             <div className={`finish-head-wrapper ${disabledStatus}`}>
-                <h2 className={'title'}>Your high score is <span>{completedCount}</span>. Try harder next time to beat it!</h2>
                 <div className={'diagrams-wrapper'}>
                     <div className="single-chart">
                         <svg viewBox="0 0 36 36" className="circular-chart">

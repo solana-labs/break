@@ -2,56 +2,21 @@ import * as React from 'react';
 import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
 import {Dispatch} from "redux";
 import {connect} from "react-redux";
-import * as H from "history";
 import {withRouter} from "react-router";
 
 import './index.scss';
 import {Button} from "../../ui/button";
-import LeaderBoard from "../leaderboard";
-import InputComponent from "../../ui/input";
 import {IMapServicesToProps, withService} from "../../hoc-helpers/with-service";
 import {IService} from "../../../services/model";
 import {IRootAppReducerState} from "../../../reducer/model";
-import {IUsersService} from "../../../services/users-service/model";
-import IUsers from "../../../reducers/users/model";
-import {setUserRecord} from "../../../actions/set-user-record";
 
 const heroImage = require('../../../shared/images/hero.svg');
 
 interface IProps {
-    usersService: IUsersService;
-    usersState: IUsers.ModelState;
     dispatch: Dispatch
-    history: H.History
 }
 
-interface IState {
-    nickname: string
-}
-
-class Home extends React.Component<IProps, IState> {
-
-    state: IState = {
-        nickname: ''
-    };
-
-    private inputValueFunc = (value: string) => {
-        this.setState({
-            nickname: value
-        });
-    };
-
-    private goToPlay = () => {
-        const { nickname } = this.state;
-
-        const userRecord: IUsers.ModelAPI = {
-            nickname,
-            record: 0,
-        };
-
-        this.props.dispatch(setUserRecord(userRecord));
-        this.props.history.push(`/game`);
-    };
+class Home extends React.Component<IProps, {}> {
 
     private startAnimation = () => {
         gsap.registerPlugin();
@@ -146,18 +111,10 @@ class Home extends React.Component<IProps, IState> {
                             Every click submits a transaction. At the end, we will show you how close you came to
                             overwhelming the system.</p>
                         <div className={'buttons-block'}>
-                            <InputComponent
-                                color={'white'}
-                                isValid={true}
-                                placeholder={'YOUR NICKNAME'}
-                                value={this.state.nickname}
-                                inputValueFunc={this.inputValueFunc}
-                            />
-                            <Button typeButton={true} onClick={this.goToPlay} name={'Play the game'}/>
+                            <Button linkTo={'/game'} name={'Play the game'}/>
                             <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
-                    <LeaderBoard/>
                 </div>
                 <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
             </div>
@@ -165,9 +122,9 @@ class Home extends React.Component<IProps, IState> {
     }
 }
 
-const mapServicesToProps: IMapServicesToProps = ({ usersService }: IService) => ({ usersService });
+const mapServicesToProps: IMapServicesToProps = ({  }: IService) => ({  });
 
-const mapStateToProps = ({usersState}: IRootAppReducerState) => ({usersState});
+const mapStateToProps = ({}: IRootAppReducerState) => ({});
 
 export default connect(mapStateToProps)(
     withRouter(withService(mapServicesToProps)(Home))
