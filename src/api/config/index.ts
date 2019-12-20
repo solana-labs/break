@@ -1,5 +1,5 @@
 export const configuration = Object.freeze(
     {
-        remoteApi: '/api'
+        remoteApi: '//break-solana-backend-staging.herokuapp.com/api'
     }
 );
