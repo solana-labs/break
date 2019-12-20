@@ -16,19 +16,17 @@ export default class TransactionsService implements ITransactionsService {
         try {
             this.connection = new Connection(url);
 
-            let secKey = localStorage.getItem('secretKey');
+            let secKey = localStorage.getItem('secretKey1');
 
             if (!secKey) {
-                setStatusLoader(true);
                 const account = await new Account();
                 secKey = account._keypair.secretKey;
 
-                localStorage.setItem('secretKey', JSON.stringify(secKey));
+                localStorage.setItem('secretKey1', JSON.stringify(secKey));
 
                 this.secretKey = secKey;
 
                 await this.connection.requestAirdrop(account.publicKey, 100000000000); // about 8 - 10 sec
-                setStatusLoader(false);
             } else {
                 this.secretKey = JSON.parse(secKey);
             }

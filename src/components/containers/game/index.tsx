@@ -21,6 +21,7 @@ import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
 import {IGameService} from "../../../services/game-service/model";
 import {GlobalStatisticsBoard} from "../../presentational/global-statistics-board";
+import {setStatusLoader} from "../../../actions/set-status-loader";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -58,7 +59,7 @@ class Game extends React.Component<IProps, {}> {
         let status = this.props.gameState.status;
         if (status !== 'started') return;
 
-        const countOfTransactions = transactions.length;
+        const countOfTransactions: number = transactions.length;
         const id = 'transaction' + countOfTransactions;
 
         this.props.dispatch(addTransaction());
@@ -159,9 +160,16 @@ class Game extends React.Component<IProps, {}> {
         }, 15000)
     };
 
+    private setConnection = async () => {
+        this.props.dispatch(setStatusLoader(true));
+        await this.props.transactionsService.setConnection();
+        this.props.dispatch(setStatusLoader(false));
+    };
+
     componentDidMount() {
         this._isMounted = true;
-        this.props.transactionsService.setConnection();
+
+        this.setConnection();
 
         document.addEventListener('keyup', (event) => {
             this.makeTransaction();
