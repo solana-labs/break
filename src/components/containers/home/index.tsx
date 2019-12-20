@@ -161,9 +161,9 @@ class Home extends React.Component<IProps, IState> {
             <div className={'home-wrapper'}>
                 <div className={'container'}>
                     <div className={'main-info'}>
-                        <h1 className={'glitch'} data-text="Break Solana">Break Solana</h1>
-                        <p>This quick game gives you the chance to break the most performant blockchain in the world.
-                            Every click submits a transaction. At the end, we will show you how close you came to
+                        <h1 className={'glitch'} data-text="Break Solana">Can You Break Solana?</h1>
+                        <p>This game gives you the chance to try and break the most performant blockchain in the world.
+                            Every action—key press or mouse click—creates an on-chain transaction. After 15 seconds, we'll show you how close you came to
                             overwhelming the system.</p>
                         <div className={'buttons-block'}>
                             <Button linkTo={'/game'} name={'Play the game'}/>

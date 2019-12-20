@@ -52,7 +52,7 @@ export default class HomeScene extends React.Component<IProps, IState> {
                         </svg>
                         <div className={'info'}>
                             <p>{percentCapacity}%</p>
-                            <p>of solana capacity used</p>
+                            <p>of Solana Capacity Used</p>
                         </div>
                     </div>
 
@@ -68,7 +68,7 @@ export default class HomeScene extends React.Component<IProps, IState> {
                         </svg>
                         <div className={'info'}>
                             <p>{completedCount} of {totalCount}</p>
-                            <p>transactions processed</p>
+                            <p>Transactions Processed</p>
                         </div>
                     </div>
 
@@ -84,15 +84,15 @@ export default class HomeScene extends React.Component<IProps, IState> {
                         </svg>
                         <div className={'info'}>
                             <p>{averageTransactionsTime} sec</p>
-                            <p>avg. transactions <br/> proccessing time</p>
+                            <p>Avg. Transaction <br/> Processing Time</p>
                         </div>
                     </div>
                 </div>
                 <div className={'info-block'}>
                     <p>With <span className={'green-text semibold'}>{completedCount}</span> transactions in
-                        15 seconds you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of Solana's network bandwidth.
-                        If you invited more people, maybe you'd stand a better chance.
-                        Review every transaction with stats on confirmation and signatures by hovering over it below.</p>
+                        15 seconds, you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of Solana's network bandwidth.
+                        If you invited more people, maybe you'd stand a better chance!
+                        Review every transaction—see confirmation statistics and signatures—by hovering over it below.</p>
                 </div>
                 <div className={'buttons-block'}>
                     <Button typeButton={true} name={'Try Again'} onClick={tryAgain}/>
@@ -103,13 +103,13 @@ export default class HomeScene extends React.Component<IProps, IState> {
                     <div className={'share-block'}>
                         <TwitterShareButton
                             className={'share-button'}
-                            title={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
+                            title={`I tried to break Solana. See if you can: \nTotal transactions created: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\n`}
                             url={'https://break.solana.com/'}>
                             <img src={shareTwitterIcon}/>
                         </TwitterShareButton>
                         <FacebookShareButton
                             className={'share-button'}
-                            quote={`My results breaking Solana: \nTotal transactions: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\nYou can try to break Solana by your own`}
+                            quote={`I tried to break Solana. See if you can: \nTotal transactions created: ${totalCount} \nSolana capacity used: ${percentCapacity}% \n\n`}
                             url={'https://break.solana.com/'}>
                             <img src={shareFacebookIcon}/>
                         </FacebookShareButton>
