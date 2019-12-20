@@ -40,6 +40,16 @@
       @include transition;
     }
   }
+
+  &.completed-after {
+    background-color: #50B6D7;
+    @include transition;
+
+    &.hovered{
+      opacity: 0.8;
+      @include transition;
+    }
+  }
 }
 
 .square-info-container {

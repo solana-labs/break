@@ -73,6 +73,13 @@ class Game extends React.Component<IProps, {}> {
 
             this.props.dispatch(setTransactionInfo(updatedTransaction));
         }
+        else if (this.props.gameState.status === 'finished') {
+            const updatedTransaction: ITransaction.Model = {
+                id, info, status: 'completed-after',
+            };
+
+            this.props.dispatch(setTransactionInfo(updatedTransaction));
+        }
     };
 
     private timer = async () => {
@@ -107,7 +114,7 @@ class Game extends React.Component<IProps, {}> {
         });
 
         this.getDayTransactionCounts();
-        this.startGetGameTransactionCounts();
+        this.getGameTransactionCounts();
     };
 
     private startGame = async () => {
