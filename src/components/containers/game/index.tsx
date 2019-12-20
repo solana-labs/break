@@ -103,7 +103,8 @@ class Game extends React.Component<IProps, {}> {
 
         this.props.gameService.saveGame({
             transactions: completedCount
-        })
+        });
+
         this.getDayTransactionCounts();
         this.startGetGameTransactionCounts();
     };
