@@ -1,5 +1,5 @@
 export interface ITransactionsService {
-    makeTransaction(id: string): Promise<TransactionInfoService>,
+    makeTransaction(id: number): Promise<TransactionInfoService>,
     setConnection(): void
 }
 
