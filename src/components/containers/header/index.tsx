@@ -14,9 +14,9 @@ export default class Header extends React.Component {
         return (
             <header className={'header-wrapper'}>
                 <div className={'container'}>
-                    <Link to={'/'} className={'logo'}>
+                    <a href={'https://solana.com/'} className={'logo'}>
                         <img src={logo} alt="solana"/>
-                    </Link>
+                    </a>
                 </div>
             </header>
         );

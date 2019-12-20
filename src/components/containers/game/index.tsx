@@ -20,6 +20,7 @@ import {Button} from "../../ui/button";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
 import {IGameService} from "../../../services/game-service/model";
+import {GlobalStatisticsBoard} from "../../presentational/global-statistics-board";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -37,6 +38,8 @@ interface IServiceProps {
 
 interface IState {
     secondsCount: number,
+    dayTransactionCounts: number,
+    gameTransactionCounts: number
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -46,6 +49,8 @@ class Game extends React.Component<IProps, {}> {
 
     state: IState = {
         secondsCount: 15,
+        dayTransactionCounts: 0,
+        gameTransactionCounts: 0
     };
 
     private makeTransaction = async () => {
@@ -92,13 +97,16 @@ class Game extends React.Component<IProps, {}> {
         const totalCount = this.props.transactionState.transactions.length;
         const completedCount = this.props.transactionState.countCompletedTransactions;
 
-        const percentCapacity = parseFloat((completedCount / 50000).toFixed(4));
+        const percentCapacity = parseFloat(((completedCount / (50000 * 15)) * 100).toFixed(4));
 
         this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
 
         this.props.gameService.saveGame({
             transactions: completedCount
-        })
+        });
+
+        this.getDayTransactionCounts();
+        this.startGetGameTransactionCounts();
     };
 
     private startGame = async () => {
@@ -121,6 +129,34 @@ class Game extends React.Component<IProps, {}> {
         if (scrollSquareContainer) {
             scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
         }
+    };
+
+    private getDayTransactionCounts = async() => {
+        const response = await this.props.gameService.getDailyTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                dayTransactionCounts: response
+            })
+        }
+    };
+
+    private getGameTransactionCounts = async () => {
+        const response = await this.props.gameService.getGameTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                gameTransactionCounts: response
+            });
+        }
+    };
+
+    private startGetGameTransactionCounts = async () => {
+        this.getGameTransactionCounts();
+
+        setInterval(async() => {
+            this.getGameTransactionCounts()
+        }, 15000)
     };
 
     componentDidMount() {
@@ -146,7 +182,7 @@ class Game extends React.Component<IProps, {}> {
         const averageTransactionsTime = this.props.transactionState.averageTransactionsTime;
         const gameStatus = this.props.gameState.status;
         const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
-        const {secondsCount} = this.state;
+        const {secondsCount, dayTransactionCounts, gameTransactionCounts} = this.state;
 
         return (
             <div className={'game-wrapper'}>
@@ -166,6 +202,10 @@ class Game extends React.Component<IProps, {}> {
                             averageTransactionsTime={averageTransactionsTime}
                         />
                     }
+                    {gameStatus === 'finished' && <GlobalStatisticsBoard
+                        dayTransactionCounts={dayTransactionCounts}
+                        gameTransactionCounts={gameTransactionCounts}
+                    />}
                     <div className={'play-zone-wrapper'}>
                         <div className={`square-container-wrapper ${gameStatus}`}>
                             {gameStatus === 'unstarted' ? <div>
