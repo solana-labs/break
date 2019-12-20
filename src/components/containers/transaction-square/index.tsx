@@ -33,7 +33,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     private squareInfo = () => {
         const {gameStatus, status} = this.props;
 
-        if (gameStatus === 'finished' && status === 'completed') {
+        if (gameStatus === 'finished' && (status === 'completed' || status === 'completed-after')) {
             const {confirmationTime, signature, lamportsCount} = this.props.information;
             const solCount = lamportsCount / 1000000000;
 

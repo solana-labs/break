@@ -73,6 +73,13 @@ class Game extends React.Component<IProps, {}> {
 
             this.props.dispatch(setTransactionInfo(updatedTransaction));
         }
+        else if (this.props.gameState.status === 'finished') {
+            const updatedTransaction: ITransaction.Model = {
+                id, info, status: 'completed-after',
+            };
+
+            this.props.dispatch(setTransactionInfo(updatedTransaction));
+        }
     };
 
     private timer = async () => {
@@ -92,7 +99,7 @@ class Game extends React.Component<IProps, {}> {
         }, 15000);
     };
 
-    private finishGame = () => {
+    private finishGame = async () => {
         this.props.dispatch(setStatusGame('finished'));
 
         const totalCount = this.props.transactionState.transactions.length;
@@ -102,12 +109,12 @@ class Game extends React.Component<IProps, {}> {
 
         this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
 
-        this.props.gameService.saveGame({
+        await this.props.gameService.saveGame({
             transactions: completedCount
         });
 
         this.getDayTransactionCounts();
-        this.startGetGameTransactionCounts();
+        this.getGameTransactionCounts();
     };
 
     private startGame = async () => {
@@ -150,14 +157,6 @@ class Game extends React.Component<IProps, {}> {
                 gameTransactionCounts: response
             });
         }
-    };
-
-    private startGetGameTransactionCounts = async () => {
-        this.getGameTransactionCounts();
-
-        setInterval(async() => {
-            this.getGameTransactionCounts()
-        }, 15000)
     };
 
     private setConnection = async () => {
