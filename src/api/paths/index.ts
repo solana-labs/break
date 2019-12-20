@@ -6,6 +6,7 @@ export default class Paths {
 
     static Game = class {
         static SaveGame = () => base(`games`);
+        static GetDailyGameCounts = () => base(`games/daily`);
         static GetDailyTransactionCounts = () => base(`games/daily/transactions`);
         static GetGameTransactionCounts = () => base(`games/latest/transactions`);
     };
