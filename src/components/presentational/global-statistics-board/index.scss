@@ -1,0 +1,60 @@
+@import '~@styles/variables/colors';
+@import '~@styles/tools/transitions';
+
+.statistics-board-wrapper{
+    margin-bottom: 4rem;
+
+    @media (max-width: 900px) {
+        max-width: 100%;
+    }
+
+    .head{
+        padding: 1.7rem 4rem 1.6rem 2.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &>p{
+            font-size: 2.4rem;
+            line-height: 4.8rem;
+            font-weight: 500;
+        }
+    }
+
+    .row{
+        display: flex;
+
+        @media (max-width: 900px) {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        &>div{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+
+            @media (max-width: 900px) {
+                width: 100%;
+                padding-bottom: 2rem;
+            }
+
+            &>*:nth-child(1){
+                font-size: 3.6rem;
+                line-height: 4.8rem;
+                font-weight: 600;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            &>*:nth-child(2){
+                font-size: 2.4rem;
+                line-height: 4rem;
+                color: rgba(255, 255, 255, 0.7);
+            }
+        }
+    }
+}
