@@ -99,7 +99,7 @@ class Game extends React.Component<IProps, {}> {
         }, 15000);
     };
 
-    private finishGame = () => {
+    private finishGame = async () => {
         this.props.dispatch(setStatusGame('finished'));
 
         const totalCount = this.props.transactionState.transactions.length;
@@ -109,7 +109,7 @@ class Game extends React.Component<IProps, {}> {
 
         this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
 
-        this.props.gameService.saveGame({
+        await this.props.gameService.saveGame({
             transactions: completedCount
         });
 
@@ -157,14 +157,6 @@ class Game extends React.Component<IProps, {}> {
                 gameTransactionCounts: response
             });
         }
-    };
-
-    private startGetGameTransactionCounts = async () => {
-        this.getGameTransactionCounts();
-
-        setInterval(async() => {
-            this.getGameTransactionCounts()
-        }, 15000)
     };
 
     private setConnection = async () => {
