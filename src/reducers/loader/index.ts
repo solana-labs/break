@@ -1,5 +1,4 @@
 import {SET_STATUS_LOADER} from "../../actions/types";
-import ITransaction from "./model";
 import ILoader from "./model";
 
 const initState: ILoader.Model = {

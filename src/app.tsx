@@ -1,14 +1,27 @@
 import * as React from 'react';
 import {Route, Switch, Redirect} from 'react-router-dom';
+import {connect} from "react-redux";
+import {Dispatch} from "redux";
 
 import HomeScene from "./components/scenes/home-scene";
 import GameScene from "./components/scenes/game-scene";
+import {IService} from "./services/model";
+import {IMapServicesToProps, withService} from "./components/hoc-helpers/with-service";
+import {IRootAppReducerState} from "./reducer/model";
 import Header from "./components/containers/header";
+import {Loader} from "./components/ui/loader";
+import ILoader from "./reducers/loader/model";
 
+interface IProps{
+    dispatch: Dispatch
+    loaderState: ILoader.ModelState
+}
 
-export default class App extends React.Component {
+class App extends React.Component<IProps, {}> {
 
     render() {
+        const loaderIsOpen = this.props.loaderState.isActive;
+
         return(
             <div>
                 <Header/>
@@ -17,7 +30,16 @@ export default class App extends React.Component {
                     <Route path="/game" exact component={GameScene}/>
                     <Redirect from="*" to="/" exact />
                 </Switch>
+                <Loader isOpen={loaderIsOpen} text={'Game initilization...'}/>
             </div>
         )
     }
 }
+
+const mapServicesToProps: IMapServicesToProps = ({  }: IService) => ({  });
+
+const mapStateToProps = ({loaderState}: IRootAppReducerState) => ({loaderState});
+
+export default connect(mapStateToProps)(
+    withService(mapServicesToProps)(App)
+);
