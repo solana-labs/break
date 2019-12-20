@@ -1,7 +1,7 @@
-import {ISwapiService} from "./swapi-service/model";
 import {ITransactionsService} from "./transactions-service/model";
+import {IGameService} from "./game-service/model";
 
 export interface IService {
-    swapiService: ISwapiService,
     transactionsService: ITransactionsService
+    gameService: IGameService
 }

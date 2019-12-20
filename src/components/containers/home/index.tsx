@@ -1,31 +1,35 @@
 import * as React from 'react';
 import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
+import {Dispatch} from "redux";
+import {connect} from "react-redux";
+import {withRouter} from "react-router";
 
 import './index.scss';
 import {Button} from "../../ui/button";
-import LeaderBoard from "../leader-board";
-import InputComponent from "../../ui/input";
+import {IMapServicesToProps, withService} from "../../hoc-helpers/with-service";
+import {IService} from "../../../services/model";
+import {IRootAppReducerState} from "../../../reducer/model";
+import {IGameService} from "../../../services/game-service/model";
+import {StatisticsBoard} from "../../presentational/statistics-board";
 
 const heroImage = require('../../../shared/images/hero.svg');
 
 interface IProps {
-
+    dispatch: Dispatch
+    gameService: IGameService
 }
 
 interface IState {
-    nickName: string
+    dayTransactionCounts: number,
+    gameTransactionCounts: number
 }
 
-export default class Home extends React.Component<IProps, IState> {
+class Home extends React.Component<IProps, IState> {
+    _isMounted = false;
 
     state: IState = {
-        nickName: ''
-    };
-
-    private inputValueFunc = (value: string) => {
-        this.setState({
-            nickName: value
-        });
+        dayTransactionCounts: 0,
+        gameTransactionCounts: 0
     };
 
     private startAnimation = () => {
@@ -111,7 +115,48 @@ export default class Home extends React.Component<IProps, IState> {
         }
     };
 
+    private getDayTransactionCounts = async() => {
+        const response = await this.props.gameService.getDailyTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                dayTransactionCounts: response
+            })
+        }
+    };
+
+    private getGameTransactionCounts = async () => {
+        const response = await this.props.gameService.getGameTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                gameTransactionCounts: response
+            });
+        }
+    };
+
+    private startGetGameTransactionCounts = async () => {
+        this.getGameTransactionCounts();
+
+        setInterval(async() => {
+            this.getGameTransactionCounts()
+        }, 15000)
+    };
+
+    componentDidMount(): void {
+        this._isMounted = true;
+        this.getDayTransactionCounts();
+        this.startGetGameTransactionCounts();
+    }
+
+    componentWillUnmount(): void {
+        this._isMounted = false;
+    }
+
     render() {
+        const {dayTransactionCounts, gameTransactionCounts} = this.state;
+        const percentCapacity = (dayTransactionCounts / 50000).toFixed(4);
+
         return (
             <div className={'home-wrapper'}>
                 <div className={'container'}>
@@ -121,18 +166,15 @@ export default class Home extends React.Component<IProps, IState> {
                             Every click submits a transaction. At the end, we will show you how close you came to
                             overwhelming the system.</p>
                         <div className={'buttons-block'}>
-                            <InputComponent
-                                color={'white'}
-                                isValid={true}
-                                placeholder={'YOUR NICKNAME'}
-                                value={this.state.nickName}
-                                inputValueFunc={this.inputValueFunc}
-                            />
-                            <Button name={'Play the game'} linkTo={'/game'}/>
+                            <Button linkTo={'/game'} name={'Play the game'}/>
                             <a href="https://solana.com/category/blog/">Read how it works</a>
                         </div>
                     </div>
-                    <LeaderBoard/>
+                    <StatisticsBoard
+                        dayTransactionCounts={dayTransactionCounts}
+                        percentCapacity={percentCapacity}
+                        gameTransactionCounts={gameTransactionCounts}
+                    />
                 </div>
                 <object id={'hero'} data={heroImage} type={'image/svg+xml'} onLoad={this.startAnimation}/>
             </div>
@@ -140,4 +182,11 @@ export default class Home extends React.Component<IProps, IState> {
     }
 }
 
+const mapServicesToProps: IMapServicesToProps = ({ gameService }: IService) => ({ gameService });
+
+const mapStateToProps = ({}: IRootAppReducerState) => ({});
+
+export default connect(mapStateToProps)(
+    withRouter(withService(mapServicesToProps)(Home))
+);
 
