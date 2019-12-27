@@ -2,7 +2,7 @@ import {RESET_STATISTICS_GAME, SET_STATISTICS_GAME, SET_STATUS_GAME} from "../..
 import IGame from "./model";
 
 const initState: IGame.ModelState = {
-    status: 'unstarted',
+    status: 'started',
     statistics: {
         totalCount: 0,
         completedCount: 0,

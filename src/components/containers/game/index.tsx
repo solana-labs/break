@@ -194,48 +194,47 @@ class Game extends React.Component<IProps, {}> {
         return (
             <div className={'game-wrapper'}>
                 <div className={'container'}>
-                    {gameStatus === 'finished' ?
-                        <FinishHead
-                            completedCount={completedCount}
-                            totalCount={totalCount}
-                            percentCapacity={percentCapacity}
-                            averageTransactionsTime={averageTransactionsTime}
-                            tryAgain={this.tryAgain}
-                        />
-                        :
-                        <StartHead
-                            secondsCount={secondsCount}
-                            transactionsCreated={transactions.length}
-                            averageTransactionsTime={averageTransactionsTime}
-                        />
-                    }
-                    {gameStatus === 'finished' && <GlobalStatisticsBoard
-                        dayTransactionCounts={dayTransactionCounts}
-                        gameTransactionCounts={gameTransactionCounts}
-                    />}
                     <div className={'play-zone-wrapper'}>
-                        <div className={`square-container-wrapper ${gameStatus}`}>
-                            {gameStatus === 'unstarted' ? <div>
-                                    <Button typeButton={true} name={'Begin'}
-                                            onClick={this.startGame}
-                                            animate={'animated infinite pulse'}/>
-                                </div> :
-                                <div id={'scroll-square-container'}
-                                     className={`square-container`}
-                                     onClick={this.makeTransaction}
-                                     tabIndex={0}
-                                >
-                                    {transactions && transactions.map((item: ITransaction.Model) => (
-                                        <TransactionSquare
-                                            key={item.id}
-                                            gameStatus={gameStatus}
-                                            status={item.status}
-                                            information={item.info}
-                                        />
-                                    ))}
-                                </div>
-                            }
+                        <div className={'timer'}>
+                            <p>Transactions Created</p>
+                            <p>{transactions.length}</p>
                         </div>
+                        <div className={'counter'}>
+                            <p>Transactions Confirmed</p>
+                            <p>{completedCount}</p>
+                        </div>
+                        <div className={'capacity'}>
+                            <p>Solana Capacity Used</p>
+                            <p> %</p>
+                        </div>
+                        <div className={'speed'}>
+                            <p>Transactions per Second</p>
+                            <p> </p>
+                        </div>
+
+                        <div className={`square-container-wrapper`}>
+                            <div id={'scroll-square-container'}
+                                 className={`square-container`}
+                                 tabIndex={0}
+                            >
+                                {transactions && transactions.map((item: ITransaction.Model) => (
+                                    <TransactionSquare
+                                        key={item.id}
+                                        gameStatus={gameStatus}
+                                        status={item.status}
+                                        information={item.info}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <button className={`click-zone`} onClick={this.makeTransaction}>
+                            <div className={'tap-icon-wrapper'}>
+                                <img src="../../../shared/images/icons/tap.svg" alt="tap"/>
+                                <p>tap <br/> here</p>
+                            </div>
+                           <p className={'info'}>Or use keyboard button</p>
+                        </button>
                     </div>
                 </div>
             </div>
