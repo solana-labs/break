@@ -1,7 +1,6 @@
 import {ITransactionsService, TransactionInfoService} from "./model";
 import * as solanaWeb3 from '@solana/web3.js';
 import {sendAndConfirmRecentTransaction} from '@solana/web3.js';
-import {setStatusLoader} from "../../actions/set-status-loader";
 
 export default class TransactionsService implements ITransactionsService {
     account: any;
@@ -11,18 +10,20 @@ export default class TransactionsService implements ITransactionsService {
 
     setConnection = async () => {
         const url = 'https://testnet.solana.com:8443';
+        //const url = 'https://testnet.solana.com:8899';
         const {Account, Connection} = solanaWeb3;
 
         try {
             this.connection = new Connection(url);
 
-            let secKey = localStorage.getItem('secretKey1');
+            let secKey = localStorage.getItem('secretKey2');
+
 
             if (!secKey) {
                 const account = await new Account();
                 secKey = account._keypair.secretKey;
 
-                localStorage.setItem('secretKey1', JSON.stringify(secKey));
+                localStorage.setItem('secretKey2', JSON.stringify(secKey));
 
                 this.secretKey = secKey;
 
