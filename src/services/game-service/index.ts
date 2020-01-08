@@ -9,7 +9,6 @@ export default class GameService implements IGameService {
     @injectPropertyFetcher
     private fetcher!: IFetcher;
 
-
     saveGame = async(data: any) => {
         return await this.fetcher.post(Paths.Game.SaveGame(), data)
     };

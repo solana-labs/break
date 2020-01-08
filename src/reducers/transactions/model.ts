@@ -17,6 +17,7 @@ namespace ITransaction {
         transactions: Model[]
         countCompletedTransactions: number
         averageTransactionsTime: number
+        transactionsPerSecond: number
     }
 }
 

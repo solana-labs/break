@@ -16,12 +16,11 @@ import {setStatusGame} from "../../../actions/set-status-game";
 import {setStatisticsGame} from "../../../actions/set-statistics-game";
 import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
 import {resetTransactions} from "../../../actions/reset-tarnsactions";
-import {Button} from "../../ui/button";
-import {StartHead} from "../../presentational/start-head";
-import FinishHead from "../../presentational/finish-head";
+
 import {IGameService} from "../../../services/game-service/model";
-import {GlobalStatisticsBoard} from "../../presentational/global-statistics-board";
 import {setStatusLoader} from "../../../actions/set-status-loader";
+import {IDefaultWebSocketService} from "../../../services/web-socket/model";
+
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -35,29 +34,43 @@ interface IStateProps {
 interface IServiceProps {
     transactionsService: ITransactionsService
     gameService: IGameService
+    wsService: IDefaultWebSocketService
 }
 
 interface IState {
     secondsCount: number,
     dayTransactionCounts: number,
-    gameTransactionCounts: number
+    gameTransactionCounts: number,
+
+    allTransactionCreated: number,
+    transactionPerSecond: number
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
 
 class Game extends React.Component<IProps, {}> {
     _isMounted = false;
+    _timerId: any;
 
     state: IState = {
         secondsCount: 15,
         dayTransactionCounts: 0,
-        gameTransactionCounts: 0
+        gameTransactionCounts: 0,
+
+        allTransactionCreated: 0,
+        transactionPerSecond: 0
     };
 
     private makeTransaction = async () => {
         const transactions = this.props.transactionState.transactions;
         let status = this.props.gameState.status;
         if (status !== 'started') return;
+
+        if (this._isMounted) {
+            this.setState({
+                allTransactionCreated: this.state.allTransactionCreated + 1,
+            })
+        }
 
         const countOfTransactions: number = transactions.length;
         const id = 'transaction' + countOfTransactions;
@@ -165,11 +178,34 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(setStatusLoader(false));
     };
 
+    // TODO: clear timeout!
+
+    private setTimerForSendTransaction = () => {
+        this._timerId = setInterval(() => {
+                const transactionCreatedLater = this.state.allTransactionCreated;
+
+                setTimeout(() => {
+                    const transactionCreatedNow = this.state.allTransactionCreated;
+                    if (this._isMounted) {
+                        const transactionPerSecond = transactionCreatedNow - transactionCreatedLater;
+                        this.setState({
+                            transactionPerSecond,
+                        });
+
+                        if (transactionPerSecond)
+                            this.props.wsService.sendInfo(transactionPerSecond);
+                    }
+                }, 1000);
+        }, 1000);
+    };
+
     componentDidMount() {
         this._isMounted = true;
 
-        this.setConnection();
+        this.props.wsService.webSocket();
 
+        this.setConnection();
+        this.setTimerForSendTransaction();
         document.addEventListener('keyup', (event) => {
             this.makeTransaction();
         });
@@ -181,15 +217,16 @@ class Game extends React.Component<IProps, {}> {
 
     componentWillUnmount() {
         this._isMounted = false;
+        clearInterval(this._timerId);
         this.tryAgain();
     }
 
     render() {
         const transactions = this.props.transactionState.transactions;
-        const averageTransactionsTime = this.props.transactionState.averageTransactionsTime;
         const gameStatus = this.props.gameState.status;
         const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
-        const {secondsCount, dayTransactionCounts, gameTransactionCounts} = this.state;
+
+        const tps = this.props.transactionState.transactionsPerSecond;
 
         return (
             <div className={'game-wrapper'}>
@@ -209,7 +246,7 @@ class Game extends React.Component<IProps, {}> {
                         </div>
                         <div className={'speed'}>
                             <p>Transactions per Second</p>
-                            <p> </p>
+                            <p>{tps}</p>
                         </div>
 
                         <div className={`square-container-wrapper`}>
@@ -242,7 +279,7 @@ class Game extends React.Component<IProps, {}> {
     }
 }
 
-const mapServicesToProps = ({transactionsService, gameService}: IService) => ({transactionsService, gameService});
+const mapServicesToProps = ({transactionsService, gameService, wsService}: IService) => ({transactionsService, gameService, wsService});
 
 const mapStateToProps = ({transactionState, gameState}: IRootAppReducerState) => ({transactionState, gameState});
 
