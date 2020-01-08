@@ -11,7 +11,6 @@ import {setTransactionInfo} from "../../../actions/set-transaction-info";
 import {IService} from "../../../services/model";
 import {withService} from "../../hoc-helpers/with-service";
 import {ITransactionsService, TransactionInfoService} from "../../../services/transactions-service/model";
-
 import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
@@ -32,7 +31,7 @@ interface IServiceProps {
 }
 
 interface IState {
-    allTransactionCreated: number,
+    allTransactionConfirmed: number,
     transactionPerSecond: number
 }
 
@@ -43,7 +42,7 @@ class Game extends React.Component<IProps, {}> {
     _timerId: any;
 
     state: IState = {
-        allTransactionCreated: 0,
+        allTransactionConfirmed: 0,
         transactionPerSecond: 0
     };
 
@@ -52,18 +51,18 @@ class Game extends React.Component<IProps, {}> {
 
         const transactions = this.props.transactionState.transactions;
 
-        if (this._isMounted) {
-            this.setState({
-                allTransactionCreated: this.state.allTransactionCreated + 1,
-            })
-        }
-
         const totalCount: number = transactions.length;
         const id = 'transaction' + totalCount;
 
         this.props.dispatch(addTransaction());
 
         const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
+
+        if (this._isMounted) {
+            this.setState({
+                allTransactionConfirmed: this.state.allTransactionConfirmed + 1,
+            })
+        }
 
         const updatedTransaction: ITransaction.Model = {
             id, info, status: 'completed',
@@ -89,12 +88,12 @@ class Game extends React.Component<IProps, {}> {
 
     private setTimerForSendTransaction = () => {
         this._timerId = setInterval(() => {
-                const transactionCreatedLater = this.state.allTransactionCreated;
+                const transactionConfirmedLater = this.state.allTransactionConfirmed;
 
                 setTimeout(() => {
-                    const transactionCreatedNow = this.state.allTransactionCreated;
+                    const transactionConfirmedNow = this.state.allTransactionConfirmed;
                     if (this._isMounted) {
-                        const transactionPerSecond = transactionCreatedNow - transactionCreatedLater;
+                        const transactionPerSecond = transactionConfirmedNow - transactionConfirmedLater;
                         this.setState({
                             transactionPerSecond,
                         });
@@ -108,7 +107,6 @@ class Game extends React.Component<IProps, {}> {
 
     componentDidMount() {
         this._isMounted = true;
-
         this.props.wsService.webSocket();
 
         this.setConnection();
@@ -131,6 +129,7 @@ class Game extends React.Component<IProps, {}> {
         const transactions = this.props.transactionState.transactions;
         const completedCount = this.props.transactionState.countCompletedTransactions;
         const tps = this.props.transactionState.transactionsPerSecond;
+        const percentCapacity = parseFloat(((tps / 50000) * 100).toFixed(4));
 
         return (
             <div className={'game-wrapper'}>
@@ -146,7 +145,7 @@ class Game extends React.Component<IProps, {}> {
                         </div>
                         <div className={'capacity'}>
                             <p>Solana Capacity Used</p>
-                            <p> %</p>
+                            <p>{percentCapacity} %</p>
                         </div>
                         <div className={'speed'}>
                             <p>Transactions per Second</p>
