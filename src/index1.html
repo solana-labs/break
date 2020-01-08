@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link type="text/css" rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.10/semantic.min.css"/>
+</head>
+<body>
+<div>
+    <div id="connect-container" class="ui centered grid">
+        <div class="row">
+            <button id="connect" onclick="connect();" class="ui green button ">Connect</button>
+            <button id="disconnect" disabled="disabled" onclick="disconnect();"
+                    class="ui red button">Disconnect
+            </button>
+        </div>
+        <div class="row">
+                <textarea id="message" style="width: 350px" class="ui input"
+                          placeholder="Message to Echo"></textarea>
+        </div>
+        <div class="row">
+            <button id="echo" onclick="echo();" disabled="disabled"
+                    class="ui button">Echo message
+            </button>
+        </div>
+    </div>
+    <div id="console-container">
+        <h3>Logging</h3>
+        <div id="logging"></div>
+    </div>
+</div>
+<script>
+    var clientWebSocket = null;
+
+    function setConnected(connected) {
+        document.getElementById('connect').disabled = connected;
+        document.getElementById('disconnect').disabled = !connected;
+        document.getElementById('echo').disabled = !connected;
+    }
+
+    function connect() {
+        var hostName = location.host;
+        clientWebSocket = new WebSocket('ws://localhost:8080/transactions');
+        clientWebSocket.onopen = function () {
+            setConnected(true);
+            log('Info: Connection Established.');
+        };
+
+        clientWebSocket.onmessage = function (event) {
+            log(event.data);
+        };
+
+        clientWebSocket.onerror = function (ev) {
+            log("ERROR!!!")
+        };
+
+        clientWebSocket.onclose = function () {
+            setConnected(false);
+            log('Info: Closing Connection.');
+        };
+    }
+
+    function disconnect() {
+        clientWebSocket.onclose = function () {
+            setConnected(false);
+            log('Info: Closing Connection.');
+        };
+    }
+
+    function echo() {
+        if (clientWebSocket != null) {
+            var message = document.getElementById('message').value;
+            clientWebSocket.send(message);
+        } else {
+            alert('connection not established, please connect.');
+        }
+    }
+
+    function log(message) {
+        var console = document.getElementById('logging');
+        var p = document.createElement('p');
+        p.appendChild(document.createTextNode(message));
+        console.appendChild(p);
+    }
+</script>
+</body>
+</html>

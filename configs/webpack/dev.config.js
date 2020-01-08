@@ -34,7 +34,7 @@ module.exports = function (webpackEnv, argv) {
                 ignored: /node_modules/
             },
             proxy: {
-                "/api": "http://localhost:8080",
+                "/api": "http://localhost:8080"
             }
         },
         devtool: 'inline-source-map',
