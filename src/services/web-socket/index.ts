@@ -4,8 +4,8 @@ import {setTransactionsPerSecond} from "../../actions/set-transactions-per-secon
 import {hostname} from "os";
 
 const devUrl = 'ws://localhost:8080/transactions';
-const stagingUrl = '//break-backend.herokuapp.com';
-const prodUrl = '//break-backend-prod.herokuapp.com';
+const stagingUrl = 'ws://break-backend.herokuapp.com/transactions';
+const prodUrl = 'ws://break-backend-prod.herokuapp.com/transactions';
 
 export default class DefaultWebSocketService implements IDefaultWebSocketService {
 
