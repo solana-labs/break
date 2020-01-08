@@ -4,7 +4,6 @@ import {connect} from "react-redux";
 
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
-import IGame from "../../../reducers/game/model";
 import TransactionSquare from "../transaction-square";
 import {IRootAppReducerState} from "../../../reducer/model";
 import {addTransaction} from "../../../actions/add-tarnsaction";
@@ -13,13 +12,7 @@ import {IService} from "../../../services/model";
 import {withService} from "../../hoc-helpers/with-service";
 import {ITransactionsService, TransactionInfoService} from "../../../services/transactions-service/model";
 import {setStatisticsGame} from "../../../actions/set-statistics-game";
-import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
-import {resetTransactions} from "../../../actions/reset-tarnsactions";
-import {Button} from "../../ui/button";
-import {StartHead} from "../../presentational/start-head";
-import FinishHead from "../../presentational/finish-head";
 import {IGameService} from "../../../services/game-service/model";
-import {GlobalStatisticsBoard} from "../../presentational/global-statistics-board";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 
 interface IDispatchProps {
