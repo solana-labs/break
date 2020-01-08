@@ -4,7 +4,7 @@
                  attributeType="XML"
                  dur="2.3s"
                  begin="1s"
-                 values="110 ; 119;"
+                 values="110 ; 119; 110"
                  repeatCount="indefinite"/>
         <animate attributeName="fill-opacity"
                  attributeType="XML"
@@ -18,13 +18,13 @@
                  attributeType="XML"
                  dur="2.3s"
                  begin="1s"
-                 values="110 ; 118.5;"
+                 values="110 ; 118.5; 110"
                  repeatCount="indefinite"/>
         <animate attributeName="fill-opacity"
                  attributeType="XML"
                  dur="2.3s"
                  begin="1s"
-                 values="0.4 ; 0;"
+                 values="0.4 ; 0; 0.4"
                  repeatCount="indefinite"/>
     </circle>
     <circle cx="119" cy="119" r="95" fill="#00FFAD" fill-opacity="0.1">
