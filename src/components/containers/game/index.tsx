@@ -11,9 +11,6 @@ import {setTransactionInfo} from "../../../actions/set-transaction-info";
 import {IService} from "../../../services/model";
 import {withService} from "../../hoc-helpers/with-service";
 import {ITransactionsService, TransactionInfoService} from "../../../services/transactions-service/model";
-import {setStatisticsGame} from "../../../actions/set-statistics-game";
-import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
-import {resetTransactions} from "../../../actions/reset-tarnsactions";
 
 import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
@@ -51,6 +48,8 @@ class Game extends React.Component<IProps, {}> {
     };
 
     private makeTransaction = async () => {
+        this.updateScroll();
+
         const transactions = this.props.transactionState.transactions;
 
         if (this._isMounted) {
@@ -71,10 +70,6 @@ class Game extends React.Component<IProps, {}> {
         };
 
         this.props.dispatch(setTransactionInfo(updatedTransaction));
-
-        const completedCount = this.props.transactionState.countCompletedTransactions;
-        const percentCapacity = parseFloat(((completedCount / (50000 * 15)) * 100).toFixed(4));
-        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
     };
 
     private updateScroll = () => {
@@ -123,9 +118,9 @@ class Game extends React.Component<IProps, {}> {
         });
     }
 
-    componentDidUpdate() {
-        this.updateScroll()
-    }
+    // componentDidUpdate() {
+    //     this.updateScroll()
+    // }
 
     componentWillUnmount() {
         this._isMounted = false;
