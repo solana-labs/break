@@ -1,6 +1,11 @@
 import {IDefaultWebSocketService} from "./model";
 import appStore from "../../store";
 import {setTransactionsPerSecond} from "../../actions/set-transactions-per-second";
+import {hostname} from "os";
+
+const devUrl = 'ws://localhost:8080/transactions';
+const stagingUrl = '//break-backend.herokuapp.com';
+const prodUrl = '//break-backend-prod.herokuapp.com';
 
 export default class DefaultWebSocketService implements IDefaultWebSocketService {
 
@@ -9,9 +14,13 @@ export default class DefaultWebSocketService implements IDefaultWebSocketService
     private isProduction = () => {
         switch(process.env.NODE_ENV) {
             case 'development':
-                return 'ws://localhost:8080/transactions';
+                return devUrl;
             case 'production':
-                return 'prod';
+                if(location.hostname.match('staging')) {
+                    return stagingUrl;
+                } else {
+                    return prodUrl;
+                }
             default:
                 return '';
         }

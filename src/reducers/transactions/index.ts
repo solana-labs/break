@@ -68,9 +68,10 @@ const transactionReducer = (state = initState, action: any) => {
             }
         }
         case SET_TPS: {
+            const tps = action.payload / 5;
             return {
                 ...state,
-                transactionsPerSecond: action.payload
+                transactionsPerSecond: tps
             }
         }
         default:
