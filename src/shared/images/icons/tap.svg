@@ -68,13 +68,3 @@
                  repeatCount="indefinite"/>
     </circle>
 </svg>
-
-
-<!--<circle opacity="0.11" cx="780" cy="143" r="13" fill="#008CE4">-->
-<!--<animate attributeName="r"-->
-<!--         attributeType="XML"-->
-<!--         dur="1.3s"-->
-<!--         begin="1s"-->
-<!--         values="8 ; 13; 8"-->
-<!--         repeatCount="indefinite"/>-->
-<!--</circle>-->

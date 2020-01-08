@@ -1,8 +1,7 @@
-import {RESET_STATISTICS_GAME, SET_STATISTICS_GAME, SET_STATUS_GAME} from "../../actions/types";
+import {RESET_STATISTICS_GAME, SET_STATISTICS_GAME} from "../../actions/types";
 import IGame from "./model";
 
 const initState: IGame.ModelState = {
-    status: 'started',
     statistics: {
         totalCount: 0,
         completedCount: 0,
@@ -13,12 +12,6 @@ const initState: IGame.ModelState = {
 const gameReducer = (state = initState, action: any) => {
 
     switch (action.type) {
-        case SET_STATUS_GAME: {
-            return {
-                ...state,
-                status: action.payload
-            }
-        }
         case SET_STATISTICS_GAME: {
             return {
                 ...state,
@@ -27,7 +20,7 @@ const gameReducer = (state = initState, action: any) => {
         }
         case RESET_STATISTICS_GAME: {
             return {
-                status: 'unstarted',
+                ...state,
                 statistics: {
                     totalCount: 0,
                     completedCount: 0,

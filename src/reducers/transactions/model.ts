@@ -1,4 +1,3 @@
-import {Maybe} from "../../toolbox/custom-types";
 
 namespace ITransaction {
     export interface Model {

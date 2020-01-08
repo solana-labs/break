@@ -1,7 +1,6 @@
 import {ITransactionsService, TransactionInfoService} from "./model";
 import * as solanaWeb3 from '@solana/web3.js';
 import {sendAndConfirmRecentTransaction} from '@solana/web3.js';
-import {setStatusLoader} from "../../actions/set-status-loader";
 
 export default class TransactionsService implements ITransactionsService {
     account: any;

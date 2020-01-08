@@ -20,16 +20,8 @@
   border: 1px solid #3D3D3D;
   animation-duration: 0.4s;
   opacity: 1;
-  pointer-events: none;
   @include transition;
 
-  &.finished{
-    pointer-events: auto;
-
-    &.default{
-      pointer-events: none;
-    }
-  }
 
   &.completed {
     background-color: $green;
