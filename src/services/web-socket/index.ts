@@ -14,7 +14,7 @@ export default class DefaultWebSocketService implements IDefaultWebSocketService
     private isProduction = () => {
         switch(process.env.NODE_ENV) {
             case 'development':
-                return devUrl;
+                return stagingUrl;
             case 'production':
                 if(location.hostname.match('staging')) {
                     return stagingUrl;

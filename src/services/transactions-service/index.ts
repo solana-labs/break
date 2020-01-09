@@ -16,14 +16,14 @@ export default class TransactionsService implements ITransactionsService {
         try {
             this.connection = new Connection(url);
 
-            let secKey = localStorage.getItem('secretKey2');
+            let secKey = localStorage.getItem('secretKey4');
 
 
             if (!secKey) {
                 const account = await new Account();
                 secKey = account._keypair.secretKey;
 
-                localStorage.setItem('secretKey2', JSON.stringify(secKey));
+                localStorage.setItem('secretKey4', JSON.stringify(secKey));
 
                 this.secretKey = secKey;
 

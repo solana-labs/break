@@ -8,9 +8,11 @@ import '@styles/global.scss';
 
 import App from './app';
 import appStore from "./store";
-import service from "./services";
+import Service from "./services";
 import {ServiceProvider} from "./components/context/service-context";
 import {HelmetSet} from "./components/presentational/helmet-set";
+
+const service = new Service();
 
 ReactDOM.render((
     <Provider store={appStore}>

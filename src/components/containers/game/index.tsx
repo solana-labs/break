@@ -43,6 +43,7 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 class Game extends React.Component<IProps, {}> {
     _isMounted = false;
     _timerId: any;
+    _timeoutId: any;
 
     state: IState = {
         allTransactionConfirmed: 0,
@@ -87,13 +88,11 @@ class Game extends React.Component<IProps, {}> {
         this.props.dispatch(setStatusLoader(false));
     };
 
-    // TODO: clear timeout!
-
     private setTimerForSendTransaction = () => {
         this._timerId = setInterval(() => {
                 const transactionConfirmedLater = this.state.allTransactionConfirmed;
 
-                setTimeout(() => {
+                this._timeoutId = setTimeout(() => {
                     const transactionConfirmedNow = this.state.allTransactionConfirmed;
                     if (this._isMounted) {
                         const transactionPerSecond = transactionConfirmedNow - transactionConfirmedLater;
@@ -122,6 +121,7 @@ class Game extends React.Component<IProps, {}> {
     componentWillUnmount() {
         this._isMounted = false;
         clearInterval(this._timerId);
+        clearTimeout(this._timeoutId);
     }
 
     render() {
