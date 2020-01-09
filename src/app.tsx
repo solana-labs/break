@@ -9,14 +9,19 @@ import {IService} from "./services/model";
 import {IMapServicesToProps, withService} from "./components/hoc-helpers/with-service";
 import {IRootAppReducerState} from "./reducer/model";
 import Header from "./components/containers/header";
+import {Loader} from "./components/ui/loader";
+import ILoader from "./reducers/loader/model";
 
 interface IProps{
     dispatch: Dispatch
+    loaderState: ILoader.ModelState
 }
 
 class App extends React.Component<IProps, {}> {
 
     render() {
+        const loaderIsOpen = this.props.loaderState.isActive;
+
         return(
             <div>
                 <Header/>
@@ -25,14 +30,15 @@ class App extends React.Component<IProps, {}> {
                     <Route path="/game" exact component={GameScene}/>
                     <Redirect from="*" to="/" exact />
                 </Switch>
+                <Loader isOpen={loaderIsOpen} text={'Game initialization...'}/>
             </div>
         )
     }
 }
 
-const mapServicesToProps: IMapServicesToProps = ({ }: IService) => ({ });
+const mapServicesToProps: IMapServicesToProps = ({  }: IService) => ({  });
 
-const mapStateToProps = ({}: IRootAppReducerState) => ({});
+const mapStateToProps = ({loaderState}: IRootAppReducerState) => ({loaderState});
 
 export default connect(mapStateToProps)(
     withService(mapServicesToProps)(App)

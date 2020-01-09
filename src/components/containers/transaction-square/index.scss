@@ -20,11 +20,29 @@
   border: 1px solid #3D3D3D;
   animation-duration: 0.4s;
   opacity: 1;
+  pointer-events: none;
   @include transition;
+
+  &.finished{
+    pointer-events: auto;
+
+    &.default{
+      pointer-events: none;
+    }
+  }
 
   &.completed {
     background-color: $green;
-    border: 1px solid #007C54;
+    @include transition;
+
+    &.hovered{
+      opacity: 0.8;
+      @include transition;
+    }
+  }
+
+  &.completed-after {
+    background-color: #50B6D7;
     @include transition;
 
     &.hovered{

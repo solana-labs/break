@@ -1,5 +1,5 @@
 export const configuration = Object.freeze(
     {
-        remoteApi: '/api'
+        remoteApi: '//break-backend.herokuapp.com/api'
     }
 );

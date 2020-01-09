@@ -33,7 +33,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     private squareInfo = () => {
         const {gameStatus, status} = this.props;
 
-        if (gameStatus === 'finished' && status === 'completed') {
+        if (gameStatus === 'finished' && (status === 'completed' || status === 'completed-after')) {
             const {confirmationTime, signature, lamportsCount} = this.props.information;
             const solCount = lamportsCount / 1000000000;
 
@@ -53,16 +53,21 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     };
 
     render() {
+        const {gameStatus, status} = this.props;
+        const {signature} = this.props.information;
         const hovered = this.state.popoverOpen ? 'hovered' : '';
+
         return (
           <Popover
             className={'square-popover-wrapper'}
             body={this.squareInfo()}
-            children={<div
+            children={<a
               key={0}
+              href={`https://explorer.solana.com/transactions/${signature}`}
+              target={'_blank'}
               onMouseOver={() => this.toggle(true)}
               onMouseOut={() => this.toggle(false)}
-              className={`square ${this.props.status} ${hovered} ${this.animatedClass}`}
+              className={`square ${status} ${gameStatus} ${hovered} ${this.animatedClass}`}
             />}
             isOpen={this.state.popoverOpen}
             enterExitTransitionDurationMs={5}

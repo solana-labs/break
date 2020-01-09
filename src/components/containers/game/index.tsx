@@ -20,6 +20,8 @@ import {Button} from "../../ui/button";
 import {StartHead} from "../../presentational/start-head";
 import FinishHead from "../../presentational/finish-head";
 import {IGameService} from "../../../services/game-service/model";
+import {GlobalStatisticsBoard} from "../../presentational/global-statistics-board";
+import {setStatusLoader} from "../../../actions/set-status-loader";
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -37,6 +39,8 @@ interface IServiceProps {
 
 interface IState {
     secondsCount: number,
+    dayTransactionCounts: number,
+    gameTransactionCounts: number
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -46,6 +50,8 @@ class Game extends React.Component<IProps, {}> {
 
     state: IState = {
         secondsCount: 15,
+        dayTransactionCounts: 0,
+        gameTransactionCounts: 0
     };
 
     private makeTransaction = async () => {
@@ -53,16 +59,23 @@ class Game extends React.Component<IProps, {}> {
         let status = this.props.gameState.status;
         if (status !== 'started') return;
 
-        const countOfTransactions = transactions.length;
+        const countOfTransactions: number = transactions.length;
         const id = 'transaction' + countOfTransactions;
 
         this.props.dispatch(addTransaction());
 
-        const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(id);
+        const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(countOfTransactions);
 
         if(this.props.gameState.status === 'started') {
             const updatedTransaction: ITransaction.Model = {
                 id, info, status: 'completed',
+            };
+
+            this.props.dispatch(setTransactionInfo(updatedTransaction));
+        }
+        else if (this.props.gameState.status === 'finished') {
+            const updatedTransaction: ITransaction.Model = {
+                id, info, status: 'completed-after',
             };
 
             this.props.dispatch(setTransactionInfo(updatedTransaction));
@@ -86,19 +99,22 @@ class Game extends React.Component<IProps, {}> {
         }, 15000);
     };
 
-    private finishGame = () => {
+    private finishGame = async () => {
         this.props.dispatch(setStatusGame('finished'));
 
         const totalCount = this.props.transactionState.transactions.length;
         const completedCount = this.props.transactionState.countCompletedTransactions;
 
-        const percentCapacity = parseFloat((completedCount / 50000).toFixed(4));
+        const percentCapacity = parseFloat(((completedCount / (50000 * 15)) * 100).toFixed(4));
 
         this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
 
-        this.props.gameService.saveGame({
+        await this.props.gameService.saveGame({
             transactions: completedCount
-        })
+        });
+
+        this.getDayTransactionCounts();
+        this.getGameTransactionCounts();
     };
 
     private startGame = async () => {
@@ -123,9 +139,36 @@ class Game extends React.Component<IProps, {}> {
         }
     };
 
+    private getDayTransactionCounts = async() => {
+        const response = await this.props.gameService.getDailyTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                dayTransactionCounts: response
+            })
+        }
+    };
+
+    private getGameTransactionCounts = async () => {
+        const response = await this.props.gameService.getGameTransactionCounts();
+
+        if(this._isMounted){
+            this.setState({
+                gameTransactionCounts: response
+            });
+        }
+    };
+
+    private setConnection = async () => {
+        this.props.dispatch(setStatusLoader(true));
+        await this.props.transactionsService.setConnection();
+        this.props.dispatch(setStatusLoader(false));
+    };
+
     componentDidMount() {
         this._isMounted = true;
-        this.props.transactionsService.setConnection();
+
+        this.setConnection();
 
         document.addEventListener('keyup', (event) => {
             this.makeTransaction();
@@ -146,7 +189,7 @@ class Game extends React.Component<IProps, {}> {
         const averageTransactionsTime = this.props.transactionState.averageTransactionsTime;
         const gameStatus = this.props.gameState.status;
         const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
-        const {secondsCount} = this.state;
+        const {secondsCount, dayTransactionCounts, gameTransactionCounts} = this.state;
 
         return (
             <div className={'game-wrapper'}>
@@ -166,6 +209,10 @@ class Game extends React.Component<IProps, {}> {
                             averageTransactionsTime={averageTransactionsTime}
                         />
                     }
+                    {gameStatus === 'finished' && <GlobalStatisticsBoard
+                        dayTransactionCounts={dayTransactionCounts}
+                        gameTransactionCounts={gameTransactionCounts}
+                    />}
                     <div className={'play-zone-wrapper'}>
                         <div className={`square-container-wrapper ${gameStatus}`}>
                             {gameStatus === 'unstarted' ? <div>
