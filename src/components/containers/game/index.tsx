@@ -16,6 +16,7 @@ import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
 import {FacebookShareButton, TwitterShareButton} from "react-share";
 
+const tapIcon = require('../../../shared/images/icons/tap.svg');
 const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
 const shareFacebookIcon = require('../../../shared/images/share-facebook-2.svg');
 
@@ -168,7 +169,7 @@ class Game extends React.Component<IProps, {}> {
 
                         <button className={`click-zone`} onClick={this.makeTransaction}>
                             <div className={'tap-icon-wrapper'}>
-                                <img src="../../../shared/images/icons/tap.svg" alt="tap"/>
+                                <img src={tapIcon} alt="tap"/>
                                 <p>tap <br/> here</p>
                             </div>
                            <p className={'info'}>Or use keyboard button</p>
