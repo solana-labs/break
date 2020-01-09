@@ -41,7 +41,6 @@ export default class DefaultWebSocketService implements IDefaultWebSocketService
         };
 
         this.sockInstance.onmessage = (event: any) => {
-            //console.log('ws - ', event.data);
             appStore.dispatch(setTransactionsPerSecond(+event.data))
         };
 
@@ -56,7 +55,6 @@ export default class DefaultWebSocketService implements IDefaultWebSocketService
 
    async sendInfo(tps: number) {
         if (this.sockInstance) {
-            //console.log('send - ', tps);
             this.sockInstance.send(tps);
         }
     }

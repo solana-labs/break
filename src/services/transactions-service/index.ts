@@ -51,27 +51,22 @@ export default class TransactionsService implements ITransactionsService {
             lamportsCount: 1000
         };
 
-        try {
-            this.keypair = new Account();
+        this.keypair = new Account();
 
-            const transaction = await SystemProgram.transfer(
-                this.account.publicKey,
-                this.keypair.publicKey,
-                transactionInfo.lamportsCount
-            );
+        const transaction = await SystemProgram.transfer(
+            this.account.publicKey,
+            this.keypair.publicKey,
+            transactionInfo.lamportsCount
+        );
 
-            const t1 = performance.now();
-            const response = await sendAndConfirmRecentTransaction(this.connection, transaction, this.account);
-            const t2 = performance.now();
+        const t1 = performance.now();
+        const response = await sendAndConfirmRecentTransaction(this.connection, transaction, this.account);
+        const t2 = performance.now();
 
-            const time = parseFloat(((t2 - t1) / 1000).toFixed(3));
+        const time = parseFloat(((t2 - t1) / 1000).toFixed(3));
 
-            transactionInfo.confirmationTime = time;
-            transactionInfo.signature = response;
-
-        } catch (e) {
-            console.log('error - ', e);
-        }
+        transactionInfo.confirmationTime = time;
+        transactionInfo.signature = response;
 
         return transactionInfo;
     };

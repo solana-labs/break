@@ -23,7 +23,6 @@
   pointer-events: none;
   @include transition;
 
-
   &.completed {
     background-color: $green;
     pointer-events: auto;
@@ -33,6 +32,12 @@
       opacity: 0.8;
       @include transition;
     }
+  }
+
+  &.no-event{
+    background-color: #3D3D3D;
+    border: 1px solid #3D3D3D;
+    pointer-events: none;
   }
 
   &.completed-after {

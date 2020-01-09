@@ -31,11 +31,10 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
 
     private squareInfo = () => {
         const {status} = this.props;
+        const {confirmationTime, signature, lamportsCount} = this.props.information;
+        const solCount = lamportsCount / 1000000000;
 
-        if (status === 'completed' || status === 'completed-after') {
-            const {confirmationTime, signature, lamportsCount} = this.props.information;
-            const solCount = lamportsCount / 1000000000;
-
+        if (signature && status === 'completed' || status === 'completed-after') {
             return <div className={'square-info-container'}>
                 <p>Confirmation Time: {confirmationTime} sec</p>
                 <p>SOL: {solCount}</p>
@@ -66,7 +65,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
               target={'_blank'}
               onMouseOver={() => this.toggle(true)}
               onMouseOut={() => this.toggle(false)}
-              className={`square ${status} ${hovered} ${this.animatedClass}`}
+              className={`square ${status} ${hovered} ${!signature ? 'no-event':''} ${this.animatedClass}`}
             />}
             isOpen={this.state.popoverOpen}
             enterExitTransitionDurationMs={5}
