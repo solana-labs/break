@@ -6,7 +6,6 @@ namespace IGame {
     }
 
     export interface ModelState {
-        status: string
         statistics: ModelStatistics
     }
 }

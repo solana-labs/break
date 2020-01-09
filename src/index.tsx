@@ -8,13 +8,13 @@ import '@styles/global.scss';
 
 import App from './app';
 import appStore from "./store";
-import service from "./services";
+import Service from "./services";
 import {ServiceProvider} from "./components/context/service-context";
 import {HelmetSet} from "./components/presentational/helmet-set";
 
 ReactDOM.render((
     <Provider store={appStore}>
-        <ServiceProvider value={service}>
+        <ServiceProvider value={new Service()}>
             <BrowserRouter>
                 <HelmetSet/>
                 <App/>

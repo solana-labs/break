@@ -8,6 +8,6 @@ interface IProps {
 
 export const GlitchH1 = ({children}: IProps) => {
     return (
-        <h1 className={'glitch'} data-text={children}>{children}</h1>
+        <h1 className={'glitch-text'} data-text={children}>{children}</h1>
     );
 };

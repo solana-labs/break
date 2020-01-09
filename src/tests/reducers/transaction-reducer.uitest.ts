@@ -18,6 +18,7 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 0,
             averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
         };
 
         const action = {
@@ -53,6 +54,7 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 2,
             averageTransactionsTime: 0.1,
+            transactionsPerSecond: 0,
         };
 
         const initState = {
@@ -69,6 +71,7 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 2,
             averageTransactionsTime: 0.1,
+            transactionsPerSecond: 0,
         };
 
         const action = {
@@ -84,7 +87,8 @@ describe('test function transactionReducer', () => {
         const expectedState = {
             transactions: [],
             countCompletedTransactions: 0,
-            averageTransactionsTime: 0
+            averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
         };
 
         const action = {
@@ -111,12 +115,14 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 2,
             averageTransactionsTime: 0.1,
+            transactionsPerSecond: 0,
         };
 
         const expectedState = {
             transactions: [],
             countCompletedTransactions: 0,
-            averageTransactionsTime: 0
+            averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
         };
 
         const action = {
@@ -133,6 +139,7 @@ describe('test function transactionReducer', () => {
             transactions: [],
             countCompletedTransactions: 0,
             averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
         };
 
         const action = {
@@ -159,6 +166,7 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 2,
             averageTransactionsTime: 0.1,
+            transactionsPerSecond: 0,
         };
 
         const action = {
@@ -194,6 +202,7 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 0,
             averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
         };
 
         const info: TransactionInfoService = {
@@ -236,6 +245,57 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 1,
             averageTransactionsTime: 0.5,
+            transactionsPerSecond: 0,
+        };
+
+        const result = transactionReducer(initState, action);
+
+        expect(result).toEqual(expectedState);
+    });
+
+    it('test set tps - 1 ', () => {
+        const initState = {
+            transactions: [],
+            countCompletedTransactions: 0,
+            averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
+        };
+
+        const action = {
+            type: 'SET_TPS',
+            payload: 10
+        };
+
+        const expectedState = {
+            transactions: [],
+            countCompletedTransactions: 0,
+            averageTransactionsTime: 0,
+            transactionsPerSecond: 2,
+        };
+
+        const result = transactionReducer(initState, action);
+
+        expect(result).toEqual(expectedState);
+    });
+
+    it('test set tps - 2 ', () => {
+        const initState = {
+            transactions: [],
+            countCompletedTransactions: 0,
+            averageTransactionsTime: 0,
+            transactionsPerSecond: 0,
+        };
+
+        const action = {
+            type: 'SET_TPS',
+            payload: 9.5
+        };
+
+        const expectedState = {
+            transactions: [],
+            countCompletedTransactions: 0,
+            averageTransactionsTime: 0,
+            transactionsPerSecond: 1.9,
         };
 
         const result = transactionReducer(initState, action);

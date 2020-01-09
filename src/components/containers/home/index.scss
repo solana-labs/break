@@ -24,11 +24,6 @@
         max-width: 50%;
         h1{
             padding-bottom: 3rem;
-            width: max-content;
-
-            @media (max-width: 1023px) {
-                width: auto;
-            }
         }
 
         p{

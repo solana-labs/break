@@ -1,10 +1,11 @@
 import ITransaction from "./model";
-import {ADD_TRANSACTION, RESET_TRANSACTIONS, SET_INFO} from "../../actions/types";
+import {ADD_TRANSACTION, RESET_TRANSACTIONS, SET_INFO, SET_TPS} from "../../actions/types";
 
 const initState: ITransaction.ModelState = {
     transactions: [],
     countCompletedTransactions: 0,
     averageTransactionsTime: 0,
+    transactionsPerSecond: 0,
 };
 
 const transactionReducer = (state = initState, action: any) => {
@@ -60,9 +61,17 @@ const transactionReducer = (state = initState, action: any) => {
         }
         case RESET_TRANSACTIONS: {
             return {
+                ...state,
                 transactions: [],
                 countCompletedTransactions: 0,
-                averageTransactionsTime: 0
+                averageTransactionsTime: 0,
+            }
+        }
+        case SET_TPS: {
+            const tps = action.payload / 5;
+            return {
+                ...state,
+                transactionsPerSecond: tps
             }
         }
         default:

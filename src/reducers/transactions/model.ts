@@ -1,4 +1,3 @@
-import {Maybe} from "../../toolbox/custom-types";
 
 namespace ITransaction {
     export interface Model {
@@ -17,6 +16,7 @@ namespace ITransaction {
         transactions: Model[]
         countCompletedTransactions: number
         averageTransactionsTime: number
+        transactionsPerSecond: number
     }
 }
 

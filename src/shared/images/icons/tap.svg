@@ -1,0 +1,70 @@
+<svg width="238" height="238" viewBox="0 0 238 238" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="119" cy="119" r="119" fill="#00FFAD" fill-opacity="0.1">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="2.3s"
+                 begin="1s"
+                 values="110 ; 119; 110"
+                 repeatCount="indefinite"/>
+        <animate attributeName="fill-opacity"
+                 attributeType="XML"
+                 dur="2.3s"
+                 begin="1s"
+                 values="0.1 ; 0;"
+                 repeatCount="indefinite"/>
+    </circle>
+    <circle cx="119" cy="119" r="118.5" stroke="#006A48" stroke-opacity="0.4">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="2.3s"
+                 begin="1s"
+                 values="110 ; 118.5; 110"
+                 repeatCount="indefinite"/>
+        <animate attributeName="fill-opacity"
+                 attributeType="XML"
+                 dur="2.3s"
+                 begin="1s"
+                 values="0.4 ; 0; 0.4"
+                 repeatCount="indefinite"/>
+    </circle>
+    <circle cx="119" cy="119" r="95" fill="#00FFAD" fill-opacity="0.1">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="3.3s"
+                 begin="1s"
+                 values="85 ; 95; 85"
+                 repeatCount="indefinite"/>
+    </circle>
+    <circle cx="119" cy="119" r="94.5" stroke="#006A48" stroke-opacity="0.6">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="3.3s"
+                 begin="1s"
+                 values="85 ; 94.5; 85"
+                 repeatCount="indefinite"/>
+    </circle>
+    <circle cx="119" cy="119" r="71" fill="#00FFAD" fill-opacity="0.08">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="1.3s"
+                 begin="1s"
+                 values="65 ; 71; 65"
+                 repeatCount="indefinite"/>
+    </circle>
+    <circle cx="119" cy="119" r="70.5" stroke="#006A48" stroke-opacity="0.8">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="1.3s"
+                 begin="1s"
+                 values="65 ; 70.5; 65"
+                 repeatCount="indefinite"/>
+    </circle>
+    <circle cx="119" cy="119" r="46.5" fill="#00FFAD" fill-opacity="0.1" stroke="#006A48">
+        <animate attributeName="r"
+                 attributeType="XML"
+                 dur="1.3s"
+                 begin="1s"
+                 values="40 ; 46.5; 40"
+                 repeatCount="indefinite"/>
+    </circle>
+</svg>

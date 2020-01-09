@@ -7,7 +7,6 @@ import Popover from "react-popover";
 interface IProps {
     status: string
     information: ITransaction.TransactionInfo
-    gameStatus: string
 }
 
 interface IState {
@@ -31,9 +30,9 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     };
 
     private squareInfo = () => {
-        const {gameStatus, status} = this.props;
+        const {status} = this.props;
 
-        if (gameStatus === 'finished' && (status === 'completed' || status === 'completed-after')) {
+        if (status === 'completed' || status === 'completed-after') {
             const {confirmationTime, signature, lamportsCount} = this.props.information;
             const solCount = lamportsCount / 1000000000;
 
@@ -53,7 +52,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     };
 
     render() {
-        const {gameStatus, status} = this.props;
+        const {status} = this.props;
         const {signature} = this.props.information;
         const hovered = this.state.popoverOpen ? 'hovered' : '';
 
@@ -67,7 +66,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
               target={'_blank'}
               onMouseOver={() => this.toggle(true)}
               onMouseOut={() => this.toggle(false)}
-              className={`square ${status} ${gameStatus} ${hovered} ${this.animatedClass}`}
+              className={`square ${status} ${hovered} ${this.animatedClass}`}
             />}
             isOpen={this.state.popoverOpen}
             enterExitTransitionDurationMs={5}

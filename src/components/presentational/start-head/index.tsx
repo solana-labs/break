@@ -3,25 +3,29 @@ import * as React from 'react';
 import './index.scss';
 
 interface IProps {
-    secondsCount: number
     transactionsCreated: number
+    confirmedCount: number
     averageTransactionsTime: number
 }
 
-export const StartHead = ({secondsCount, transactionsCreated, averageTransactionsTime}: IProps) => {
+export const StartHead = ({transactionsCreated, averageTransactionsTime, confirmedCount}: IProps) => {
     return (
         <div className={'start-head-wrapper'}>
             <div className={'timer'}>
-                <p>Time Left</p>
-                <p>{secondsCount} sec</p>
-            </div>
-            <div className={'counter'}>
                 <p>Transactions Created</p>
                 <p>{transactionsCreated}</p>
             </div>
-            <div className={'processing'}>
-                <p>Avg. Transactions Time</p>
-                <p>{averageTransactionsTime} sec</p>
+            <div className={'counter'}>
+                <p>Transactions Confirmed</p>
+                <p>{confirmedCount}</p>
+            </div>
+            <div className={'capacity'}>
+                <p>Solana Capacity Used</p>
+                <p> %</p>
+            </div>
+            <div className={'speed'}>
+                <p>Transactions per Second</p>
+                <p> </p>
             </div>
         </div>
     );

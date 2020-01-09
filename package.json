@@ -20,6 +20,7 @@
     "axios": "^0.19.0",
     "gsap": "^3.0.4",
     "http-server": "^0.12.0",
+    "net": "^1.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-helmet": "^5.2.1",
@@ -28,6 +29,8 @@
     "react-router-dom": "^5.0.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
+    "sockjs-client": "^1.4.0",
+    "stompjs": "^2.3.3",
     "webpack-cli": "^3.3.6",
     "webpack-merge": "^4.2.1"
   },

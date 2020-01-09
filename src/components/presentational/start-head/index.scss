@@ -6,13 +6,13 @@
     justify-content: space-between;
     align-items: center;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     grid-template-rows: auto;
     grid-column-gap: 2rem;
     padding-bottom: 2rem;
 
     @media (max-width: 700px) {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
         grid-gap: 1.2rem;
     }
 
@@ -63,11 +63,11 @@
         background-image: url("../../../shared/images/icons/arrows.svg");
     }
 
-    .processing{
+    .capacity{
+        background-image: url("../../../shared/images/icons/capacity.svg");
+    }
+
+    .speed{
         background-image: url("../../../shared/images/icons/processing.svg");
-        @media (max-width: 700px) {
-            grid-column-start: 1;
-            grid-column-end: 3;
-        }
     }
 }

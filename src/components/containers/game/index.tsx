@@ -4,7 +4,6 @@ import {connect} from "react-redux";
 
 import './index.scss';
 import ITransaction from "../../../reducers/transactions/model";
-import IGame from "../../../reducers/game/model";
 import TransactionSquare from "../transaction-square";
 import {IRootAppReducerState} from "../../../reducer/model";
 import {addTransaction} from "../../../actions/add-tarnsaction";
@@ -12,16 +11,13 @@ import {setTransactionInfo} from "../../../actions/set-transaction-info";
 import {IService} from "../../../services/model";
 import {withService} from "../../hoc-helpers/with-service";
 import {ITransactionsService, TransactionInfoService} from "../../../services/transactions-service/model";
-import {setStatusGame} from "../../../actions/set-status-game";
-import {setStatisticsGame} from "../../../actions/set-statistics-game";
-import {resetStatisticsGame} from "../../../actions/reset-statistics-game";
-import {resetTransactions} from "../../../actions/reset-tarnsactions";
-import {Button} from "../../ui/button";
-import {StartHead} from "../../presentational/start-head";
-import FinishHead from "../../presentational/finish-head";
 import {IGameService} from "../../../services/game-service/model";
-import {GlobalStatisticsBoard} from "../../presentational/global-statistics-board";
 import {setStatusLoader} from "../../../actions/set-status-loader";
+import {IDefaultWebSocketService} from "../../../services/web-socket/model";
+import {FacebookShareButton, TwitterShareButton} from "react-share";
+
+const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
+const shareFacebookIcon = require('../../../shared/images/share-facebook-2.svg');
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -29,107 +25,54 @@ interface IDispatchProps {
 
 interface IStateProps {
     transactionState: ITransaction.ModelState;
-    gameState: IGame.ModelState;
 }
 
 interface IServiceProps {
     transactionsService: ITransactionsService
     gameService: IGameService
+    wsService: IDefaultWebSocketService
 }
 
 interface IState {
-    secondsCount: number,
-    dayTransactionCounts: number,
-    gameTransactionCounts: number
+    allTransactionConfirmed: number,
+    transactionPerSecond: number
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
 
 class Game extends React.Component<IProps, {}> {
     _isMounted = false;
+    _timerId: any;
+    _timeoutId: any;
 
     state: IState = {
-        secondsCount: 15,
-        dayTransactionCounts: 0,
-        gameTransactionCounts: 0
+        allTransactionConfirmed: 0,
+        transactionPerSecond: 0
     };
 
     private makeTransaction = async () => {
-        const transactions = this.props.transactionState.transactions;
-        let status = this.props.gameState.status;
-        if (status !== 'started') return;
+        this.updateScroll();
 
-        const countOfTransactions: number = transactions.length;
-        const id = 'transaction' + countOfTransactions;
+        const transactions = this.props.transactionState.transactions;
+
+        const totalCount: number = transactions.length;
+        const id = 'transaction' + totalCount;
 
         this.props.dispatch(addTransaction());
 
-        const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(countOfTransactions);
+        const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
 
-        if(this.props.gameState.status === 'started') {
-            const updatedTransaction: ITransaction.Model = {
-                id, info, status: 'completed',
-            };
-
-            this.props.dispatch(setTransactionInfo(updatedTransaction));
+        if (this._isMounted) {
+            this.setState({
+                allTransactionConfirmed: this.state.allTransactionConfirmed + 1,
+            })
         }
-        else if (this.props.gameState.status === 'finished') {
-            const updatedTransaction: ITransaction.Model = {
-                id, info, status: 'completed-after',
-            };
 
-            this.props.dispatch(setTransactionInfo(updatedTransaction));
-        }
-    };
+        const updatedTransaction: ITransaction.Model = {
+            id, info, status: 'completed',
+        };
 
-    private timer = async () => {
-        let timerId = setInterval(() => {
-            if (this._isMounted) {
-                this.setState({
-                    secondsCount: this.state.secondsCount - 1,
-                })
-            }
-        }, 1000);
-
-        setTimeout(() => {
-            clearInterval(timerId);
-            if (this._isMounted) {
-                this.finishGame();
-            }
-        }, 15000);
-    };
-
-    private finishGame = async () => {
-        this.props.dispatch(setStatusGame('finished'));
-
-        const totalCount = this.props.transactionState.transactions.length;
-        const completedCount = this.props.transactionState.countCompletedTransactions;
-
-        const percentCapacity = parseFloat(((completedCount / (50000 * 15)) * 100).toFixed(4));
-
-        this.props.dispatch(setStatisticsGame({totalCount, completedCount, percentCapacity}));
-
-        await this.props.gameService.saveGame({
-            transactions: completedCount
-        });
-
-        this.getDayTransactionCounts();
-        this.getGameTransactionCounts();
-    };
-
-    private startGame = async () => {
-        this.props.dispatch(setStatusGame('started'));
-        this.timer();
-    };
-
-    private tryAgain = () => {
-        this.props.dispatch(setStatusGame('unstarted'));
-        this.props.dispatch(resetStatisticsGame());
-        this.props.dispatch(resetTransactions());
-
-        this.setState({
-            secondsCount: 15,
-        });
+        this.props.dispatch(setTransactionInfo(updatedTransaction));
     };
 
     private updateScroll = () => {
@@ -139,102 +82,113 @@ class Game extends React.Component<IProps, {}> {
         }
     };
 
-    private getDayTransactionCounts = async() => {
-        const response = await this.props.gameService.getDailyTransactionCounts();
-
-        if(this._isMounted){
-            this.setState({
-                dayTransactionCounts: response
-            })
-        }
-    };
-
-    private getGameTransactionCounts = async () => {
-        const response = await this.props.gameService.getGameTransactionCounts();
-
-        if(this._isMounted){
-            this.setState({
-                gameTransactionCounts: response
-            });
-        }
-    };
-
     private setConnection = async () => {
         this.props.dispatch(setStatusLoader(true));
         await this.props.transactionsService.setConnection();
         this.props.dispatch(setStatusLoader(false));
     };
 
+    private setTimerForSendTransaction = () => {
+        this._timerId = setInterval(() => {
+                const transactionConfirmedLater = this.state.allTransactionConfirmed;
+
+                this._timeoutId = setTimeout(() => {
+                    const transactionConfirmedNow = this.state.allTransactionConfirmed;
+                    if (this._isMounted) {
+                        const transactionPerSecond = transactionConfirmedNow - transactionConfirmedLater;
+                        this.setState({
+                            transactionPerSecond,
+                        });
+
+                        if (transactionPerSecond)
+                            this.props.wsService.sendInfo(transactionPerSecond);
+                    }
+                }, 1000);
+        }, 1000);
+    };
+
     componentDidMount() {
         this._isMounted = true;
+        this.props.wsService.webSocket();
 
         this.setConnection();
-
+        this.setTimerForSendTransaction();
         document.addEventListener('keyup', (event) => {
             this.makeTransaction();
         });
     }
 
-    componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<{}>, snapshot?: any): void {
-        this.updateScroll()
-    }
-
     componentWillUnmount() {
         this._isMounted = false;
-        this.tryAgain();
+        clearInterval(this._timerId);
+        clearTimeout(this._timeoutId);
     }
 
     render() {
         const transactions = this.props.transactionState.transactions;
-        const averageTransactionsTime = this.props.transactionState.averageTransactionsTime;
-        const gameStatus = this.props.gameState.status;
-        const {totalCount, completedCount, percentCapacity} = this.props.gameState.statistics;
-        const {secondsCount, dayTransactionCounts, gameTransactionCounts} = this.state;
+        const completedCount = this.props.transactionState.countCompletedTransactions;
+        const tps = this.props.transactionState.transactionsPerSecond;
+        const percentCapacity = parseFloat(((tps / 50000) * 100).toFixed(4));
 
         return (
             <div className={'game-wrapper'}>
                 <div className={'container'}>
-                    {gameStatus === 'finished' ?
-                        <FinishHead
-                            completedCount={completedCount}
-                            totalCount={totalCount}
-                            percentCapacity={percentCapacity}
-                            averageTransactionsTime={averageTransactionsTime}
-                            tryAgain={this.tryAgain}
-                        />
-                        :
-                        <StartHead
-                            secondsCount={secondsCount}
-                            transactionsCreated={transactions.length}
-                            averageTransactionsTime={averageTransactionsTime}
-                        />
-                    }
-                    {gameStatus === 'finished' && <GlobalStatisticsBoard
-                        dayTransactionCounts={dayTransactionCounts}
-                        gameTransactionCounts={gameTransactionCounts}
-                    />}
                     <div className={'play-zone-wrapper'}>
-                        <div className={`square-container-wrapper ${gameStatus}`}>
-                            {gameStatus === 'unstarted' ? <div>
-                                    <Button typeButton={true} name={'Begin'}
-                                            onClick={this.startGame}
-                                            animate={'animated infinite pulse'}/>
-                                </div> :
-                                <div id={'scroll-square-container'}
-                                     className={`square-container`}
-                                     onClick={this.makeTransaction}
-                                     tabIndex={0}
-                                >
-                                    {transactions && transactions.map((item: ITransaction.Model) => (
-                                        <TransactionSquare
-                                            key={item.id}
-                                            gameStatus={gameStatus}
-                                            status={item.status}
-                                            information={item.info}
-                                        />
-                                    ))}
-                                </div>
-                            }
+                        <div className={'timer'}>
+                            <p>Transactions Created</p>
+                            <p>{transactions.length}</p>
+                        </div>
+                        <div className={'counter'}>
+                            <p>Transactions Confirmed</p>
+                            <p>{completedCount}</p>
+                        </div>
+                        <div className={'capacity'}>
+                            <p>Solana Capacity Used</p>
+                            <p>{percentCapacity} %</p>
+                        </div>
+                        <div className={'speed'}>
+                            <p>Transactions per Second</p>
+                            <p>{tps}</p>
+                        </div>
+
+                        <div className={`square-container-wrapper`}>
+                            <div id={'scroll-square-container'}
+                                 className={`square-container`}
+                                 tabIndex={0}
+                            >
+                                {transactions && transactions.map((item: ITransaction.Model) => (
+                                    <TransactionSquare
+                                        key={item.id}
+                                        status={item.status}
+                                        information={item.info}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <button className={`click-zone`} onClick={this.makeTransaction}>
+                            <div className={'tap-icon-wrapper'}>
+                                <img src="../../../shared/images/icons/tap.svg" alt="tap"/>
+                                <p>tap <br/> here</p>
+                            </div>
+                           <p className={'info'}>Or use keyboard button</p>
+                        </button>
+                    </div>
+                    <div className={'share-block-wrapper'}>
+                        <a className={'build-button'} target={'_blank'} href="https://solana.com/developers/">build on solana</a>
+                        <div className={'share-block'}>
+                            <TwitterShareButton
+                                className={'share-button'}
+                                title={`Currently, all players online are creating ${tps} TPS, which means they are using ${percentCapacity}% of Solana capacity. \n\nYou can join us and try to break Solana:`}
+                                url={'https://break.solana.com/'}>
+                                <img src={shareTwitterIcon}/>
+                            </TwitterShareButton>
+                            <FacebookShareButton
+                                className={'share-button'}
+                                quote={`Currently, all players online are creating ${tps} TPS, which means they are using ${percentCapacity}% of Solana capacity. \n\nYou can join us and try to break Solana:`}
+                                url={'https://break.solana.com/'}>
+                                <img src={shareFacebookIcon}/>
+                            </FacebookShareButton>
                         </div>
                     </div>
                 </div>
@@ -243,9 +197,9 @@ class Game extends React.Component<IProps, {}> {
     }
 }
 
-const mapServicesToProps = ({transactionsService, gameService}: IService) => ({transactionsService, gameService});
+const mapServicesToProps = ({transactionsService, gameService, wsService}: IService) => ({transactionsService, gameService, wsService});
 
-const mapStateToProps = ({transactionState, gameState}: IRootAppReducerState) => ({transactionState, gameState});
+const mapStateToProps = ({transactionState}: IRootAppReducerState) => ({transactionState});
 
 export default connect<IStateProps, IDispatchProps, {}>(mapStateToProps as any)(
     withService(mapServicesToProps)(Game)
