@@ -12,7 +12,7 @@ export default class Home extends React.Component {
             <div className={'home-wrapper'}>
                 <div className={'container'}>
                     <div className={'main-info'}>
-                        <GlitchH1>Break Solana</GlitchH1>
+                        <GlitchH1>Can You Break Solana?</GlitchH1>
                         <p>This quick game gives you the chance to break the most performant blockchain in the world.
                             Every click submits a transaction. At the end, we will show you how close you came to
                             overwhelming the system.</p>
