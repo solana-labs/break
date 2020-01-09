@@ -15,7 +15,6 @@ import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
 
-
 interface IDispatchProps {
     dispatch: Dispatch
 }
@@ -115,10 +114,6 @@ class Game extends React.Component<IProps, {}> {
             this.makeTransaction();
         });
     }
-
-    // componentDidUpdate() {
-    //     this.updateScroll()
-    // }
 
     componentWillUnmount() {
         this._isMounted = false;

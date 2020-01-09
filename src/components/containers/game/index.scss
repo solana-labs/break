@@ -16,7 +16,9 @@
     }
 
     .play-zone-wrapper{
+        max-width: 100%;
         display: grid;
+        grid-template-columns: repeat(4, calc(25% - 6rem/4));
         grid-template-areas:
                 "timer             counter          capacity         speed"
                 "square-container  square-container square-container click-zone";
@@ -24,6 +26,7 @@
         grid-gap: 2rem;
 
         @media (max-width: 1024px) {
+            grid-template-columns: repeat(4, calc(50% - 2rem/2));
             grid-template-areas:
                     "timer            counter"
                     "capacity         speed"
@@ -38,7 +41,7 @@
 
         .timer, .counter, .capacity, .speed{
             height: 100%;
-            width: 100%;
+            max-width: 100%;
             background-color: #1B1B1B;
             padding: 2.4rem;
             border-top: 1px solid #007C54;
@@ -66,6 +69,10 @@
                 font-size: 4.8rem;
                 line-height: 4.8rem;
                 font-weight: 600;
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
 
                 @media (max-width: 700px) {
                     font-size: 2rem;
