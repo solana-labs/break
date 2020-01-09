@@ -15,6 +15,7 @@ import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
 import {FacebookShareButton, TwitterShareButton} from "react-share";
+import {sendAndConfirmRecentTransaction} from "@solana/web3.js";
 
 const tapIcon = require('../../../shared/images/icons/tap.svg');
 const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
@@ -61,19 +62,24 @@ class Game extends React.Component<IProps, {}> {
 
         this.props.dispatch(addTransaction());
 
-        const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
+        // const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
 
-        if (this._isMounted) {
-            this.setState({
-                allTransactionConfirmed: this.state.allTransactionConfirmed + 1,
-            })
+        try {
+            const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
+            const updatedTransaction: ITransaction.Model = {
+                id, info, status: 'completed',
+            };
+
+            if (this._isMounted) {
+                this.setState({
+                    allTransactionConfirmed: this.state.allTransactionConfirmed + 1,
+                })
+            }
+
+            this.props.dispatch(setTransactionInfo(updatedTransaction));
+        } catch (e) {
+            console.log(e);
         }
-
-        const updatedTransaction: ITransaction.Model = {
-            id, info, status: 'completed',
-        };
-
-        this.props.dispatch(setTransactionInfo(updatedTransaction));
     };
 
     private updateScroll = () => {
