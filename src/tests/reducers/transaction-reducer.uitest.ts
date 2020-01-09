@@ -54,6 +54,7 @@ describe('test function transactionReducer', () => {
             ],
             countCompletedTransactions: 2,
             averageTransactionsTime: 0.1,
+            transactionsPerSecond: 0,
         };
 
         const initState = {

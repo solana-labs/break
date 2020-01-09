@@ -3,7 +3,6 @@ import gameReducer from "../../reducers/game";
 describe('test function gameReducer', () => {
     it('set status game', () => {
         const expectedState = {
-            status: 'started',
             statistics: {
                 totalCount: 0,
                 completedCount: 0,
@@ -12,7 +11,6 @@ describe('test function gameReducer', () => {
         };
 
         const action = {
-            payload: 'started',
             type: 'SET_STATUS_GAME',
         };
 
@@ -23,7 +21,6 @@ describe('test function gameReducer', () => {
 
     it('set status game - 2', () => {
         const initState = {
-            status: 'started',
             statistics: {
                 totalCount: 10,
                 completedCount: 9,
@@ -32,7 +29,6 @@ describe('test function gameReducer', () => {
         };
 
         const expectedState = {
-            status: 'finished',
             statistics: {
                 totalCount: 10,
                 completedCount: 9,
@@ -52,7 +48,6 @@ describe('test function gameReducer', () => {
 
     it('set statistics game', () => {
         const expectedState = {
-            status: 'unstarted',
             statistics: {
                 totalCount: 10,
                 completedCount: 10,
@@ -76,7 +71,6 @@ describe('test function gameReducer', () => {
 
     it('set statistics game - 2', () => {
         const initState = {
-            status: 'started',
             statistics: {
                 totalCount: 0,
                 completedCount: 0,
@@ -85,7 +79,6 @@ describe('test function gameReducer', () => {
         };
 
         const expectedState = {
-            status: 'started',
             statistics: {
                 totalCount: 10,
                 completedCount: 10,
@@ -109,7 +102,6 @@ describe('test function gameReducer', () => {
 
     it('reset statistics game', () => {
         const expectedState = {
-            status: 'unstarted',
             statistics: {
                 totalCount: 0,
                 completedCount: 0,
@@ -128,7 +120,6 @@ describe('test function gameReducer', () => {
 
     it('reset statistics game - 2', () => {
         const initState = {
-            status: 'started',
             statistics: {
                 totalCount: 100,
                 completedCount: 100,
@@ -137,7 +128,6 @@ describe('test function gameReducer', () => {
         };
 
         const expectedState = {
-            status: 'unstarted',
             statistics: {
                 totalCount: 0,
                 completedCount: 0,
@@ -156,7 +146,6 @@ describe('test function gameReducer', () => {
 
     it('test with invalid action', () => {
         const expectedState = {
-            status: 'unstarted',
             statistics: {
                 totalCount: 0,
                 completedCount: 0,
@@ -175,7 +164,6 @@ describe('test function gameReducer', () => {
 
     it('test with invalid action - 2', () => {
         const initState = {
-            status: 'started',
             statistics: {
                 totalCount: 100,
                 completedCount: 100,
