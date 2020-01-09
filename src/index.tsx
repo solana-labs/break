@@ -12,11 +12,9 @@ import Service from "./services";
 import {ServiceProvider} from "./components/context/service-context";
 import {HelmetSet} from "./components/presentational/helmet-set";
 
-const service = new Service();
-
 ReactDOM.render((
     <Provider store={appStore}>
-        <ServiceProvider value={service}>
+        <ServiceProvider value={new Service()}>
             <BrowserRouter>
                 <HelmetSet/>
                 <App/>

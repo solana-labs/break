@@ -1,11 +1,10 @@
 import * as React from 'react';
-
-import service from "../../../services";
+import Service from "../../../services";
 
 const {
     Provider: ServiceProvider,
     Consumer: ServiceConsumer
-} = React.createContext(service);
+} = React.createContext(new Service());
 
 export {
     ServiceProvider,
