@@ -23,4 +23,44 @@
             height: 100%;
         }
     }
+
+    .copy-link-block{
+        margin-left: auto;
+        height: 100%;
+        background-color: #1B1B1B;
+        display: flex;
+        align-items: center;
+
+        @media (max-width: 700px) {
+
+        }
+
+        &>*:nth-child(1){
+            padding: 0 1.4rem;
+            background-color: #1B1B1B;
+            border: none;
+            box-shadow: none;
+            text-overflow: ellipsis;
+
+            &::selection{
+                background-color: $green;
+                color: $black;
+            }
+
+            @media (max-width: 700px) {
+                width: 12rem;
+            }
+        }
+
+        &>*:nth-child(2){
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1.4rem;
+            color: $green;
+            background-color: #313131;
+            cursor: pointer;
+        }
+    }
 }

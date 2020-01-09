@@ -14,6 +14,10 @@ import {ITransactionsService, TransactionInfoService} from "../../../services/tr
 import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
+import {FacebookShareButton, TwitterShareButton} from "react-share";
+
+const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
+const shareFacebookIcon = require('../../../shared/images/share-facebook-2.svg');
 
 interface IDispatchProps {
     dispatch: Dispatch
@@ -169,6 +173,23 @@ class Game extends React.Component<IProps, {}> {
                             </div>
                            <p className={'info'}>Or use keyboard button</p>
                         </button>
+                    </div>
+                    <div className={'share-block-wrapper'}>
+                        <a className={'build-button'} target={'_blank'} href="https://solana.com/developers/">build on solana</a>
+                        <div className={'share-block'}>
+                            <TwitterShareButton
+                                className={'share-button'}
+                                title={`Currently, all players online are creating ${tps} TPS, which means they are using ${percentCapacity}% of Solana capacity. \n\nYou can join us and try to break Solana:`}
+                                url={'https://break.solana.com/'}>
+                                <img src={shareTwitterIcon}/>
+                            </TwitterShareButton>
+                            <FacebookShareButton
+                                className={'share-button'}
+                                quote={`Currently, all players online are creating ${tps} TPS, which means they are using ${percentCapacity}% of Solana capacity. \n\nYou can join us and try to break Solana:`}
+                                url={'https://break.solana.com/'}>
+                                <img src={shareFacebookIcon}/>
+                            </FacebookShareButton>
+                        </div>
                     </div>
                 </div>
             </div>

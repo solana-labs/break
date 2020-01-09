@@ -26,7 +26,7 @@
         grid-gap: 2rem;
 
         @media (max-width: 1024px) {
-            grid-template-columns: repeat(4, calc(50% - 2rem/2));
+            grid-template-columns: repeat(2, 1fr);
             grid-template-areas:
                     "timer            counter"
                     "capacity         speed"
@@ -214,6 +214,73 @@
 
                 @media (max-width: 1024px) {
                     display: none;
+                }
+            }
+        }
+    }
+
+    .share-block-wrapper{
+        margin: auto;
+        display: flex;
+        padding-top: 2.4rem;
+
+        .build-button{
+            border: 1px solid #00FFAD;
+            font-size: 1.5rem;
+            line-height: 2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.8rem;
+            min-width: 23rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-right: 1.6rem;
+
+            &:hover{
+                background-color: $green;
+                color: $black;
+                @include transition-hover;
+            }
+        }
+
+        .share-block{
+            display: flex;
+
+            &>*:not(:last-child){
+                margin-right: 1.6rem;
+            }
+
+            .share-button{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 4.8rem;
+                height: 4.8rem;
+                border: 1px solid $green;
+                cursor: pointer;
+                @include transition-hover;
+
+                @media (max-width: 700px) {
+                    width: 6rem;
+                    height: 6rem;
+                }
+
+                &>img{
+                    width: 2.4rem;
+                    height: 2.4rem;
+                    filter: none;
+                    @include transition-hover;
+                }
+
+                &:hover{
+                    background-color: $green;
+                    @include transition-hover;
+                    &>img{
+                        filter: brightness(0%);
+                        @include transition-hover;
+                    }
                 }
             }
         }
