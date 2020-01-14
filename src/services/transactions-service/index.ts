@@ -24,7 +24,7 @@ export default class TransactionsService implements ITransactionsService {
         const {Account, Connection} = solanaWeb3;
 
         try {
-            const connection = new Connection('https://testnet.solana.com:8443/');
+            const connection = new Connection('http://testnet.solana.com:8899/');
             const clusterNodes = await connection.getClusterNodes();
 
             this.connectionArray = [];
