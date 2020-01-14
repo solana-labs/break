@@ -13,6 +13,8 @@ export default class TransactionsService implements ITransactionsService {
         const blockHash = await connection.getRecentBlockhash();
         const blockHash2 = await connection.getRecentBlockhash();
 
+        console.log('check')
+
         // checking if it is possible to get a new blockHash
         if(blockHash[0] !== blockHash2[0]){
             // if it's valid url connection
@@ -28,7 +30,7 @@ export default class TransactionsService implements ITransactionsService {
             const connection = new Connection('http://testnet.solana.com:8899/');
             const clusterNodes = await connection.getClusterNodes();
 
-            this.connectionArray = ['http://testnet.solana.com:8899/'];
+            this.connectionArray = [connection];
 
             await clusterNodes.forEach((obj: any) => {
                 const connection = new Connection(`http://${obj.rpc}`);
