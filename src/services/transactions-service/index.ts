@@ -28,7 +28,7 @@ export default class TransactionsService implements ITransactionsService {
             const connection = new Connection('http://testnet.solana.com:8899/');
             const clusterNodes = await connection.getClusterNodes();
 
-            this.connectionArray = [];
+            this.connectionArray = ['http://testnet.solana.com:8899/'];
 
             await clusterNodes.forEach((obj: any) => {
                 const connection = new Connection(`http://${obj.rpc}`);
