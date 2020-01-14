@@ -15,7 +15,6 @@ import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
 import {FacebookShareButton, TwitterShareButton} from "react-share";
-import {sendAndConfirmRecentTransaction} from "@solana/web3.js";
 
 const tapIcon = require('../../../shared/images/icons/tap.svg');
 const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
