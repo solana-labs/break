@@ -17,6 +17,7 @@ export default class TransactionsService implements ITransactionsService {
         if(blockHash[0] !== blockHash2[0]){
             // if it's valid url connection
             this.connectionArray.push(connection);
+            console.log('connection enable')
         }
     };
 
@@ -24,12 +25,12 @@ export default class TransactionsService implements ITransactionsService {
         const {Account, Connection} = solanaWeb3;
 
         try {
-            const connection = new Connection('https://testnet.solana.com:8443/');
+            const connection = new Connection('http://testnet.solana.com:8899/');
             const clusterNodes = await connection.getClusterNodes();
 
-            this.connectionArray = [];
+            this.connectionArray = ['http://testnet.solana.com:8899/'];
 
-            clusterNodes.forEach((obj: any) => {
+            await clusterNodes.forEach((obj: any) => {
                 const connection = new Connection(`http://${obj.rpc}`);
                 this.checkBlockHash(connection);
             });
@@ -44,7 +45,7 @@ export default class TransactionsService implements ITransactionsService {
 
                 this.secretKey = secKey;
 
-                await this.connectionArray[0].requestAirdrop(account.publicKey, 100000000000); // about 8 - 10 sec
+                await connection.requestAirdrop(account.publicKey, 100000000000); // about 8 - 10 sec
             } else {
                 this.secretKey = JSON.parse(secKey);
             }
