@@ -3,3 +3,4 @@ build/
 *.iml
 *.log
 /dist/
+node_modules
