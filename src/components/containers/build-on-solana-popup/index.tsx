@@ -8,12 +8,12 @@ import validationSet from "../../../utils/validation-set";
 
 
 interface IProps {
-    onClose(): void
+    onClose(): void;
 }
 
 interface IState {
-    email: string,
-    isValid: boolean
+    email: string;
+    isValid: boolean;
 }
 
 export default class BuildOnSolanaPopup extends React.Component<IProps, IState> {
@@ -51,7 +51,7 @@ export default class BuildOnSolanaPopup extends React.Component<IProps, IState> 
         }
     };
 
-    componentWillUnmount(): void {
+    componentWillUnmount() {
         this.setState({
             email: '',
             isValid: true

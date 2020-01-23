@@ -1,7 +1,6 @@
 import {IDefaultWebSocketService} from "./model";
 import appStore from "../../store";
 import {setTransactionsPerSecond} from "../../actions/set-transactions-per-second";
-import {hostname} from "os";
 
 const devUrl = 'ws://localhost:8080/transactions';
 const stagingUrl = 'wss://break-backend.herokuapp.com/transactions';
@@ -9,9 +8,9 @@ const prodUrl = 'wss://break-backend-prod.herokuapp.com/transactions';
 
 export default class DefaultWebSocketService implements IDefaultWebSocketService {
 
-    private sockInstance: any = null;
+    private sockInstance?: WebSocket;
 
-    private isProduction = () => {
+    private isProduction = (): string => {
         switch(process.env.NODE_ENV) {
             case 'development':
                 return devUrl;
@@ -26,10 +25,10 @@ export default class DefaultWebSocketService implements IDefaultWebSocketService
         }
     };
 
-    async webSocket() {
+    async webSocket(): Promise<void> {
         if (this.sockInstance) {
             this.sockInstance.close();
-            this.sockInstance = null;
+            this.sockInstance = undefined;
         }
 
         const url = this.isProduction();
@@ -53,7 +52,7 @@ export default class DefaultWebSocketService implements IDefaultWebSocketService
         };
     }
 
-   async sendInfo(tps: number) {
+   async sendInfo(tps: number): Promise<void> {
         if (this.sockInstance) {
             this.sockInstance.send(tps);
         }

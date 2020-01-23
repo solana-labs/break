@@ -5,12 +5,12 @@ import ITransaction from "../../../reducers/transactions/model";
 import Popover from "react-popover";
 
 interface IProps {
-    status: string
-    information: ITransaction.TransactionInfo
+    status: string;
+    information: ITransaction.TransactionInfo;
 }
 
 interface IState {
-    popoverOpen: boolean
+    popoverOpen: boolean;
 }
 
 export default class TransactionSquare extends React.Component<IProps, IState> {
@@ -59,18 +59,20 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
           <Popover
             className={'square-popover-wrapper'}
             body={this.squareInfo()}
-            children={<a
-              key={0}
-              href={`https://explorer.solana.com/transactions/${signature}`}
-              target={'_blank'}
-              onMouseOver={() => this.toggle(true)}
-              onMouseOut={() => this.toggle(false)}
-              className={`square ${status} ${hovered} ${!signature ? 'no-event':''} ${this.animatedClass}`}
-            />}
             isOpen={this.state.popoverOpen}
             enterExitTransitionDurationMs={5}
             preferPlace={'right'}
-          />
+          >
+                <a
+              key={0}
+              href={`https://explorer.solana.com/transactions/${signature}`}
+              target={'_blank'}
+              rel="noopener noreferrer"
+              onMouseOver={() => this.toggle(true)}
+              onMouseOut={() => this.toggle(false)}
+              className={`square ${status} ${hovered} ${!signature ? 'no-event':''} ${this.animatedClass}`}
+            />
+            </Popover>
         );
     }
 }

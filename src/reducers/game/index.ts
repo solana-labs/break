@@ -1,5 +1,5 @@
 import {RESET_STATISTICS_GAME, SET_STATISTICS_GAME} from "../../actions/types";
-import IGame from "./model";
+import * as IGame from "./model";
 
 const initState: IGame.ModelState = {
     statistics: {
@@ -9,7 +9,7 @@ const initState: IGame.ModelState = {
     }
 };
 
-const gameReducer = (state = initState, action: any) => {
+const gameReducer = (state = initState, action: any): IGame.ModelState => {
 
     switch (action.type) {
         case SET_STATISTICS_GAME: {

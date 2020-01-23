@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import './index.scss';
 
-const loaderImg = require('../../../shared/images/icons/loader.svg');
+import loaderImg from '@images/icons/loader.svg';
 
 interface IProps {
-    isOpen: boolean
-    text?: string
+    isOpen: boolean;
+    text?: string;
 }
 
 export const Loader = ({isOpen, text}: IProps) => {

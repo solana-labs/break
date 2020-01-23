@@ -1,6 +1,6 @@
 export interface IDefaultWebSocketService {
-    webSocket(): any
-    sendInfo(tps: number): any
+    webSocket(): any;
+    sendInfo(tps: number): any;
 }
 
 

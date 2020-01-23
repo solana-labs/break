@@ -10,11 +10,11 @@ import {IMapServicesToProps, withService} from "./components/hoc-helpers/with-se
 import {IRootAppReducerState} from "./reducer/model";
 import Header from "./components/containers/header";
 import {Loader} from "./components/ui/loader";
-import ILoader from "./reducers/loader/model";
+import * as ILoader from "./reducers/loader/model";
 
 interface IProps{
-    dispatch: Dispatch
-    loaderState: ILoader.ModelState
+    dispatch: Dispatch;
+    loaderState: ILoader.ModelState;
 }
 
 class App extends React.Component<IProps, {}> {
@@ -38,7 +38,7 @@ class App extends React.Component<IProps, {}> {
 
 const mapServicesToProps: IMapServicesToProps = ({  }: IService) => ({  });
 
-const mapStateToProps = ({loaderState}: IRootAppReducerState) => ({loaderState});
+const mapStateToProps = ({loaderState}: IRootAppReducerState): Partial<IRootAppReducerState> => ({loaderState});
 
 export default connect(mapStateToProps)(
     withService(mapServicesToProps)(App)

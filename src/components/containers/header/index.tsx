@@ -5,7 +5,7 @@ import {withRouter} from 'react-router-dom';
 
 import './index.scss';
 
-const logo = require('../../../shared/images/logo.svg');
+import logo from '@images/logo.svg';
 
 interface IProps extends RouteComponentProps {
     history: H.History;
@@ -14,7 +14,7 @@ interface IProps extends RouteComponentProps {
 class Header extends React.Component<IProps, {}> {
 
     private copyPath = () => {
-        let copyText: any = document.getElementById('break-game-link');
+        const copyText: any = document.getElementById('break-game-link');
 
         copyText.select();
         copyText.setSelectionRange(0, 99999);

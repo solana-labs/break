@@ -1,11 +1,7 @@
-namespace ILoader {
-    export interface Model {
-        isActive: boolean
-    }
-
-    export interface ModelState {
-        isActive: boolean
-    }
+export interface Model {
+    isActive: boolean;
 }
 
-export default ILoader;
+export interface ModelState {
+    isActive: boolean;
+}

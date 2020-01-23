@@ -1,100 +1,51 @@
-import {ITransactionsService, TransactionInfoService} from "./model";
-import * as solanaWeb3 from '@solana/web3.js';
+import {ITransactionsService, TransactionServiceInfo} from "./model";
+import * as w3 from '@solana/web3.js';
 import {sendAndConfirmRecentTransaction} from '@solana/web3.js';
 
 
 export default class TransactionsService implements ITransactionsService {
-    account: any;
-    keypair: any;
-    secretKey: any;
-    connectionArray: any;
+    account?: w3.Account;
+    connection = new w3.Connection('http://testnet.solana.com:8899/', 'recent');
 
-    checkBlockHash = async (connection: any) => {
-        const blockHash = await connection.getRecentBlockhash();
-        const blockHash2 = await connection.getRecentBlockhash();
-
-        console.log('check')
-
-        // checking if it is possible to get a new blockHash
-        if(blockHash[0] !== blockHash2[0]){
-            // if it's valid url connection
-            this.connectionArray.push(connection);
-            console.log('connection enable')
+    async initialize(): Promise<void> {
+        let secretKey;
+        const secretKeyString = localStorage.getItem('secretKey');
+        if (!secretKeyString) {
+            const account = new w3.Account();
+            secretKey = account.secretKey;
+            localStorage.setItem('secretKey', secretKey.toString());
+            await this.connection.requestAirdrop(account.publicKey, 100000000000);
+        } else {
+            secretKey = Buffer.from(secretKeyString);
         }
+
+        this.account = new w3.Account(secretKey);
+        const balance = await this.connection.getBalance(this.account.publicKey);
+        console.log('balance - ', balance);
     };
 
-    setConnection = async () => {
-        const {Account, Connection} = solanaWeb3;
-
-        try {
-            const connection = new Connection('http://testnet.solana.com:8899/');
-            const clusterNodes = await connection.getClusterNodes();
-
-            this.connectionArray = [connection];
-
-            await clusterNodes.forEach((obj: any) => {
-                const connection = new Connection(`http://${obj.rpc}`);
-                this.checkBlockHash(connection);
-            });
-
-            let secKey = localStorage.getItem('secretKey');
-
-            if (!secKey) {
-                const account = await new Account();
-                secKey = account._keypair.secretKey;
-
-                localStorage.setItem('secretKey', JSON.stringify(secKey));
-
-                this.secretKey = secKey;
-
-                await connection.requestAirdrop(account.publicKey, 100000000000); // about 8 - 10 sec
-            } else {
-                this.secretKey = JSON.parse(secKey);
-            }
-
-            const secretKeyObj = this.secretKey;
-            const bufferArray = Object.keys(secretKeyObj).map(function(key) {
-                return secretKeyObj[key];
-            });
-
-            this.account = new Account(new Uint8Array(bufferArray));
-
-            const balance = await connection.getBalance(this.account.publicKey);
-            //console.log('balance - ', balance);
-
-        } catch (e) {
-            console.log('error - ', e);
+    makeTransaction = async (id: number): Promise<TransactionServiceInfo> => {
+        if (!this.account) {
+            throw new Error('Account not initialized');
         }
-    };
 
-    makeTransaction = async (id: number) => {
-        const {SystemProgram, Account} = solanaWeb3;
-        const transactionInfo: TransactionInfoService = {
-            signature: '',
-            confirmationTime: 0,
-            lamportsCount: 1000
-        };
-
-        const index = id % this.connectionArray.length; // get index of rpc array
-        const connection = this.connectionArray[index];
-
-        this.keypair = new Account();
-
-        const transaction = await SystemProgram.transfer(
+        const keypair = new w3.Account();
+        const lamportsCount = id + 1;
+        const transaction = w3.SystemProgram.transfer(
             this.account.publicKey,
-            this.keypair.publicKey,
-            transactionInfo.lamportsCount
+            keypair.publicKey,
+            lamportsCount,
         );
 
         const t1 = performance.now();
-        const response = await sendAndConfirmRecentTransaction(connection, transaction, this.account);
+        const signature = await sendAndConfirmRecentTransaction(this.connection, transaction, this.account);
         const t2 = performance.now();
+        const confirmationTime = parseFloat(((t2 - t1) / 1000).toFixed(3));
 
-        const time = parseFloat(((t2 - t1) / 1000).toFixed(3));
-
-        transactionInfo.confirmationTime = time;
-        transactionInfo.signature = response;
-
-        return transactionInfo;
+        return {
+            signature,
+            confirmationTime,
+            lamportsCount,
+        };
     };
 }

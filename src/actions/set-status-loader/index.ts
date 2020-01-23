@@ -1,6 +1,6 @@
-import {SET_STATUS_LOADER} from "../types";
+import {Action, SET_STATUS_LOADER} from "../types";
 
-export const setStatusLoader = (status: boolean) => {
+export const setStatusLoader = (status: boolean): Action => {
     return {
         type: SET_STATUS_LOADER,
         payload: status

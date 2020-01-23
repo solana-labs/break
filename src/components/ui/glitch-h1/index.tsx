@@ -3,7 +3,7 @@ import * as React from 'react';
 import './index.scss';
 
 interface IProps {
-    children: string
+    children: string;
 }
 
 export const GlitchH1 = ({children}: IProps) => {

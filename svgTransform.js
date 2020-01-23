@@ -1,8 +1,8 @@
 module.exports = {
-  process() {
+  process(): string {
     return 'module.exports = {};';
   },
-  getCacheKey() {
+  getCacheKey(): string {
     // The output is always the same.
     return 'svgTransform';
   },

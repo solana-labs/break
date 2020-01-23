@@ -1,11 +1,11 @@
 import {SET_STATUS_LOADER} from "../../actions/types";
-import ILoader from "./model";
+import * as ILoader from "./model";
 
 const initState: ILoader.Model = {
     isActive: false
 };
 
-const loaderReducer = (state = initState, action: any) => {
+const loaderReducer = (state = initState, action: any): ILoader.Model => {
 
     switch (action.type) {
         case SET_STATUS_LOADER: {

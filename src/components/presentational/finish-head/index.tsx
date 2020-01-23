@@ -4,19 +4,19 @@ import './index.scss';
 import {Button} from "../../ui/button";
 import {FacebookShareButton, TwitterShareButton} from "react-share";
 
-const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
-const shareFacebookIcon = require('../../../shared/images/share-facebook.svg');
+import shareTwitterIcon from '@images/share-twitter.svg';
+import shareFacebookIcon from '@images/share-facebook.svg';
 
 interface IProps {
-    completedCount: number
-    totalCount: number
-    percentCapacity: number
-    averageTransactionsTime: number
-    tryAgain(): void
+    completedCount: number;
+    totalCount: number;
+    percentCapacity: number;
+    averageTransactionsTime: number;
+    tryAgain(): void;
 }
 
 interface IState {
-    disableWrapper: boolean
+    disableWrapper: boolean;
 }
 
 export default class HomeScene extends React.Component<IProps, IState> {
@@ -25,7 +25,7 @@ export default class HomeScene extends React.Component<IProps, IState> {
         disableWrapper: true
     };
 
-    componentDidMount(): void {
+    componentDidMount() {
         setTimeout(() => {
             this.setState({
                 disableWrapper: false
@@ -90,8 +90,8 @@ export default class HomeScene extends React.Component<IProps, IState> {
                 </div>
                 <div className={'info-block'}>
                     <p>With <span className={'green-text semibold'}>{completedCount}</span> transactions in
-                        15 seconds, you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of Solana's network bandwidth.
-                        If you invited more people, maybe you'd stand a better chance!
+                        15 seconds, you took up <span className={'green-text semibold'}>{percentCapacity}%</span> of Solana&apos;s network bandwidth.
+                        If you invited more people, maybe you&apos;d stand a better chance!
                         Review every transaction—see confirmation statistics and signatures—by hovering over it below.</p>
                 </div>
                 <div className={'buttons-block'}>

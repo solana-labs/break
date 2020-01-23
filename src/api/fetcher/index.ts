@@ -16,25 +16,25 @@ class Fetcher implements IFetcher{
         })
     }
 
-    public get = async(url: string, body: any = {}) => {
+    public get = async(url: string, body: any = {}): Promise<any> => {
         const result = await this.axios.get(url, body);
 
         return result.data;
     };
 
-    public post = async(url: string, body: any = {}) => {
+    public post = async(url: string, body: any = {}): Promise<any> => {
         const result = await this.axios.post(url, body);
 
         return result.data;
     };
 
-    public put = async(url: string, body: any = {}) => {
+    public put = async(url: string, body: any = {}): Promise<any> => {
         const result = await this.axios.put(url, body);
 
         return result.data;
     };
 
-    public delete = async(url: string, body: any = {}) => {
+    public delete = async(url: string, body: any = {}): Promise<any> => {
         const result = await this.axios.delete(url, body);
 
         return result.data;
