@@ -1,7 +1,7 @@
-import {Action, ADD_TRANSACTION} from "../types";
+import { Action, ADD_TRANSACTION } from "../types";
 
 export const addTransaction = (): Action => {
-    return {
-        type: ADD_TRANSACTION,
-    }
+  return {
+    type: ADD_TRANSACTION
+  };
 };

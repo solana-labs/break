@@ -1,7 +1,7 @@
 export interface Model {
-    isActive: boolean;
+  isActive: boolean;
 }
 
 export interface ModelState {
-    isActive: boolean;
+  isActive: boolean;
 }

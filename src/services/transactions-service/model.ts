@@ -1,10 +1,10 @@
 export interface ITransactionsService {
-    makeTransaction(id: number): Promise<TransactionServiceInfo>;
-    initialize(): Promise<void>;
+  makeTransaction(id: number): Promise<TransactionServiceInfo>;
+  initialize(): Promise<void>;
 }
 
 export interface TransactionServiceInfo {
-    signature: string;
-    confirmationTime: number;
-    lamportsCount: number;
+  signature: string;
+  confirmationTime: number;
+  lamportsCount: number;
 }
