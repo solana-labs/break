@@ -15,6 +15,7 @@
     "test": "jest --ci",
     "test:local": "jest",
     "cover": "jest --coverage",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "lint": "set -ex; eslint --ext .js,.ts,.tsx .",
     "lint:fix": "npm run lint -- --fix"
   },
@@ -86,6 +87,7 @@
     "moment": "^2.24.0",
     "node-sass": "^4.13.1",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "prettier": "^1.19.1",
     "react-popover": "^0.5.10",
     "react-share": "^3.0.1",
     "react-test-renderer": "^16.8.6",

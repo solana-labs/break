@@ -26,6 +26,6 @@ npm run build
 
 ## Built With
 
-* [React.js](https://github.com/facebook/react/) - Component Library
-* [TypeScript](https://www.typescriptlang.org/) - Primary language
-* [Redux](https://github.com/reduxjs/react-redux) - State management library
+- [React.js](https://github.com/facebook/react/) - Component Library
+- [TypeScript](https://www.typescriptlang.org/) - Primary language
+- [Redux](https://github.com/reduxjs/react-redux) - State management library

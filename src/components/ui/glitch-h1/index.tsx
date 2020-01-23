@@ -1,13 +1,15 @@
-import * as React from 'react';
+import * as React from "react";
 
-import './index.scss';
+import "./index.scss";
 
 interface IProps {
-    children: string;
+  children: string;
 }
 
-export const GlitchH1 = ({children}: IProps) => {
-    return (
-        <h1 className={'glitch-text'} data-text={children}>{children}</h1>
-    );
+export const GlitchH1 = ({ children }: IProps) => {
+  return (
+    <h1 className={"glitch-text"} data-text={children}>
+      {children}
+    </h1>
+  );
 };
