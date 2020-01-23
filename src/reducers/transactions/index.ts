@@ -1,4 +1,4 @@
-import ITransaction from "./model";
+import * as ITransaction from "./model";
 import {ADD_TRANSACTION, RESET_TRANSACTIONS, SET_INFO, SET_TPS} from "../../actions/types";
 
 const initState: ITransaction.ModelState = {
@@ -8,7 +8,7 @@ const initState: ITransaction.ModelState = {
     transactionsPerSecond: 0,
 };
 
-const transactionReducer = (state = initState, action: any) => {
+const transactionReducer = (state = initState, action: any): ITransaction.ModelState => {
 
     switch (action.type) {
         case ADD_TRANSACTION: {

@@ -4,12 +4,12 @@ import './index.scss';
 import {Link} from "react-router-dom";
 
 interface IProps {
-    name: string
-    linkTo?: string
-    typeButton?: boolean
-    typeALink?: boolean
-    animate?: string
-    onClick?(): void
+    name: string;
+    linkTo?: string;
+    typeButton?: boolean;
+    typeALink?: boolean;
+    animate?: string;
+    onClick?(): void;
 }
 
 export const Button = ({name, linkTo, typeButton,typeALink,onClick, animate}: IProps) => {

@@ -3,18 +3,18 @@ import * as React from 'react';
 import './index.scss';
 
 interface IProps {
-    placeholder?: string
+    placeholder?: string;
     value?: string;
-    id?: number,
-    isValid?: boolean
-    color?: string
+    id?: number;
+    isValid?: boolean;
+    color?: string;
     inputValueFunc(value: string): void;
     onBlur?(): void;
     onFocus?(): void;
 }
 
 interface IState {
-    focused: boolean
+    focused: boolean;
 }
 
 export default class InputComponent extends React.Component<IProps, IState> {

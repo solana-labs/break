@@ -3,7 +3,7 @@ import transactionReducer from "../reducers/transactions";
 import gameReducer from "../reducers/game";
 import loaderReducer from "../reducers/loader";
 
-const rootAppReducer = (state: IRootAppReducerState = {} as IRootAppReducerState, action: any) => {
+const rootAppReducer = (state: IRootAppReducerState = {} as IRootAppReducerState, action: any): IRootAppReducerState => {
     return {
         transactionState: transactionReducer(state.transactionState, action),
         gameState: gameReducer(state.gameState, action),

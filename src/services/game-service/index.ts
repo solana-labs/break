@@ -9,19 +9,19 @@ export default class GameService implements IGameService {
     @injectPropertyFetcher
     private fetcher!: IFetcher;
 
-    saveGame = async(data: any) => {
+    saveGame = async(data: any): Promise<any> => {
         return await this.fetcher.post(Paths.Game.SaveGame(), data)
     };
 
-    getDailyGameCounts = async() => {
+    getDailyGameCounts = async(): Promise<any> => {
         return await this.fetcher.get(Paths.Game.GetDailyGameCounts());
     };
 
-    getDailyTransactionCounts = async() => {
+    getDailyTransactionCounts = async(): Promise<any> => {
         return await this.fetcher.get(Paths.Game.GetDailyTransactionCounts());
     };
 
-    getGameTransactionCounts = async() => {
+    getGameTransactionCounts = async(): Promise<any> => {
         return await this.fetcher.get(Paths.Game.GetGameTransactionCounts());
     };
 }

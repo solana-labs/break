@@ -3,25 +3,25 @@ import {Dispatch} from "redux";
 import {connect} from "react-redux";
 
 import './index.scss';
-import ITransaction from "../../../reducers/transactions/model";
+import * as ITransaction from "../../../reducers/transactions/model";
 import TransactionSquare from "../transaction-square";
 import {IRootAppReducerState} from "../../../reducer/model";
-import {addTransaction} from "../../../actions/add-tarnsaction";
+import {addTransaction} from "../../../actions/add-transaction";
 import {setTransactionInfo} from "../../../actions/set-transaction-info";
 import {IService} from "../../../services/model";
 import {withService} from "../../hoc-helpers/with-service";
-import {ITransactionsService, TransactionInfoService} from "../../../services/transactions-service/model";
+import {ITransactionsService, TransactionServiceInfo} from "../../../services/transactions-service/model";
 import {IGameService} from "../../../services/game-service/model";
 import {setStatusLoader} from "../../../actions/set-status-loader";
 import {IDefaultWebSocketService} from "../../../services/web-socket/model";
 import {FacebookShareButton, TwitterShareButton} from "react-share";
 
-const tapIcon = require('../../../shared/images/icons/tap.svg');
-const shareTwitterIcon = require('../../../shared/images/share-twitter.svg');
-const shareFacebookIcon = require('../../../shared/images/share-facebook-2.svg');
+import tapIcon from '@images/icons/tap.svg';
+import shareTwitterIcon from '@images/share-twitter.svg';
+import shareFacebookIcon from '@images/share-facebook-2.svg';
 
 interface IDispatchProps {
-    dispatch: Dispatch
+    dispatch: Dispatch;
 }
 
 interface IStateProps {
@@ -29,14 +29,14 @@ interface IStateProps {
 }
 
 interface IServiceProps {
-    transactionsService: ITransactionsService
-    gameService: IGameService
-    wsService: IDefaultWebSocketService
+    transactionsService: ITransactionsService;
+    gameService: IGameService;
+    wsService: IDefaultWebSocketService;
 }
 
 interface IState {
-    allTransactionConfirmed: number,
-    transactionPerSecond: number
+    allTransactionConfirmed: number;
+    transactionPerSecond: number;
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -61,10 +61,8 @@ class Game extends React.Component<IProps, {}> {
 
         this.props.dispatch(addTransaction());
 
-        // const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
-
         try {
-            const info: TransactionInfoService = await this.props.transactionsService.makeTransaction(totalCount);
+            const info: TransactionServiceInfo = await this.props.transactionsService.makeTransaction(totalCount);
             const updatedTransaction: ITransaction.Model = {
                 id, info, status: 'completed',
             };
@@ -90,7 +88,7 @@ class Game extends React.Component<IProps, {}> {
 
     private setConnection = async () => {
         this.props.dispatch(setStatusLoader(true));
-        await this.props.transactionsService.setConnection();
+        await this.props.transactionsService.initialize();
         this.props.dispatch(setStatusLoader(false));
     };
 
@@ -119,7 +117,7 @@ class Game extends React.Component<IProps, {}> {
 
         this.setConnection();
         this.setTimerForSendTransaction();
-        document.addEventListener('keyup', (event) => {
+        document.addEventListener('keyup', () => {
             this.makeTransaction();
         });
     }
@@ -181,7 +179,7 @@ class Game extends React.Component<IProps, {}> {
                         </button>
                     </div>
                     <div className={'share-block-wrapper'}>
-                        <a className={'build-button'} target={'_blank'} href="https://solana.com/developers/">build on solana</a>
+                        <a className={'build-button'} target={'_blank'} rel="noopener noreferrer" href="https://solana.com/developers/">build on solana</a>
                         <div className={'share-block'}>
                             <TwitterShareButton
                                 className={'share-button'}

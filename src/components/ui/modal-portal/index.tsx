@@ -4,14 +4,14 @@ import ReactDOM from 'react-dom'
 import './index.scss';
 
 interface IProps {
-    isOpenProps: boolean
-    children: any
-    onClose(): void
+    isOpenProps: boolean;
+    children: any;
+    onClose(): void;
 }
 
 interface IState {
-    isOpenProps: boolean
-    isOpen: boolean
+    isOpenProps: boolean;
+    isOpen: boolean;
 }
 
 export default class ModalPortal extends React.Component<IProps, IState> {
@@ -41,7 +41,7 @@ export default class ModalPortal extends React.Component<IProps, IState> {
         this.root = div;
     }
 
-    componentWillUnmount(): void {
+    componentWillUnmount() {
         if(this.root){
             document.body.removeChild(this.root)
         }

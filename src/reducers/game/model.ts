@@ -1,13 +1,9 @@
-namespace IGame {
-    export interface ModelStatistics {
-        totalCount: number
-        completedCount: number
-        percentCapacity: number
-    }
-
-    export interface ModelState {
-        statistics: ModelStatistics
-    }
+export interface ModelStatistics {
+    totalCount: number;
+    completedCount: number;
+    percentCapacity: number;
 }
 
-export default IGame;
+export interface ModelState {
+    statistics: ModelStatistics;
+}

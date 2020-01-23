@@ -3,12 +3,11 @@ import * as React from 'react';
 import './index.scss';
 
 interface IProps {
-    transactionsCreated: number
-    confirmedCount: number
-    averageTransactionsTime: number
+    transactionsCreated: number;
+    confirmedCount: number;
 }
 
-export const StartHead = ({transactionsCreated, averageTransactionsTime, confirmedCount}: IProps) => {
+export const StartHead = ({transactionsCreated, confirmedCount}: IProps) => {
     return (
         <div className={'start-head-wrapper'}>
             <div className={'timer'}>
@@ -25,7 +24,7 @@ export const StartHead = ({transactionsCreated, averageTransactionsTime, confirm
             </div>
             <div className={'speed'}>
                 <p>Transactions per Second</p>
-                <p> </p>
+                <p></p>
             </div>
         </div>
     );

@@ -2,11 +2,10 @@ import * as React from 'react';
 import gsap, {TimelineMax, Power0, Cubic} from 'gsap'
 
 import './index.scss';
-
-const heroImage = require('../../../shared/images/hero.svg');
+import heroImage from '@images/hero.svg';
 
 interface IProps {
-    className: string
+    className: string;
 }
 
 export default class CircleAnimation extends React.Component<IProps, {}> {

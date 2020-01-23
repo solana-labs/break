@@ -2,10 +2,10 @@ import * as React from 'react';
 
 import './index.scss';
 
-const userImg = require('../../../shared/images/icons/user.svg');
+import userImg from '@images/icons/user.svg';
 
 interface IProps {
-    name: string
+    name: string;
 }
 
 export const PlayerSticker = ({name}: IProps) => {

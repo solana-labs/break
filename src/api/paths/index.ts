@@ -1,17 +1,17 @@
 import {configuration} from "../config";
 
-const base = (rest: string) => `${configuration.remoteApi}/${rest}`;
+const base = (rest: string): string => `${configuration.remoteApi}/${rest}`;
 
 export default class Paths {
 
     static Game = class {
-        static SaveGame = () => base(`games`);
-        static GetDailyGameCounts = () => base(`games/daily`);
-        static GetDailyTransactionCounts = () => base(`games/daily/transactions`);
-        static GetGameTransactionCounts = () => base(`games/latest/transactions`);
+        static SaveGame = (): string => base(`games`);
+        static GetDailyGameCounts = (): string => base(`games/daily`);
+        static GetDailyTransactionCounts = (): string => base(`games/daily/transactions`);
+        static GetGameTransactionCounts = (): string => base(`games/latest/transactions`);
     };
 
     static Users = class {
-        static GetLeaderboard = () => base(`users/leaderboard`);
+        static GetLeaderboard = (): string => base(`users/leaderboard`);
     };
 }

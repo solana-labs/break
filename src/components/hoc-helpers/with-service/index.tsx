@@ -8,6 +8,7 @@ export interface IMapServicesToProps {
 }
 
 export const withService = (mapServicesToProps: IMapServicesToProps) => (Wrapped: any) => {
+    /* eslint-disable react/display-name */
     return (props: any) => {
         return (
             <ServiceConsumer>
