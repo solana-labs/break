@@ -9,7 +9,7 @@ module.exports = {
   "moduleNameMapper": {
     "^.+\\.(css|less|scss)$": "identity-obj-proxy"
   },
-  "setupTestFrameworkScriptFile": "jest-enzyme",
   "setupFiles": ['<rootDir>/jest.config.js', 'jest-canvas-mock'],
+  "setupFilesAfterEnv": ["jest-enzyme"],
   "testEnvironment": "enzyme"
 };
