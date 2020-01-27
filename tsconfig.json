@@ -15,7 +15,7 @@
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "typeRoots": ["types"],
+    "typeRoots": ["types", "./node_modules/@types"],
     "jsx": "preserve",
     "baseUrl": "./",
     "paths": {
