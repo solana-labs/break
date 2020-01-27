@@ -54,7 +54,7 @@ export default class DefaultWebSocketService
 
   async sendInfo(tps: number): Promise<void> {
     if (this.sockInstance) {
-      this.sockInstance.send(tps);
+      this.sockInstance.send(`${tps}`);
     }
   }
 }
