@@ -23,6 +23,9 @@ module.exports = {
   output: {
     path: resolvePath(paths.dist)
   },
+  node: {
+    fs: 'empty'
+  },
   resolve: resolveAlias.resolve,
   module: {
     strictExportPresence: true,
