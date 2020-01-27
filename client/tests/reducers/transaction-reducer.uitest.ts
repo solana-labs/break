@@ -1,6 +1,6 @@
-import transactionReducer from "../../reducers/transactions";
-import * as ITransaction from "../../reducers/transactions/model";
-import { TransactionServiceInfo } from "../../services/transactions-service/model";
+import transactionReducer from "@/reducers/transactions";
+import * as ITransaction from "@/reducers/transactions/model";
+import { TransactionServiceInfo } from "@/services/transactions-service/model";
 
 describe("test function transactionReducer", () => {
   it("add transaction", () => {

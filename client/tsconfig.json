@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "rootDirs": ["./", "./src"],
     "allowJs": true,
     "strict": true,
     "esModuleInterop": true,
@@ -19,6 +18,7 @@
     "jsx": "preserve",
     "baseUrl": "./",
     "paths": {
+      "@/*": ["./src/*"],
       "@fonts/*": ["./src/shared/fonts/*"],
       "@styles/*": ["./src/shared/styles/*"],
       "@images/*": ["./src/shared/images/*"]

@@ -1,4 +1,4 @@
-import gameReducer from "../../reducers/game";
+import gameReducer from "@/reducers/game";
 
 describe("test function gameReducer", () => {
   it("set status game", () => {
