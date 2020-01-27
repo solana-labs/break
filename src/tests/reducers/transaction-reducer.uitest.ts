@@ -1,6 +1,6 @@
 import transactionReducer from "../../reducers/transactions";
-import ITransaction from "../../reducers/transactions/model";
-import { TransactionInfoService } from "../../services/transactions-service/model";
+import * as ITransaction from "../../reducers/transactions/model";
+import { TransactionServiceInfo } from "../../services/transactions-service/model";
 
 describe("test function transactionReducer", () => {
   it("add transaction", () => {
@@ -205,7 +205,7 @@ describe("test function transactionReducer", () => {
       transactionsPerSecond: 0
     };
 
-    const info: TransactionInfoService = {
+    const info: TransactionServiceInfo = {
       signature: "signature",
       confirmationTime: 0.5,
       lamportsCount: 1000
