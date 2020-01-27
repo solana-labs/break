@@ -20,7 +20,7 @@ Supported actions:
 EOF
 }
 
-sdkDir=../node_modules/@solana/web3.js/bpf-sdk
+sdkDir=../client/node_modules/@solana/web3.js/bpf-sdk
 targetDir="$PWD"/target
 distDir=./dist
 profile=bpfel-unknown-unknown/release

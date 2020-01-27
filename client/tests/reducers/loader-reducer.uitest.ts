@@ -1,4 +1,4 @@
-import loaderReducer from "../../reducers/loader";
+import loaderReducer from "@/reducers/loader";
 
 describe("test function loaderReducer", () => {
   it("set status loader", () => {

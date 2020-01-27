@@ -2,6 +2,16 @@ language: node_js
 node_js:
   - "node"
 
+matrix:
+  include:
+  - name: Client
+    env: PACKAGE_LOCATION=client
+  - name: Server
+    env: PACKAGE_LOCATION=server
+
+before_install:
+  - cd $PACKAGE_LOCATION
+
 script:
   - npm run format
   - npm run lint

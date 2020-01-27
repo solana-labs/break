@@ -1,12 +1,13 @@
 module.exports = {
-  roots: ["<rootDir>/src"],
+  roots: ["<rootDir>/tests"],
   transform: {
     "^.+\\.tsx?$": "ts-jest",
     "^.+\\.svg$": "<rootDir>/svgTransform.js"
   },
-  testRegex: "(/tests/.*|(\\.|/)(uitest))\\.tsx?$",
+  testRegex: "(/.*|(\\.|/)(uitest))\\.tsx?$",
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1",
     "^.+\\.(css|less|scss)$": "identity-obj-proxy"
   },
   setupFiles: ["<rootDir>/jest.config.js", "jest-canvas-mock"],

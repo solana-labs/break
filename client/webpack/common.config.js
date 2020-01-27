@@ -24,7 +24,7 @@ module.exports = {
     path: resolvePath(paths.dist)
   },
   node: {
-    fs: 'empty'
+    fs: "empty"
   },
   resolve: resolveAlias.resolve,
   module: {
