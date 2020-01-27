@@ -17,7 +17,9 @@
     "cover": "jest --coverage",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "lint": "set -ex; eslint --ext .js,.ts,.tsx .",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "build:program": "./program/do.sh build",
+    "clean:program": "./program/do.sh clean"
   },
   "dependencies": {
     "@solana/web3.js": "^0.29.4",
