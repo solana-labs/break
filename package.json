@@ -1,4 +1,5 @@
 {
+  "cacheDirectories": ["client/node_modules", "server/node_modules"],
   "scripts": {
     "client:build": "./package.sh client run build",
     "client:install": "./package.sh client install",
@@ -14,6 +15,6 @@
     "build": "./package.sh both run build",
     "lint": "./package.sh both run lint",
     "format": "./package.sh both run format",
-    "preinstall": "./package.sh both install"
+    "postinstall": "./package.sh both install"
   }
 }
