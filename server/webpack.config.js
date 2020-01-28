@@ -8,6 +8,9 @@ module.exports = (env, argv) => {
     mode,
     target: "node",
     entry: ["./src/index.ts"],
+    node: {
+      __dirname: false
+    },
     output: {
       path: path.resolve(__dirname, "dist"),
       filename: "server.js"
