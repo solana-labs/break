@@ -1,9 +1,19 @@
 {
   "scripts": {
-    "client:build": "(cd client && npm run build)",
-    "server:build": "(cd server && npm run build)",
-    "server:start": "(cd server && npm run start)",
+    "client:build": "./package.sh client run build",
+    "client:install": "./package.sh client install",
+
+    "server:build": "./package.sh server run build",
+    "server:start": "./package.sh server run start",
+    "server:install": "./package.sh server install",
+
     "program:build": "./program/do.sh build",
-    "program:clean": "./program/do.sh clean"
+    "program:clean": "./program/do.sh clean",
+
+    "start": "npm run server:start",
+    "build": "./package.sh both run build",
+    "lint": "./package.sh both run lint",
+    "format": "./package.sh both run format",
+    "preinstall": "./package.sh both install"
   }
 }

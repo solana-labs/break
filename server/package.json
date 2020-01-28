@@ -11,7 +11,8 @@
   },
   "scripts": {
     "build": "webpack --mode production",
-    "start": "node dist/server.js",
+    "start": "node ./dist/server.js",
+    "start:dev": "PUBLIC_PATH=../dist/public ts-node src/index.ts",
     "build:dev": "webpack --mode development",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "lint": "set -ex; eslint --ext .js,.ts,.tsx .",

@@ -4,6 +4,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 // helpers
 const { resolvePath } = require("./tools/helpers");
 const babelLoaderOptions = require("./tools/babel-loader-options");
+const path = require("path");
 const paths = require("./tools/paths");
 const resolveAlias = require("./tools/resolve-alias");
 
@@ -12,16 +13,16 @@ const configForkTsCheckerWebpackPlugin = {
   useTypescriptIncrementalApi: true
 };
 
+const root = path.resolve(__dirname, "..");
 const mode = process.env.NODE_ENV;
 const devMode = mode === "development" ? true : false;
 
 module.exports = {
-  context: resolvePath(paths.source),
   entry: {
-    main: "./index.tsx"
+    main: path.join(root, "src", "index.tsx")
   },
   output: {
-    path: resolvePath(paths.dist)
+    path: path.join(root, "..", "server", "dist", "public")
   },
   node: {
     fs: "empty"
