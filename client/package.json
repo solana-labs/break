@@ -26,7 +26,6 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "gsap": "^3.0.4",
-    "http-server": "^0.12.0",
     "net": "^1.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -37,9 +36,7 @@
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
     "sockjs-client": "^1.4.0",
-    "stompjs": "^2.3.3",
-    "webpack-cli": "^3.3.6",
-    "webpack-merge": "^4.2.1"
+    "stompjs": "^2.3.3"
   },
   "devDependencies": {
     "@babel/core": "^7.5.5",
@@ -105,6 +102,8 @@
     "typescript": "^3.7.5",
     "url-loader": "^2.1.0",
     "webpack": "^4.39.1",
-    "webpack-dev-server": "^3.7.2"
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2",
+    "webpack-merge": "^4.2.1"
   }
 }
