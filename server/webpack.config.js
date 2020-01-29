@@ -24,6 +24,9 @@ module.exports = (env, argv) => {
         }
       ]
     },
+    resolve: {
+      extensions: [".ts", ".js", ".json"]
+    },
     externals: [nodeExternals()]
   };
 

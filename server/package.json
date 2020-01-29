@@ -14,12 +14,13 @@
     "start": "node ./dist/server.js",
     "start:dev": "PUBLIC_PATH=../dist/public ts-node src/index.ts",
     "build:dev": "webpack --mode development",
-    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "lint": "set -ex; eslint --ext .js,.ts,.tsx .",
     "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
-    "@solana/web3.js": "^0.29.4",
+    "@solana/web3.js": "0.29.4",
     "cors": "^2.8.5",
     "express": "^4.17.1"
   },

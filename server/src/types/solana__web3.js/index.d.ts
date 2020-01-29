@@ -449,7 +449,7 @@ declare module "@solana/web3.js" {
     static load(
       connection: Connection,
       payer: Account,
-      elfBytes: Array<number>
+      elfBytes: Buffer | Array<number>
     ): Promise<PublicKey>;
   }
 

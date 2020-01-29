@@ -14,7 +14,6 @@ import {
   ITransactionsService,
   TransactionServiceInfo
 } from "../../../services/transactions-service/model";
-import { IGameService } from "../../../services/game-service/model";
 import { setStatusLoader } from "../../../actions/set-status-loader";
 import { IDefaultWebSocketService } from "../../../services/web-socket/model";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
@@ -33,7 +32,6 @@ interface IStateProps {
 
 interface IServiceProps {
   transactionsService: ITransactionsService;
-  gameService: IGameService;
   wsService: IDefaultWebSocketService;
 }
 
@@ -225,11 +223,10 @@ class Game extends React.Component<IProps, {}> {
   }
 }
 
-const mapServicesToProps = ({
+const mapServicesToProps = ({ transactionsService, wsService }: IService) => ({
   transactionsService,
-  gameService,
   wsService
-}: IService) => ({ transactionsService, gameService, wsService });
+});
 
 const mapStateToProps = ({ transactionState }: IRootAppReducerState) => ({
   transactionState

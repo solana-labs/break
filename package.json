@@ -1,20 +1,22 @@
 {
-  "cacheDirectories": ["client/node_modules", "server/node_modules"],
+  "cacheDirectories": [
+    "client/node_modules",
+    "server/node_modules"
+  ],
   "scripts": {
     "client:build": "./package.sh client run build",
     "client:install": "./package.sh client install",
-
     "server:build": "./package.sh server run build",
     "server:start": "./package.sh server run start",
     "server:install": "./package.sh server install",
-
     "program:build": "./program/do.sh build",
     "program:clean": "./program/do.sh clean",
-
     "start": "npm run server:start",
     "build": "./package.sh both run build",
     "lint": "./package.sh both run lint",
+    "lint:fix": "./package.sh both run lint:fix",
     "format": "./package.sh both run format",
+    "format:fix": "./package.sh both run format:fix",
     "postinstall": "./package.sh both install"
   }
 }

@@ -1,3 +1,10 @@
-export const configuration = Object.freeze({
-  remoteApi: "//break-backend.herokuapp.com/api"
-});
+let origin = window.location.origin;
+const hostname = window.location.hostname;
+switch (hostname) {
+  case "localhost":
+  case "127.0.0.1":
+  case "0.0.0.0":
+    origin = `http://${hostname}:${process.env.PORT || 8080}`;
+}
+
+export const baseUrl = origin;
