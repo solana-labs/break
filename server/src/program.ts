@@ -25,7 +25,6 @@ export default class Program {
       feeCalculator.lamportsPerSignature *
         (BpfLoader.getMinNumSignatures(elfData.length) + NUM_RETRIES) +
       (await this.connection.getMinimumBalanceForRentExemption(elfData.length));
-    console.log({ fees });
 
     const loaderAccount = new Account();
     await this.connection.requestAirdrop(loaderAccount.publicKey, fees);
