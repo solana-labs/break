@@ -40,6 +40,11 @@ import AccountSupply from "./account_supply";
       .end();
   });
 
+  /* final catch-all route to index.html defined last */
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(staticPath, "/index.html"));
+  });
+
   app.listen(port);
   console.log(`Server listening on port: ${port}`);
 })();

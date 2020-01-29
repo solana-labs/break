@@ -11,9 +11,14 @@ export default class TransactionsService implements ITransactionsService {
   connection = new Connection("http://testnet.solana.com:8899/", "recent");
 
   async initialize(): Promise<void> {
-    const response = await fetcher.get(Path.Init);
-    if (!response.programId || !response.accountKey) {
-      console.error("Init failed");
+    let response;
+    try {
+      response = await fetcher.get(Path.Init);
+      if (!response.programId || !response.accountKey) {
+        throw new Error("Invalid response");
+      }
+    } catch (err) {
+      console.error("Init failed", err);
       return;
     }
 
