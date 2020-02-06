@@ -1,11 +1,21 @@
-import { ITransactionsService, TransactionServiceInfo } from "./model";
 import { Account, PublicKey, Connection, SystemProgram } from "@solana/web3.js";
 import { sendAndConfirmRecentTransaction } from "@solana/web3.js";
 import Path from "@/api/paths";
 import fetcher from "@/api/fetcher";
 import { Buffer } from "buffer";
 
-export default class TransactionsService implements ITransactionsService {
+export interface ITransactionService {
+  makeTransaction(id: number): Promise<TransactionServiceInfo>;
+  initialize(): Promise<void>;
+}
+
+export interface TransactionServiceInfo {
+  signature: string;
+  confirmationTime: number;
+  lamportsCount: number;
+}
+
+export class TransactionService implements ITransactionService {
   account?: Account;
   programId?: PublicKey;
   connection = new Connection("http://testnet.solana.com:8899/", "recent");

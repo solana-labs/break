@@ -8,14 +8,13 @@ import TransactionSquare from "../transaction-square";
 import { IRootAppReducerState } from "../../../reducer/model";
 import { addTransaction } from "../../../actions/add-transaction";
 import { setTransactionInfo } from "../../../actions/set-transaction-info";
-import { IService } from "../../../services/model";
+import { IService } from "../../../services";
 import { withService } from "../../hoc-helpers/with-service";
 import {
-  ITransactionsService,
+  ITransactionService,
   TransactionServiceInfo
-} from "../../../services/transactions-service/model";
+} from "../../../services/transaction";
 import { setStatusLoader } from "../../../actions/set-status-loader";
-import { IDefaultWebSocketService } from "../../../services/web-socket/model";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 
 import tapIcon from "@images/icons/tap.svg";
@@ -31,8 +30,7 @@ interface IStateProps {
 }
 
 interface IServiceProps {
-  transactionsService: ITransactionsService;
-  wsService: IDefaultWebSocketService;
+  transactionService: ITransactionService;
 }
 
 interface IState {
@@ -63,7 +61,7 @@ class Game extends React.Component<IProps, {}> {
     this.props.dispatch(addTransaction());
 
     try {
-      const info: TransactionServiceInfo = await this.props.transactionsService.makeTransaction(
+      const info: TransactionServiceInfo = await this.props.transactionService.makeTransaction(
         totalCount
       );
       const updatedTransaction: ITransaction.Model = {
@@ -95,7 +93,7 @@ class Game extends React.Component<IProps, {}> {
 
   private setConnection = async () => {
     this.props.dispatch(setStatusLoader(true));
-    await this.props.transactionsService.initialize();
+    await this.props.transactionService.initialize();
     this.props.dispatch(setStatusLoader(false));
   };
 
@@ -111,9 +109,6 @@ class Game extends React.Component<IProps, {}> {
           this.setState({
             transactionPerSecond
           });
-
-          if (transactionPerSecond)
-            this.props.wsService.sendInfo(transactionPerSecond);
         }
       }, 1000);
     }, 1000);
@@ -121,7 +116,6 @@ class Game extends React.Component<IProps, {}> {
 
   componentDidMount() {
     this._isMounted = true;
-    this.props.wsService.webSocket();
 
     this.setConnection();
     this.setTimerForSendTransaction();
@@ -223,9 +217,8 @@ class Game extends React.Component<IProps, {}> {
   }
 }
 
-const mapServicesToProps = ({ transactionsService, wsService }: IService) => ({
-  transactionsService,
-  wsService
+const mapServicesToProps = ({ transactionService }: IService) => ({
+  transactionService
 });
 
 const mapStateToProps = ({ transactionState }: IRootAppReducerState) => ({

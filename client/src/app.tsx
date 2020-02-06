@@ -5,7 +5,7 @@ import { Dispatch } from "redux";
 
 import HomeScene from "./components/scenes/home-scene";
 import GameScene from "./components/scenes/game-scene";
-import { IService } from "./services/model";
+import { IService } from "./services";
 import {
   IMapServicesToProps,
   withService

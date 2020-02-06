@@ -12,8 +12,6 @@
   "scripts": {
     "build": "webpack --config ./webpack/prod.config.js",
     "dev": "webpack-dev-server --config ./webpack/dev.config.js",
-    "test": "jest --ci",
-    "test:local": "jest",
     "cover": "jest --coverage",
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { IService } from "../../../services/model";
+import { IService } from "../../../services";
 import { ServiceConsumer } from "../../context/service-context";
 
 export interface IMapServicesToProps {
