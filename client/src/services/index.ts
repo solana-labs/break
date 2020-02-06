@@ -1,8 +1,9 @@
-import TransactionsService from "./transactions-service";
-import { IService } from "./model";
-import DefaultWebSocketService from "./web-socket";
+import { TransactionService, ITransactionService } from "./transaction";
+
+export interface IService {
+  transactionService: ITransactionService;
+}
 
 export default class Service implements IService {
-  public transactionsService = new TransactionsService();
-  public wsService = new DefaultWebSocketService();
+  public transactionService = new TransactionService();
 }
