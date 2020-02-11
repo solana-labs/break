@@ -69,6 +69,13 @@ class Game extends React.Component<IProps, {}> {
     document.addEventListener("keyup", this.makeTransaction);
   };
 
+  private onDisconnected = () => {
+    this.props.dispatch(setStatusLoader(true));
+    clearInterval(this._timerId);
+    clearTimeout(this._timeoutId);
+    document.removeEventListener("keyup", this.makeTransaction);
+  };
+
   private setTimerForSendTransaction = () => {
     this._timerId = window.setInterval(() => {
       const transactionConfirmedEarlier = this.props.transactionState
@@ -85,14 +92,15 @@ class Game extends React.Component<IProps, {}> {
 
   componentDidMount() {
     this.props.dispatch(setStatusLoader(true));
-    this.props.transactionService.connect(this.onConnected, this.onTransaction);
+    this.props.transactionService.connect(
+      this.onConnected,
+      this.onDisconnected,
+      this.onTransaction
+    );
   }
 
   componentWillUnmount() {
-    document.removeEventListener("keyup", this.makeTransaction);
     this.props.transactionService.disconnect();
-    clearInterval(this._timerId);
-    clearTimeout(this._timeoutId);
   }
 
   render() {

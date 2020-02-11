@@ -1,7 +1,7 @@
-import { Account, Connection, FeeCalculator } from "@solana/web3.js";
+import { Account, Connection } from "@solana/web3.js";
 
 const MIN_SUPPLY = 50;
-const NUM_FUNDED_TRANSACTIONS = 10000;
+const NUM_FUNDED_TRANSACTIONS = 1000;
 const BATCH_SIZE = 10;
 
 function sleep(ms: number): Promise<void> {
@@ -16,12 +16,11 @@ export default class AccountSupply {
 
   constructor(
     private connection: Connection,
-    feeCalculator: FeeCalculator,
+    public creationFee: number,
     public minAccountBalance: number
   ) {
     this.fundAmount =
-      NUM_FUNDED_TRANSACTIONS *
-      (feeCalculator.maxLamportsPerSignature + minAccountBalance);
+      NUM_FUNDED_TRANSACTIONS * (creationFee + minAccountBalance);
     this.replenish();
   }
 
