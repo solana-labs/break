@@ -7,19 +7,17 @@ import * as ITransaction from "../../../reducers/transactions/model";
 import TransactionSquare from "../transaction-square";
 import { IRootAppReducerState } from "../../../reducer/model";
 import { addTransaction } from "../../../actions/add-transaction";
-import { setTransactionInfo } from "../../../actions/set-transaction-info";
+import { updateTransaction } from "../../../actions/set-transaction-info";
 import { IService } from "../../../services";
 import { withService } from "../../hoc-helpers/with-service";
-import {
-  ITransactionService,
-  TransactionServiceInfo
-} from "../../../services/transaction";
+import { ITransactionService } from "../../../services/transaction";
 import { setStatusLoader } from "../../../actions/set-status-loader";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 
 import tapIcon from "@images/icons/tap.svg";
 import shareTwitterIcon from "@images/share-twitter.svg";
 import shareFacebookIcon from "@images/share-facebook-2.svg";
+import { setTransactionsPerSecond } from "@/actions/set-transactions-per-second";
 
 interface IDispatchProps {
   dispatch: Dispatch;
@@ -33,53 +31,27 @@ interface IServiceProps {
   transactionService: ITransactionService;
 }
 
-interface IState {
-  allTransactionConfirmed: number;
-  transactionPerSecond: number;
-}
-
 type IProps = IStateProps & IDispatchProps & IServiceProps;
 
 class Game extends React.Component<IProps, {}> {
-  _isMounted = false;
-  _timerId: any;
-  _timeoutId: any;
+  _timerId?: number;
+  _timeoutId?: number;
 
-  state: IState = {
-    allTransactionConfirmed: 0,
-    transactionPerSecond: 0
+  private makeTransaction = () => {
+    this.updateScroll();
+    const {
+      accountId,
+      signature
+    } = this.props.transactionService.sendTransaction();
+    this.props.dispatch(addTransaction(accountId, signature));
   };
 
-  private makeTransaction = async () => {
-    this.updateScroll();
-
-    const transactions = this.props.transactionState.transactions;
-
-    const totalCount: number = transactions.length;
-    const id = "transaction" + totalCount;
-
-    this.props.dispatch(addTransaction());
-
-    try {
-      const info: TransactionServiceInfo = await this.props.transactionService.makeTransaction(
-        totalCount
-      );
-      const updatedTransaction: ITransaction.Model = {
-        id,
-        info,
-        status: "completed"
-      };
-
-      if (this._isMounted) {
-        this.setState({
-          allTransactionConfirmed: this.state.allTransactionConfirmed + 1
-        });
-      }
-
-      this.props.dispatch(setTransactionInfo(updatedTransaction));
-    } catch (e) {
-      console.log(e);
+  private onTransaction = (transaction: ITransaction.Model) => {
+    const { userSent, accountId, signature } = transaction.info;
+    if (!userSent) {
+      this.props.dispatch(addTransaction(accountId, signature));
     }
+    this.props.dispatch(updateTransaction(transaction));
   };
 
   private updateScroll = () => {
@@ -91,49 +63,41 @@ class Game extends React.Component<IProps, {}> {
     }
   };
 
-  private setConnection = async () => {
-    this.props.dispatch(setStatusLoader(true));
-    await this.props.transactionService.initialize();
+  private onConnected = () => {
     this.props.dispatch(setStatusLoader(false));
+    this.setTimerForSendTransaction();
+    document.addEventListener("keyup", this.makeTransaction);
   };
 
   private setTimerForSendTransaction = () => {
-    this._timerId = setInterval(() => {
-      const transactionConfirmedLater = this.state.allTransactionConfirmed;
+    this._timerId = window.setInterval(() => {
+      const transactionConfirmedEarlier = this.props.transactionState
+        .allCompletedCount;
 
-      this._timeoutId = setTimeout(() => {
-        const transactionConfirmedNow = this.state.allTransactionConfirmed;
-        if (this._isMounted) {
-          const transactionPerSecond =
-            transactionConfirmedNow - transactionConfirmedLater;
-          this.setState({
-            transactionPerSecond
-          });
-        }
+      this._timeoutId = window.setTimeout(() => {
+        const transactionConfirmedNow = this.props.transactionState
+          .allCompletedCount;
+        const tps = transactionConfirmedNow - transactionConfirmedEarlier;
+        this.props.dispatch(setTransactionsPerSecond(tps));
       }, 1000);
-    }, 1000);
+    }, 250);
   };
 
   componentDidMount() {
-    this._isMounted = true;
-
-    this.setConnection();
-    this.setTimerForSendTransaction();
-    document.addEventListener("keyup", () => {
-      this.makeTransaction();
-    });
+    this.props.dispatch(setStatusLoader(true));
+    this.props.transactionService.connect(this.onConnected, this.onTransaction);
   }
 
   componentWillUnmount() {
-    this._isMounted = false;
+    document.removeEventListener("keyup", this.makeTransaction);
+    this.props.transactionService.disconnect();
     clearInterval(this._timerId);
     clearTimeout(this._timeoutId);
   }
 
   render() {
     const transactions = this.props.transactionState.transactions;
-    const completedCount = this.props.transactionState
-      .countCompletedTransactions;
+    const completedCount = this.props.transactionState.userCompletedCount;
     const tps = this.props.transactionState.transactionsPerSecond;
     const percentCapacity = parseFloat(((tps / 50000) * 100).toFixed(4));
 
@@ -167,7 +131,7 @@ class Game extends React.Component<IProps, {}> {
                 {transactions &&
                   transactions.map((item: ITransaction.Model) => (
                     <TransactionSquare
-                      key={item.id}
+                      key={item.info.accountId}
                       status={item.status}
                       information={item.info}
                     />
