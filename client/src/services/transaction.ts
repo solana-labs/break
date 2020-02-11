@@ -1,5 +1,6 @@
 import {
   Account,
+  AccountInfo,
   PublicKey,
   Connection,
   SystemProgram,
@@ -20,11 +21,14 @@ export type SentTransaction = {
 };
 
 export type OnTransaction = (tx: ITransaction.Model) => void;
-export type OnConnect = () => void;
 
 export interface ITransactionService {
   sendTransaction(): SentTransaction;
-  connect(onConnect: OnConnect, onTransaction: OnTransaction): void;
+  connect(
+    onConnect: () => void,
+    onDisconnect: () => void,
+    onTransaction: OnTransaction
+  ): void;
   disconnect(): void;
 }
 
@@ -32,6 +36,7 @@ type InitResponse = {
   programId: string;
   accountKey: string;
   minAccountBalance: number;
+  creationFee: number;
   rpcUrl: string;
   rpcUrlTls: string;
 };
@@ -52,28 +57,50 @@ function sleep(ms: number): Promise<void> {
 }
 
 export class TransactionService implements ITransactionService {
-  onConnect?: OnConnect;
+  onConnect?: () => void;
+  onDisconnect?: () => void;
   onTransaction?: OnTransaction;
   connection?: Connection;
   programId?: PublicKey;
+  programSubscriptionId?: number;
   payerAccount?: Account;
+  payerSubscriptionId?: number;
   minAccountBalance?: number;
+  creationFee?: number;
   blockhash?: Blockhash;
   blockhashTimer?: number;
-
   pendingTransactions: Map<string, PendingTransaction> = new Map();
 
-  connect(onConnect: OnConnect, onTransaction: OnTransaction) {
+  connect = (
+    onConnect: () => void,
+    onDisconnect: () => void,
+    onTransaction: OnTransaction
+  ) => {
     this.disconnect();
     this.onConnect = onConnect;
+    this.onDisconnect = onDisconnect;
     this.onTransaction = onTransaction;
     this.connectLoop();
-  }
+  };
 
-  disconnect() {
+  disconnect = () => {
     this.onConnect = undefined;
     this.onTransaction = undefined;
     clearInterval(this.blockhashTimer);
+
+    if (this.connection) {
+      if (this.programSubscriptionId) {
+        this.connection.removeProgramAccountChangeListener(
+          this.programSubscriptionId
+        );
+        this.programSubscriptionId = undefined;
+      }
+      if (this.payerSubscriptionId) {
+        this.connection.removeAccountChangeListener(this.payerSubscriptionId);
+        this.payerSubscriptionId = undefined;
+      }
+    }
+
     this.pendingTransactions.forEach(value => {
       if (value.timeoutId) {
         clearTimeout(value.timeoutId);
@@ -83,7 +110,8 @@ export class TransactionService implements ITransactionService {
       }
     }, this);
     this.pendingTransactions.clear();
-  }
+    this.connection = undefined;
+  };
 
   sendTransaction = () => {
     if (
@@ -138,63 +166,99 @@ export class TransactionService implements ITransactionService {
     return { accountId, signature };
   };
 
-  private async connectLoop() {
+  private connectLoop = async () => {
     while (this.onConnect) {
       try {
-        this._connect();
+        this.reconnect();
         return;
       } catch (err) {
-        console.log("Failed to initialize app", err);
+        console.error("Failed to initialize app", err);
+        this.onDisconnect && this.onDisconnect();
         await sleep(1000);
       }
     }
-  }
+  };
 
-  private async _connect() {
-    const {
-      programId,
-      accountKey,
-      minAccountBalance,
-      rpcUrl,
-      rpcUrlTls
-    } = await this.fetchInit();
+  private updatePayerAccount = (account: Account) => {
+    if (!this.connection) return;
 
-    if (location.protocol !== "https:") {
-      this.connection = new Connection(rpcUrl, "recent");
-    } else {
-      this.connection = new Connection(rpcUrlTls, "recent");
+    this.payerAccount = account;
+    if (this.payerSubscriptionId) {
+      this.connection.removeAccountChangeListener(this.payerSubscriptionId);
     }
-
-    this.refreshBlockhash();
-    this.blockhashTimer = window.setInterval(
-      this.refreshBlockhash,
-      BLOCKHASH_INTERVAL_MS
+    this.payerSubscriptionId = this.connection.onAccountChange(
+      this.payerAccount.publicKey,
+      this.onPayerAccount
     );
-    this.programId = new PublicKey(programId);
-    this.payerAccount = new Account(Buffer.from(accountKey, "hex"));
-    this.minAccountBalance = minAccountBalance;
-    this.connection.onProgramAccountChange(
+  };
+
+  private updateProgramId = (programId: PublicKey) => {
+    if (!this.connection) return;
+    if (this.programId?.equals(programId)) return;
+
+    this.programId = programId;
+    if (this.programSubscriptionId) {
+      this.connection.removeProgramAccountChangeListener(
+        this.programSubscriptionId
+      );
+    }
+    this.programSubscriptionId = this.connection.onProgramAccountChange(
       this.programId,
       (keyedAccountInfo: KeyedAccountInfo) => {
         this.onAccount(keyedAccountInfo.accountId.toString());
       }
     );
+  };
 
-    if (this.onConnect) {
-      this.onConnect();
+  private reconnect = async () => {
+    const {
+      programId,
+      accountKey,
+      minAccountBalance,
+      creationFee,
+      rpcUrl,
+      rpcUrlTls
+    } = await this.fetchInit();
+
+    if (!this.onConnect) return;
+
+    this.minAccountBalance = minAccountBalance;
+    this.creationFee = creationFee;
+
+    if (!this.connection) {
+      if (location.protocol !== "https:") {
+        this.connection = new Connection(rpcUrl, "recent");
+      } else {
+        this.connection = new Connection(rpcUrlTls, "recent");
+      }
     }
-  }
 
-  private async refreshBlockhash() {
+    this.refreshBlockhash();
+    clearInterval(this.blockhashTimer);
+    this.blockhashTimer = window.setInterval(
+      this.refreshBlockhash,
+      BLOCKHASH_INTERVAL_MS
+    );
+
+    const newPayer = new Account(Buffer.from(accountKey, "hex"));
+    this.updatePayerAccount(newPayer);
+
+    const newProgramId = new PublicKey(programId);
+    this.updateProgramId(newProgramId);
+
+    this.onConnect();
+  };
+
+  private refreshBlockhash = async () => {
     if (!this.connection) return;
     try {
       this.blockhash = (await this.connection.getRecentBlockhash()).blockhash;
     } catch (err) {
       console.error("Failed to refresh blockhash", err);
     }
-  }
+  };
 
-  private async fetchInit(): Promise<InitResponse> {
+  private fetchInit = async (): Promise<InitResponse> => {
     let response;
     let invalidResponse = true;
     while (invalidResponse) {
@@ -203,6 +267,7 @@ export class TransactionService implements ITransactionService {
         !("programId" in response) ||
         !("accountKey" in response) ||
         !("minAccountBalance" in response) ||
+        !("creationFee" in response) ||
         !("rpcUrl" in response) ||
         !("rpcUrlTls" in response);
       if (invalidResponse) {
@@ -210,7 +275,7 @@ export class TransactionService implements ITransactionService {
       }
     }
     return response;
-  }
+  };
 
   private onTimeout = (signature: string) => {
     this.pendingTransactions.forEach(
@@ -235,6 +300,22 @@ export class TransactionService implements ITransactionService {
       },
       this
     );
+  };
+
+  private onPayerAccount = async (accountInfo: AccountInfo) => {
+    if (this.minAccountBalance && this.creationFee) {
+      const totalCreationCost = this.minAccountBalance + this.creationFee;
+      if (accountInfo.lamports < 10 * totalCreationCost) {
+        const subscriptionId = this.payerSubscriptionId;
+        if (subscriptionId) {
+          this.payerSubscriptionId = undefined;
+          if (this.connection) {
+            await this.connection.removeAccountChangeListener(subscriptionId);
+          }
+          this.connectLoop();
+        }
+      }
+    }
   };
 
   private onAccount = (accountId: string) => {

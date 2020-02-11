@@ -24,9 +24,10 @@ async function init(): Promise<{
       const minAccountBalance = await connection.getMinimumBalanceForRentExemption(
         0
       );
+      const creationFee = feeCalculator.maxLamportsPerSignature;
       const accountSupply = new AccountSupply(
         connection,
-        feeCalculator,
+        creationFee,
         minAccountBalance
       );
       return { programId, accountSupply };
@@ -54,7 +55,6 @@ async function init(): Promise<{
 
   app.get("/init", async (req, res) => {
     const account = accountSupply.pop();
-    const minAccountBalance = accountSupply.minAccountBalance;
     if (!account) {
       res.status(500).send("Account supply empty, try again");
       return;
@@ -65,7 +65,8 @@ async function init(): Promise<{
         JSON.stringify({
           programId: programId.toString(),
           accountKey: Buffer.from(account.secretKey).toString("hex"),
-          minAccountBalance,
+          minAccountBalance: accountSupply.minAccountBalance,
+          creationFee: accountSupply.creationFee,
           rpcUrl: url,
           rpcUrlTls: urlTls
         })
