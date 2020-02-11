@@ -1,12 +1,12 @@
 import * as React from "react";
 
 import "./index.scss";
-import ITransaction from "../../../reducers/transactions/model";
+import * as ITransaction from "../../../reducers/transactions/model";
 import Popover from "react-popover";
 
 interface IProps {
-  status: string;
-  information: ITransaction.TransactionInfo;
+  status: ITransaction.Status;
+  information: ITransaction.Info;
 }
 
 interface IState {
@@ -14,16 +14,9 @@ interface IState {
 }
 
 export default class TransactionSquare extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props);
-    this.setAnimation();
-  }
-
   state: IState = {
     popoverOpen: false
   };
-
-  animatedClass = "";
 
   private toggle = (toState: any = null) => {
     this.setState({
@@ -33,42 +26,70 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
 
   private squareInfo = () => {
     const { status } = this.props;
-    const {
-      confirmationTime,
-      signature,
-      lamportsCount
-    } = this.props.information;
-    const solCount = lamportsCount / 1000000000;
+    const { confirmationTime, signature, userSent } = this.props.information;
 
-    if ((signature && status === "completed") || status === "completed-after") {
-      return (
-        <div className={"square-info-container"}>
-          <p>Confirmation Time: {confirmationTime} sec</p>
-          <p>SOL: {solCount}</p>
-          <p>Signature: {signature}</p>
-        </div>
-      );
-    } else return <div />;
-  };
+    function displaySentBy() {
+      if (!userSent) {
+        return <p>Sent by another user</p>;
+      }
 
-  private setAnimation = () => {
-    const animatedArray = [
-      "zoomInRight",
-      "slideInRight",
-      "fadeInRight",
-      "slideInRight",
-      "bounceInRight",
-      "lightSpeedIn"
-    ];
-    const index = Math.floor(Math.random() * Math.floor(6));
+      return null;
+    }
 
-    this.animatedClass = animatedArray[index];
+    function displaySignature() {
+      if (signature) {
+        return <p>Signature: {signature}</p>;
+      }
+
+      return null;
+    }
+
+    function displayConfTime() {
+      if (confirmationTime === Number.MAX_VALUE) {
+        return <p>Unconfirmed: Timed out</p>;
+      } else if (confirmationTime > 0) {
+        return <p>Confirmation Time: {confirmationTime} sec</p>;
+      }
+      return null;
+    }
+
+    function displayErrorMsg() {
+      if (typeof status === "object" && "msg" in status) {
+        return <p>Error: {status.msg}</p>;
+      }
+      return null;
+    }
+
+    return (
+      <div className={"square-info-container"}>
+        {displaySentBy()}
+        {displayConfTime()}
+        {displaySignature()}
+        {displayErrorMsg()}
+      </div>
+    );
   };
 
   render() {
     const { status } = this.props;
-    const { signature } = this.props.information;
+    const { signature, userSent } = this.props.information;
     const hovered = this.state.popoverOpen ? "hovered" : "";
+    const notUserSent = userSent ? "" : "not-user-sent";
+    const noEvent = !signature && userSent ? "no-event" : "";
+
+    let statusClass = "";
+    if (status === "success") {
+      statusClass = "success";
+    } else if (status === "timeout") {
+      statusClass = "timeout";
+    } else if (typeof status === "object" && "msg" in status) {
+      statusClass = "error";
+    }
+
+    const completedClass = status !== "sent" ? "completed" : "";
+    const explorerLink = signature
+      ? `https://explorer.solana.com/transactions/${signature}`
+      : undefined;
 
     return (
       <Popover
@@ -80,14 +101,12 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
       >
         <a
           key={0}
-          href={`https://explorer.solana.com/transactions/${signature}`}
+          href={explorerLink}
           target={"_blank"}
           rel="noopener noreferrer"
           onMouseOver={() => this.toggle(true)}
           onMouseOut={() => this.toggle(false)}
-          className={`square ${status} ${hovered} ${
-            !signature ? "no-event" : ""
-          } ${this.animatedClass}`}
+          className={`square slideInRight ${statusClass} ${completedClass} ${hovered} ${notUserSent} ${noEvent}`}
         />
       </Popover>
     );

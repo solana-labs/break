@@ -23,8 +23,25 @@
   pointer-events: none;
   @include transition;
 
+
   &.completed {
-    background-color: $green;
+    &.success {
+      background-color: $green;
+    }
+
+    &.error {
+      background-color: $red;
+    }
+
+    &.timeout {
+      background-color: $orange;
+    }
+
+    &.not-user-sent {
+      background-color: $pink;
+      cursor: default;
+    }
+
     pointer-events: auto;
     @include transition;
 
@@ -38,16 +55,6 @@
     background-color: #3D3D3D;
     border: 1px solid #3D3D3D;
     pointer-events: none;
-  }
-
-  &.completed-after {
-    background-color: #50B6D7;
-    @include transition;
-
-    &.hovered{
-      opacity: 0.8;
-      @include transition;
-    }
   }
 }
 

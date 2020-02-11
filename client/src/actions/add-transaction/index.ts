@@ -1,7 +1,14 @@
 import { Action, ADD_TRANSACTION } from "../types";
 
-export const addTransaction = (): Action => {
+export const addTransaction = (
+  accountId: string,
+  signature: string
+): Action => {
   return {
-    type: ADD_TRANSACTION
+    type: ADD_TRANSACTION,
+    payload: {
+      accountId,
+      signature
+    }
   };
 };

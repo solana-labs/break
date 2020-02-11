@@ -218,7 +218,7 @@ describe("test function transactionReducer", () => {
     };
 
     const action = {
-      type: "SET_INFO",
+      type: "UPDATE_TRANSACTION",
       payload
     };
 

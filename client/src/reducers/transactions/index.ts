@@ -2,14 +2,14 @@ import * as ITransaction from "./model";
 import {
   ADD_TRANSACTION,
   RESET_TRANSACTIONS,
-  SET_INFO,
+  UPDATE_TRANSACTION,
   SET_TPS
 } from "../../actions/types";
 
 const initState: ITransaction.ModelState = {
   transactions: [],
-  countCompletedTransactions: 0,
-  averageTransactionsTime: 0,
+  userCompletedCount: 0,
+  allCompletedCount: 0,
   transactionsPerSecond: 0
 };
 
@@ -19,13 +19,14 @@ const transactionReducer = (
 ): ITransaction.ModelState => {
   switch (action.type) {
     case ADD_TRANSACTION: {
+      const { accountId, signature } = action.payload;
       const newTransaction: ITransaction.Model = {
-        id: "transaction" + state.transactions.length,
-        status: "default",
+        status: "sent",
         info: {
-          signature: "",
+          accountId,
+          signature,
           confirmationTime: 0,
-          lamportsCount: 0
+          userSent: false
         }
       };
 
@@ -34,12 +35,12 @@ const transactionReducer = (
         transactions: [...state.transactions, newTransaction]
       };
     }
-    case SET_INFO: {
-      const { id, status, info } = action.payload;
+    case UPDATE_TRANSACTION: {
+      const { status, info }: ITransaction.Model = action.payload;
 
-      const newTransactions: ITransaction.Model[] = state.transactions.map(
+      const transactions: ITransaction.Model[] = state.transactions.map(
         (item: ITransaction.Model) => {
-          if (item.id === id) {
+          if (item.info.accountId === info.accountId) {
             return {
               ...item,
               status,
@@ -50,40 +51,35 @@ const transactionReducer = (
         }
       );
 
-      const newCountCompletedTransactions =
-        state.countCompletedTransactions + 1;
-
-      const timeSum = newTransactions.reduce(
-        (prev: number, elem: ITransaction.Model) => {
-          return prev + elem.info.confirmationTime;
-        },
-        0
-      );
-
-      const newAverageTransactionsTime = Number(
-        (timeSum / newCountCompletedTransactions).toFixed(3)
-      );
+      let allCompletedCount = state.allCompletedCount;
+      let userCompletedCount = state.userCompletedCount;
+      if (status === "success") {
+        allCompletedCount += 1;
+        if (info.userSent) {
+          userCompletedCount += 1;
+        }
+      }
 
       return {
         ...state,
-        transactions: newTransactions,
-        countCompletedTransactions: newCountCompletedTransactions,
-        averageTransactionsTime: newAverageTransactionsTime
+        transactions,
+        allCompletedCount,
+        userCompletedCount
       };
     }
     case RESET_TRANSACTIONS: {
       return {
         ...state,
         transactions: [],
-        countCompletedTransactions: 0,
-        averageTransactionsTime: 0
+        allCompletedCount: 0,
+        userCompletedCount: 0,
+        transactionsPerSecond: 0
       };
     }
     case SET_TPS: {
-      const tps = action.payload / 5;
       return {
         ...state,
-        transactionsPerSecond: tps
+        transactionsPerSecond: action.payload
       };
     }
     default:

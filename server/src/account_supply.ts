@@ -1,8 +1,12 @@
 import { Account, Connection, FeeCalculator } from "@solana/web3.js";
 
-const MIN_SUPPLY = 100;
-const NUM_FUNDED_TRANSACTIONS = 1000;
+const MIN_SUPPLY = 50;
+const NUM_FUNDED_TRANSACTIONS = 10000;
 const BATCH_SIZE = 10;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Provides pre-funded accounts for break game clients
 export default class AccountSupply {
@@ -10,9 +14,14 @@ export default class AccountSupply {
   private fundAmount: number;
   private replenishing = false;
 
-  constructor(private connection: Connection, feeCalculator: FeeCalculator) {
+  constructor(
+    private connection: Connection,
+    feeCalculator: FeeCalculator,
+    public minAccountBalance: number
+  ) {
     this.fundAmount =
-      NUM_FUNDED_TRANSACTIONS * feeCalculator.maxLamportsPerSignature;
+      NUM_FUNDED_TRANSACTIONS *
+      (feeCalculator.maxLamportsPerSignature + minAccountBalance);
     this.replenish();
   }
 
@@ -34,6 +43,7 @@ export default class AccountSupply {
               );
             } catch (err) {
               console.error("Failed to replenish account supply", err);
+              await sleep(1000);
               return undefined;
             }
             return account;

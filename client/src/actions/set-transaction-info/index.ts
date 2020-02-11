@@ -1,9 +1,9 @@
-import { Action, SET_INFO } from "../types";
-import ITransaction from "../../reducers/transactions/model";
+import { Action, UPDATE_TRANSACTION } from "../types";
+import * as ITransaction from "../../reducers/transactions/model";
 
-export const setTransactionInfo = (info: ITransaction.Model): Action => {
+export const updateTransaction = (model: ITransaction.Model): Action => {
   return {
-    type: SET_INFO,
-    payload: info
+    type: UPDATE_TRANSACTION,
+    payload: model
   };
 };

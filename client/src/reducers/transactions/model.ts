@@ -1,18 +1,23 @@
+export type Error = {
+  msg: string;
+};
+
+export type Status = "sent" | "success" | "timeout" | Error;
 export interface Model {
-  id: string;
-  status: string;
-  info: TransactionInfo;
+  status: Status;
+  info: Info;
 }
 
-export interface TransactionInfo {
+export interface Info {
+  accountId: string;
   signature: string;
   confirmationTime: number;
-  lamportsCount: number;
+  userSent: boolean;
 }
 
 export interface ModelState {
   transactions: Model[];
-  countCompletedTransactions: number;
-  averageTransactionsTime: number;
+  allCompletedCount: number;
+  userCompletedCount: number;
   transactionsPerSecond: number;
 }
