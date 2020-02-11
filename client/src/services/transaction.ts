@@ -238,15 +238,27 @@ export class TransactionService implements ITransactionService {
   };
 
   private onAccount = (accountId: string) => {
+    // Info defaults
+    let userSent = false;
+    let signature = "";
+    let confirmationTime = 0;
+
+    // Check if the user sent the transaction that created this account
     const pendingTransaction = this.pendingTransactions.get(accountId);
-    this.pendingTransactions.delete(accountId);
-    clearTimeout(pendingTransaction?.timeoutId);
+    if (pendingTransaction) {
+      userSent = true;
+      confirmationTime = this.confirmationTime(pendingTransaction.sentAt);
+      signature = pendingTransaction.signature;
+      this.pendingTransactions.delete(accountId);
+      clearTimeout(pendingTransaction.timeoutId);
+      if (this.connection && pendingTransaction.subscriptionId) {
+        this.connection.removeSignatureListener(
+          pendingTransaction.subscriptionId
+        );
+      }
+    }
+
     if (this.onTransaction) {
-      const userSent = !!pendingTransaction;
-      const confirmationTime = pendingTransaction
-        ? this.confirmationTime(pendingTransaction.sentAt)
-        : 0;
-      const signature = pendingTransaction ? pendingTransaction.signature : "";
       this.onTransaction({
         status: "success",
         info: { accountId, signature, confirmationTime, userSent }
