@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Dispatch } from "redux";
 import { connect } from "react-redux";
+import debounce from "lodash/debounce";
 
 import "./index.scss";
 import * as ITransaction from "../../../reducers/transactions/model";
@@ -10,7 +11,7 @@ import { addTransaction } from "../../../actions/add-transaction";
 import { updateTransaction } from "../../../actions/set-transaction-info";
 import { IService } from "../../../services";
 import { withService } from "../../hoc-helpers/with-service";
-import { ITransactionService } from "../../../services/transaction";
+import { TransactionService } from "../../../services/transaction";
 import { setStatusLoader } from "../../../actions/set-status-loader";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 
@@ -28,7 +29,7 @@ interface IStateProps {
 }
 
 interface IServiceProps {
-  transactionService: ITransactionService;
+  transactionService: TransactionService;
 }
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
@@ -36,14 +37,25 @@ type IProps = IStateProps & IDispatchProps & IServiceProps;
 class Game extends React.Component<IProps, {}> {
   _timerId?: number;
   _timeoutId?: number;
+  _updateDebounced = debounce(this.forceUpdate, 1000 / 60, { leading: true });
+
+  shouldComponentUpdate() {
+    this._updateDebounced();
+    return false;
+  }
 
   private makeTransaction = () => {
+    try {
+      const {
+        accountId,
+        signature
+      } = this.props.transactionService.sendTransaction();
+      this.props.dispatch(addTransaction(accountId, signature));
+    } catch (err) {
+      console.error("failed to send transaction", err);
+      this.props.transactionService.reconnect();
+    }
     this.updateScroll();
-    const {
-      accountId,
-      signature
-    } = this.props.transactionService.sendTransaction();
-    this.props.dispatch(addTransaction(accountId, signature));
   };
 
   private onTransaction = (transaction: ITransaction.Model) => {
@@ -101,6 +113,7 @@ class Game extends React.Component<IProps, {}> {
 
   componentWillUnmount() {
     this.props.transactionService.disconnect();
+    this._updateDebounced.cancel();
   }
 
   render() {

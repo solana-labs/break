@@ -7,4 +7,5 @@ switch (hostname) {
     origin = `http://${hostname}:${process.env.PORT || 8080}`;
 }
 
-export const baseUrl = origin;
+export const wsUrl = origin.replace("http", "ws");
+export const httpUrl = origin;

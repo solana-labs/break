@@ -1,7 +1,8 @@
-import { baseUrl } from "../config";
+import { httpUrl, wsUrl } from "../config";
 
-const base = (rest: string): string => `${baseUrl}/${rest}`;
+const base = (rest: string): string => `${httpUrl}/${rest}`;
 
 export default class Paths {
+  static WS = wsUrl;
   static Init = base(`init`);
 }
