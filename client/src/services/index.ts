@@ -1,7 +1,7 @@
-import { TransactionService, ITransactionService } from "./transaction";
+import { TransactionService } from "./transaction";
 
 export interface IService {
-  transactionService: ITransactionService;
+  transactionService: TransactionService;
 }
 
 export default class Service implements IService {

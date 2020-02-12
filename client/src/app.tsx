@@ -32,7 +32,7 @@ class App extends React.Component<IProps, {}> {
           <Route path="/game" exact component={GameScene} />
           <Redirect from="*" to="/" exact />
         </Switch>
-        <Loader isOpen={loaderIsOpen} text={"Game initialization..."} />
+        <Loader isOpen={loaderIsOpen} text={"Game loading..."} />
       </div>
     );
   }

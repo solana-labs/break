@@ -97,6 +97,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
         body={this.squareInfo()}
         isOpen={this.state.popoverOpen}
         enterExitTransitionDurationMs={5}
+        refreshIntervalMs={undefined}
         preferPlace={"right"}
       >
         <a
