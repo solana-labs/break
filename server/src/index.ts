@@ -32,7 +32,7 @@ async function init(): Promise<{
       const minAccountBalance = await connection.getMinimumBalanceForRentExemption(
         0
       );
-      const creationFee = feeCalculator.maxLamportsPerSignature;
+      const creationFee = feeCalculator.lamportsPerSignature;
       const accountSupply = new AccountSupply(
         connection,
         creationFee,
