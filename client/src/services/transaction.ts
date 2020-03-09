@@ -82,13 +82,13 @@ export class TransactionService {
 
   sendTransaction = () => {
     const newAccount = new Account();
-    const transaction = SystemProgram.createAccount(
-      this.solanaService.payerAccount.publicKey,
-      newAccount.publicKey,
-      this.solanaService.minAccountBalance,
-      0,
-      this.solanaService.programId
-    );
+    const transaction = SystemProgram.createAccount({
+      fromPubkey: this.solanaService.payerAccount.publicKey,
+      newAccountPubkey: newAccount.publicKey,
+      lamports: this.solanaService.minAccountBalance,
+      space: 0,
+      programId: this.solanaService.programId
+    });
 
     const sentAt = performance.now();
     const accountId = newAccount.publicKey.toBase58();
