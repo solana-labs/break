@@ -6,16 +6,20 @@ For running this application you need to have [NodeJs](https://nodejs.org/en/) a
 We recommend to use [NVM](https://github.com/creationix/nvm) for managing NodeJs versions
 For NVM installation please refer to [manual](https://github.com/creationix/nvm#install--update-script)
 
-### Installing
+### Install
 
 ```
 npm install
 ```
 
-### Run application
+### Run
 
 ```
+# Connect to local node
 npm run start
+
+# Connect to devnet cluster
+LIVE=1 npm run start
 ```
 
 If you need to compile application for deployment
