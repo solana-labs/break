@@ -20,7 +20,9 @@ export default class Home extends React.Component {
             </p>
             <div className={"buttons-block"}>
               <Button linkTo={"/game"} name={"Play the game"} />
-              <a href="https://docs.solana.com/apps">Learn how to develop apps</a>
+              <a href="https://docs.solana.com/apps">
+                Learn how to develop apps
+              </a>
             </div>
           </div>
         </div>
