@@ -11,7 +11,7 @@ homepage = "https://break.solana.com/"
 edition = "2018"
 
 [dependencies]
-solana-sdk = { version = "0.22.2", default-features = false, features = ["program"] }
+solana-sdk = { version = "=1.0.9", default-features = false, features = ["program"] }
 
 [lib]
 crate-type = ["cdylib"]
