@@ -24,6 +24,23 @@ export default class AccountSupply {
     this.replenish();
   }
 
+  static async create(connection: Connection): Promise<AccountSupply> {
+    const { feeCalculator } = await connection.getRecentBlockhash();
+    const rentExemptBalance = await connection.getMinimumBalanceForRentExemption(
+      0
+    );
+    const { slotsPerEpoch } = await connection.getEpochSchedule();
+    const slotsPerSecond = 0.4;
+    const slotsPerYear = (365.25 * 24.0 * 60.0 * 60.0) / slotsPerSecond;
+    const epochsPerYear = slotsPerYear / slotsPerEpoch;
+    const paddingMultiplier = 2.0;
+    const minBalanceForOneEpoch = Math.round(
+      (paddingMultiplier * rentExemptBalance) / (2.0 * epochsPerYear)
+    );
+    const creationFee = feeCalculator.lamportsPerSignature;
+    return new AccountSupply(connection, creationFee, minBalanceForOneEpoch);
+  }
+
   private async replenish(): Promise<void> {
     if (this.replenishing) return;
     this.replenishing = true;
