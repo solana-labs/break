@@ -16,6 +16,10 @@ export default class TpuProxy {
 
   constructor(private connection: Connection) {}
 
+  connected = (): boolean => {
+    return this.tpu !== undefined && !this.connecting;
+  };
+
   connect = async (): Promise<void> => {
     if (this.connecting) return;
     this.connecting = true;
