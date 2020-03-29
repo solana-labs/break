@@ -14,29 +14,32 @@ function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function init(): Promise<{
-  programId: PublicKey;
-  accountSupply: AccountSupply;
-  tpuProxy: TpuProxy;
-}> {
-  const connection = new Connection(url, "recent");
-  const program = new Program(connection);
-  const tpuProxy = new TpuProxy(connection);
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    try {
-      await tpuProxy.connect();
-      const programId = await program.load();
-      console.log("Program Loaded");
-      const accountSupply = await AccountSupply.create(connection);
-      console.log("Account Supply Created");
-      return { programId, accountSupply, tpuProxy };
-    } catch (err) {
-      console.error("Failed to initialize server", err);
-      await sleep(1000);
-      console.log("Retrying initialization");
+class Server {
+  programId?: PublicKey;
+  accountSupply?: AccountSupply;
+
+  init = async (connection: Connection, tpuProxy: TpuProxy): Promise<void> => {
+    const program = new Program(connection);
+    let programId, accountSupply;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        await tpuProxy.connect();
+        programId = await program.load();
+        console.log("Program Loaded");
+        accountSupply = await AccountSupply.create(connection);
+        console.log("Account Supply Created");
+        break;
+      } catch (err) {
+        console.error("Failed to initialize server", err);
+        await sleep(1000);
+        console.log("Retrying initialization");
+      }
     }
-  }
+
+    this.programId = programId;
+    this.accountSupply = accountSupply;
+  };
 }
 
 (async function(): Promise<void> {
@@ -49,17 +52,28 @@ async function init(): Promise<{
   app.use("/", express.static(staticPath));
   console.log(`Serving static files from: ${staticPath}`);
 
-  const { programId, accountSupply, tpuProxy } = await init();
-  console.log("Server initialized");
+  const connection = new Connection(url, "recent");
+  const tpuProxy = new TpuProxy(connection);
+  const server = new Server();
+  server.init(connection, tpuProxy);
 
   app.get("/init", async (req, res) => {
+    const programId = server.programId;
+    const accountSupply = server.accountSupply;
+
+    if (!tpuProxy.connected()) {
+      res.status(500).send("Tpu proxy reconnecting, try again");
+      return;
+    }
+
+    if (!programId || !accountSupply) {
+      res.status(500).send("Server has not initialized, try again");
+      return;
+    }
+
     const account = accountSupply.pop();
     if (!account) {
       res.status(500).send("Account supply empty, try again");
-      return;
-    }
-    if (tpuProxy.connecting) {
-      res.status(500).send("Tpu proxy reconnecting, try again");
       return;
     }
 
@@ -81,15 +95,15 @@ async function init(): Promise<{
     res.sendFile(path.join(staticPath, "/index.html"));
   });
 
-  const server = http.createServer(app);
+  const httpServer = http.createServer(app);
 
   // Start websocket server
-  const wss = new WebSocket.Server({ server });
+  const wss = new WebSocket.Server({ server: httpServer });
   wss.on("connection", function connection(ws) {
     ws.on("message", tpuProxy.onTransaction);
   });
 
   const port = process.env.PORT || 8080;
-  server.listen(port);
+  httpServer.listen(port);
   console.log(`Server listening on port: ${port}`);
 })();
