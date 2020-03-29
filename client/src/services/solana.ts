@@ -62,8 +62,7 @@ export class SolanaService {
           !("accountKey" in response) ||
           !("minAccountBalance" in response) ||
           !("creationFee" in response) ||
-          !("rpcUrl" in response) ||
-          !("rpcUrlTls" in response);
+          !("rpcUrl" in response);
         if (invalidResponse) {
           throw new Error("Failed server init request");
         }
@@ -74,11 +73,7 @@ export class SolanaService {
     }
 
     if (!this._connection) {
-      if (location.protocol !== "https:") {
-        this._connection = new Connection(response.rpcUrl, "recent");
-      } else {
-        this._connection = new Connection(response.rpcUrlTls, "recent");
-      }
+      this._connection = new Connection(response.rpcUrl, "recent");
     }
 
     const newPayer = new Account(Buffer.from(response.accountKey, "hex"));
@@ -135,21 +130,14 @@ export class SolanaService {
     let invalidResponse = true;
     while (invalidResponse) {
       response = await fetcher.get(Path.Init);
-      invalidResponse =
-        !("accountKey" in response) ||
-        !("rpcUrl" in response) ||
-        !("rpcUrlTls" in response);
+      invalidResponse = !("accountKey" in response) || !("rpcUrl" in response);
       if (invalidResponse) {
         throw new Error("Failed to refresh payer");
       }
     }
 
     if (!this._connection) {
-      if (location.protocol !== "https:") {
-        this._connection = new Connection(response.rpcUrl, "recent");
-      } else {
-        this._connection = new Connection(response.rpcUrlTls, "recent");
-      }
+      this._connection = new Connection(response.rpcUrl, "recent");
     }
 
     const newPayer = new Account(Buffer.from(response.accountKey, "hex"));
