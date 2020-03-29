@@ -28,16 +28,8 @@ async function init(): Promise<{
       await tpuProxy.connect();
       const programId = await program.load();
       console.log("Program Loaded");
-      const { feeCalculator } = await connection.getRecentBlockhash();
-      const minAccountBalance = await connection.getMinimumBalanceForRentExemption(
-        0
-      );
-      const creationFee = feeCalculator.lamportsPerSignature;
-      const accountSupply = new AccountSupply(
-        connection,
-        creationFee,
-        minAccountBalance
-      );
+      const accountSupply = await AccountSupply.create(connection);
+      console.log("Account Supply Created");
       return { programId, accountSupply, tpuProxy };
     } catch (err) {
       console.error("Failed to initialize server", err);
