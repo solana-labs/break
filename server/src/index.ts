@@ -70,8 +70,7 @@ async function init(): Promise<{
           accountKey: Buffer.from(account.secretKey).toString("hex"),
           minAccountBalance: accountSupply.minAccountBalance,
           creationFee: accountSupply.creationFee,
-          rpcUrl: url,
-          rpcUrlTls: urlTls
+          rpcUrl: urlTls
         })
       )
       .end();
