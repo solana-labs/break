@@ -9,6 +9,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import { url, urlTls } from "./urls";
 import AccountSupply from "./account_supply";
 import TpuProxy from "./tpu_proxy";
+import Faucet from "./faucet";
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -24,11 +25,17 @@ class Server {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
-        await tpuProxy.connect();
-        programId = await program.load();
-        console.log("Program Loaded");
-        accountSupply = await AccountSupply.create(connection);
+        const { feeCalculator } = await connection.getRecentBlockhash();
+        const faucet = new Faucet(connection, feeCalculator);
+        accountSupply = await AccountSupply.create(
+          connection,
+          faucet,
+          feeCalculator
+        );
         console.log("Account Supply Created");
+        await tpuProxy.connect();
+        programId = await program.load(faucet, feeCalculator);
+        console.log("Program Loaded");
         break;
       } catch (err) {
         console.error("Failed to initialize server", err);
@@ -55,6 +62,7 @@ class Server {
   const connection = new Connection(url, "recent");
   const tpuProxy = new TpuProxy(connection);
   const server = new Server();
+  console.log(`Connecting to cluster: ${url}`);
   server.init(connection, tpuProxy);
 
   app.get("/init", async (req, res) => {

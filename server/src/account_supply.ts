@@ -1,4 +1,6 @@
-import { Account, Connection } from "@solana/web3.js";
+import { Account, Connection, FeeCalculator } from "@solana/web3.js";
+
+import Faucet from "./faucet";
 
 const MIN_SUPPLY = 50;
 const NUM_FUNDED_TRANSACTIONS = 1000;
@@ -15,7 +17,7 @@ export default class AccountSupply {
   private replenishing = false;
 
   constructor(
-    private connection: Connection,
+    private faucet: Faucet,
     public creationFee: number,
     public minAccountBalance: number
   ) {
@@ -24,8 +26,11 @@ export default class AccountSupply {
     this.replenish();
   }
 
-  static async create(connection: Connection): Promise<AccountSupply> {
-    const { feeCalculator } = await connection.getRecentBlockhash();
+  static async create(
+    connection: Connection,
+    faucet: Faucet,
+    feeCalculator: FeeCalculator
+  ): Promise<AccountSupply> {
     const rentExemptBalance = await connection.getMinimumBalanceForRentExemption(
       0
     );
@@ -38,7 +43,7 @@ export default class AccountSupply {
       (paddingMultiplier * rentExemptBalance) / (2.0 * epochsPerYear)
     );
     const creationFee = feeCalculator.lamportsPerSignature;
-    return new AccountSupply(connection, creationFee, minBalanceForOneEpoch);
+    return new AccountSupply(faucet, creationFee, minBalanceForOneEpoch);
   }
 
   private async replenish(): Promise<void> {
@@ -53,10 +58,7 @@ export default class AccountSupply {
           .map(async () => {
             const account = new Account();
             try {
-              await this.connection.requestAirdrop(
-                account.publicKey,
-                this.fundAmount
-              );
+              await this.faucet.fundAccount(account.publicKey, this.fundAmount);
             } catch (err) {
               console.error("Failed to replenish account supply", err);
               await sleep(1000);
