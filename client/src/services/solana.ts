@@ -10,6 +10,7 @@ import {
 } from "@solana/web3.js";
 
 export class SolanaService {
+  _rpcUrl?: string;
   _connection?: Connection;
   _programId?: PublicKey;
   _payerAccount?: Account;
@@ -20,6 +21,11 @@ export class SolanaService {
   onProgramAccountChange?: ProgramAccountChangeCallback;
   programSubscriptionId?: number;
   payerSubscriptionId?: number;
+
+  get rpcUrl(): string {
+    if (!this._rpcUrl) throw new Error("Not initialized");
+    return this._rpcUrl;
+  }
 
   get connection(): Connection {
     if (!this._connection) throw new Error("Not initialized");
@@ -73,6 +79,7 @@ export class SolanaService {
     }
 
     if (!this._connection) {
+      this._rpcUrl = response.rpcUrl;
       this._connection = new Connection(response.rpcUrl, "recent");
     }
 

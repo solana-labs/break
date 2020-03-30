@@ -34,7 +34,7 @@ interface IServiceProps {
 
 type IProps = IStateProps & IDispatchProps & IServiceProps;
 
-class Game extends React.Component<IProps, {}> {
+class Game extends React.Component<IProps, { clusterUrl: string }> {
   _timerId?: number;
   _timeoutId?: number;
   _updateDebounced = debounce(this.forceUpdate, 1000 / 60, { leading: true });
@@ -75,7 +75,8 @@ class Game extends React.Component<IProps, {}> {
     }
   };
 
-  private onConnected = () => {
+  private onConnected = (clusterUrl: string) => {
+    this.setState({ clusterUrl });
     this.props.dispatch(setStatusLoader(false));
     this.setTimerForSendTransaction();
     document.addEventListener("keyup", this.makeTransaction);
@@ -155,6 +156,7 @@ class Game extends React.Component<IProps, {}> {
                       key={item.info.accountId}
                       status={item.status}
                       information={item.info}
+                      clusterUrl={this.state.clusterUrl}
                     />
                   ))}
               </div>
