@@ -34,7 +34,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 export class TransactionService {
-  onConnect?: () => void;
+  onConnect?: (clusterUrl: string) => void;
   onDisconnect?: () => void;
   onTransaction?: OnTransaction;
   connection?: Connection;
@@ -46,7 +46,7 @@ export class TransactionService {
   solanaService = new SolanaService();
 
   connect = (
-    onConnect: () => void,
+    onConnect: (clusterUrl: string) => void,
     onDisconnect: () => void,
     onTransaction: OnTransaction
   ) => {
@@ -149,7 +149,7 @@ export class TransactionService {
       return;
     }
     this.connection = this.solanaService.connection;
-    this.onConnect && this.onConnect();
+    this.onConnect && this.onConnect(this.solanaService.rpcUrl);
   };
 
   private onTimeout = (signature: string) => {
