@@ -3,13 +3,16 @@ import Path from "@/api/paths";
 import { Buffer } from "buffer";
 import {
   Account,
+  clusterApiUrl,
   ProgramAccountChangeCallback,
   PublicKey,
+  Cluster,
   Connection
 } from "@solana/web3.js";
 
 export class SolanaService {
-  _rpcUrl?: string;
+  _cluster?: Cluster;
+  _clusterUrl?: string;
   _connection?: Connection;
   _programId?: PublicKey;
   _payerAccount?: Account;
@@ -21,11 +24,6 @@ export class SolanaService {
   refreshingPayer = false;
   onProgramAccountChange?: ProgramAccountChangeCallback;
   programSubscriptionId?: number;
-
-  get rpcUrl(): string {
-    if (!this._rpcUrl) throw new Error("Not initialized");
-    return this._rpcUrl;
-  }
 
   get connection(): Connection {
     if (!this._connection) throw new Error("Not initialized");
@@ -53,6 +51,16 @@ export class SolanaService {
     return this._creationFee;
   }
 
+  getClusterParam = (): string => {
+    if (this._cluster) {
+      return `cluster=${this._cluster}`;
+    } else if (this._clusterUrl) {
+      return `clusterUrl=${this._clusterUrl}`;
+    } else {
+      throw new Error("Not initialized");
+    }
+  };
+
   init = async (
     onProgramAccountChange: ProgramAccountChangeCallback
   ): Promise<void> => {
@@ -70,7 +78,7 @@ export class SolanaService {
           !("accountCapacity" in response) ||
           !("minAccountBalance" in response) ||
           !("creationFee" in response) ||
-          !("rpcUrl" in response);
+          !("cluster" in response || "clusterUrl" in response);
         if (invalidResponse) {
           throw new Error("Failed server init request");
         }
@@ -81,8 +89,12 @@ export class SolanaService {
     }
 
     if (!this._connection) {
-      this._rpcUrl = response.rpcUrl;
-      this._connection = new Connection(response.rpcUrl, "recent");
+      const endpoint = response.cluster
+        ? clusterApiUrl(response.cluster)
+        : response.clusterUrl;
+      this._connection = new Connection(endpoint, "recent");
+      this._cluster = response.cluster;
+      this._clusterUrl = response.clusterUrl;
     }
 
     const newProgramId = new PublicKey(response.programId);

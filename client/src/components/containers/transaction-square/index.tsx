@@ -7,7 +7,7 @@ import Popover from "react-popover";
 interface IProps {
   status: ITransaction.Status;
   information: ITransaction.Info;
-  clusterUrl: string;
+  clusterParam: string;
 }
 
 interface IState {
@@ -72,7 +72,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
   };
 
   render() {
-    const { status, clusterUrl } = this.props;
+    const { status, clusterParam } = this.props;
     const { signature, userSent } = this.props.information;
     const hovered = this.state.popoverOpen ? "hovered" : "";
     const notUserSent = userSent ? "" : "not-user-sent";
@@ -89,7 +89,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
 
     const completedClass = status !== "sent" ? "completed" : "";
     const explorerLink = signature
-      ? `https://explorer.solana.com?txs=${signature}&networkUrl=${clusterUrl}`
+      ? `https://explorer.solana.com/transaction/${signature}?${clusterParam}`
       : undefined;
 
     return (

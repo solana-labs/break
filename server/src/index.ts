@@ -6,7 +6,7 @@ import WebSocket from "ws";
 
 import Program from "./program";
 import { Connection, PublicKey } from "@solana/web3.js";
-import { url, urlTls } from "./urls";
+import { cluster, url, urlTls } from "./urls";
 import AccountSupply, { NUM_FUNDED_TRANSACTIONS } from "./account_supply";
 import TpuProxy from "./tpu_proxy";
 import Faucet from "./faucet";
@@ -93,7 +93,8 @@ class Server {
           accountCapacity: NUM_FUNDED_TRANSACTIONS,
           minAccountBalance: accountSupply.minAccountBalance,
           creationFee: accountSupply.creationFee,
-          rpcUrl: urlTls
+          clusterUrl: urlTls,
+          cluster
         })
       )
       .end();

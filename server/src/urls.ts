@@ -3,7 +3,8 @@
 
 import { clusterApiUrl, Cluster } from "@solana/web3.js";
 
-function chooseCluster(): Cluster {
+function chooseCluster(): Cluster | undefined {
+  if (!process.env.LIVE) return;
   switch (process.env.CLUSTER) {
     case "devnet":
     case "testnet":
@@ -11,18 +12,15 @@ function chooseCluster(): Cluster {
       return process.env.CLUSTER;
     }
   }
-
   return "devnet";
 }
 
+export const cluster = chooseCluster();
+
 export const url =
   process.env.RPC_URL ||
-  (process.env.LIVE
-    ? clusterApiUrl(chooseCluster(), false)
-    : "http://localhost:8899");
+  (process.env.LIVE ? clusterApiUrl(cluster, false) : "http://localhost:8899");
 
 export const urlTls =
   process.env.RPC_URL ||
-  (process.env.LIVE
-    ? clusterApiUrl(chooseCluster(), true)
-    : "http://localhost:8899");
+  (process.env.LIVE ? clusterApiUrl(cluster, true) : "http://localhost:8899");
