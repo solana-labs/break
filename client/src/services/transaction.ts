@@ -3,8 +3,9 @@ import {
   Connection,
   SystemProgram,
   TransactionSignature,
-  SignatureStatusResult,
-  KeyedAccountInfo
+  KeyedAccountInfo,
+  SignatureSuccess,
+  TransactionError
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as ITransaction from "@/reducers/transactions/model";
@@ -215,7 +216,7 @@ export class TransactionService {
 
   private onSignature = (
     signature: string,
-    statusResult: SignatureStatusResult
+    statusResult: SignatureSuccess | TransactionError
   ) => {
     this.pendingTransactions.forEach(
       (pendingTransaction: PendingTransaction, accountId: string) => {
