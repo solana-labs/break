@@ -42,7 +42,7 @@ export default class AccountSupply {
     const minBalanceForOneEpoch = Math.round(
       (paddingMultiplier * rentExemptBalance) / (2.0 * epochsPerYear)
     );
-    const creationFee = feeCalculator.lamportsPerSignature;
+    const creationFee = 2 * feeCalculator.lamportsPerSignature;
     return new AccountSupply(faucet, creationFee, minBalanceForOneEpoch);
   }
 
