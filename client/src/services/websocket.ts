@@ -22,18 +22,27 @@ export class WebSocketService {
         throw new Error("WebSocket open timed out");
       }
       this.socket = socket;
+      this.socket.onclose = () => {
+        this.close();
+      };
+      this.socket.onerror = err => {
+        this.error(err);
+      };
     } finally {
       this.connecting = false;
     }
   };
 
+  error = (err: any) => {
+    console.error(err);
+    this.close();
+  };
+
   send = (data: Buffer) => {
-    if (this.socket) {
-      if (this.socket.readyState == WebSocket.OPEN) {
-        this.socket.send(data);
-      } else {
-        throw new Error("Websocket disconnected");
-      }
+    if (this.socket && this.socket.readyState == WebSocket.OPEN) {
+      this.socket.send(data);
+    } else {
+      throw new Error("Websocket disconnected");
     }
   };
 

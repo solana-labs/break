@@ -122,11 +122,12 @@ export class TransactionService {
 
   public reconnect = () => {
     if (this.reconnecting) return;
+    this.reconnecting = true;
     this._reconnectLoop();
   };
 
   private _reconnectLoop = async () => {
-    while (this.onConnect) {
+    while (!this.disconnected()) {
       try {
         console.log("Connecting...");
         await this._reconnect();
@@ -138,7 +139,6 @@ export class TransactionService {
         await sleep(1000);
       }
     }
-    this.reconnecting = false;
   };
 
   private _reconnect = async () => {

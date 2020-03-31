@@ -116,6 +116,7 @@ export class SolanaService {
       }
       this._connection = undefined;
     }
+    this._programId = undefined;
   };
 
   private onPayerAccount = async (accountInfo: AccountInfo) => {
