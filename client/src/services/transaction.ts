@@ -83,8 +83,9 @@ export class TransactionService {
 
   sendTransaction = () => {
     const newAccount = new Account();
+    const payerAccount = this.solanaService.payerAccount;
     const transaction = SystemProgram.createAccount({
-      fromPubkey: this.solanaService.payerAccount.publicKey,
+      fromPubkey: payerAccount.publicKey,
       newAccountPubkey: newAccount.publicKey,
       lamports: this.solanaService.minAccountBalance,
       space: 0,
@@ -94,7 +95,7 @@ export class TransactionService {
     const sentAt = performance.now();
     const accountId = newAccount.publicKey.toBase58();
     transaction.recentBlockhash = this.blockhashPoller.current;
-    transaction.sign(this.solanaService.payerAccount, newAccount);
+    transaction.sign(payerAccount, newAccount);
     const signatureBuffer = transaction.signature;
     if (!signatureBuffer) throw new Error("Failed to sign transaction");
     const signature = bs58.encode(signatureBuffer);

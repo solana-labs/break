@@ -3,7 +3,8 @@ import { Account, Connection, FeeCalculator } from "@solana/web3.js";
 import Faucet from "./faucet";
 
 const MIN_SUPPLY = 50;
-const NUM_FUNDED_TRANSACTIONS = 1000;
+export const NUM_FUNDED_TRANSACTIONS =
+  parseInt(process.env.FUND_TX_COUNT || "") || 1000;
 const BATCH_SIZE = 10;
 
 function sleep(ms: number): Promise<void> {

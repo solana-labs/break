@@ -7,7 +7,7 @@ import WebSocket from "ws";
 import Program from "./program";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { url, urlTls } from "./urls";
-import AccountSupply from "./account_supply";
+import AccountSupply, { NUM_FUNDED_TRANSACTIONS } from "./account_supply";
 import TpuProxy from "./tpu_proxy";
 import Faucet from "./faucet";
 
@@ -90,6 +90,7 @@ class Server {
         JSON.stringify({
           programId: programId.toString(),
           accountKey: Buffer.from(account.secretKey).toString("hex"),
+          accountCapacity: NUM_FUNDED_TRANSACTIONS,
           minAccountBalance: accountSupply.minAccountBalance,
           creationFee: accountSupply.creationFee,
           rpcUrl: urlTls
