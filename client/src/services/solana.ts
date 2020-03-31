@@ -3,7 +3,6 @@ import Path from "@/api/paths";
 import { Buffer } from "buffer";
 import {
   Account,
-  AccountInfo,
   ProgramAccountChangeCallback,
   PublicKey,
   Connection
@@ -16,11 +15,12 @@ export class SolanaService {
   _payerAccount?: Account;
   _minAccountBalance?: number;
   _creationFee?: number;
+  _remainingCapacity = 0;
 
   initializing = false;
+  refreshingPayer = false;
   onProgramAccountChange?: ProgramAccountChangeCallback;
   programSubscriptionId?: number;
-  payerSubscriptionId?: number;
 
   get rpcUrl(): string {
     if (!this._rpcUrl) throw new Error("Not initialized");
@@ -39,6 +39,7 @@ export class SolanaService {
 
   get payerAccount(): Account {
     if (!this._payerAccount) throw new Error("Not initialized");
+    if (!this.usePayerAccount()) throw new Error("Payer account depleted");
     return this._payerAccount;
   }
 
@@ -66,6 +67,7 @@ export class SolanaService {
         invalidResponse =
           !("programId" in response) ||
           !("accountKey" in response) ||
+          !("accountCapacity" in response) ||
           !("minAccountBalance" in response) ||
           !("creationFee" in response) ||
           !("rpcUrl" in response);
@@ -83,9 +85,6 @@ export class SolanaService {
       this._connection = new Connection(response.rpcUrl, "recent");
     }
 
-    const newPayer = new Account(Buffer.from(response.accountKey, "hex"));
-    this.updatePayerAccount(newPayer, this._connection);
-
     const newProgramId = new PublicKey(response.programId);
     this.updateProgramId(
       newProgramId,
@@ -93,6 +92,8 @@ export class SolanaService {
       onProgramAccountChange
     );
 
+    this._remainingCapacity = response.accountCapacity;
+    this._payerAccount = new Account(Buffer.from(response.accountKey, "hex"));
     this._creationFee = response.creationFee;
     this._minAccountBalance = response.minAccountBalance;
     this.initializing = false;
@@ -110,59 +111,37 @@ export class SolanaService {
         );
         this.programSubscriptionId = undefined;
       }
-      if (this.payerSubscriptionId) {
-        this.connection.removeAccountChangeListener(this.payerSubscriptionId);
-        this.payerSubscriptionId = undefined;
-      }
       this._connection = undefined;
     }
     this._programId = undefined;
   };
 
-  private onPayerAccount = async (accountInfo: AccountInfo) => {
-    const totalCreationCost = this.minAccountBalance + this.creationFee;
-    if (accountInfo.lamports < 10 * totalCreationCost) {
-      const subscriptionId = this.payerSubscriptionId;
-      if (subscriptionId) {
-        this.payerSubscriptionId = undefined;
-        if (this._connection) {
-          await this._connection.removeAccountChangeListener(subscriptionId);
-        }
-      }
-      this.refreshPayerAccount();
-    }
-  };
-
   private refreshPayerAccount = async (): Promise<void> => {
-    let response;
-    let invalidResponse = true;
-    while (invalidResponse) {
-      response = await fetcher.get(Path.Init);
-      invalidResponse = !("accountKey" in response) || !("rpcUrl" in response);
-      if (invalidResponse) {
+    if (this.refreshingPayer) return;
+    this.refreshingPayer = true;
+
+    try {
+      const response = await fetcher.get(Path.Init);
+      if (!("accountKey" in response) || !("accountCapacity" in response)) {
         throw new Error("Failed to refresh payer");
       }
-    }
 
-    if (!this._connection) {
-      this._connection = new Connection(response.rpcUrl, "recent");
+      this._remainingCapacity = response.accountCapacity;
+      this._payerAccount = new Account(Buffer.from(response.accountKey, "hex"));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.refreshingPayer = false;
     }
-
-    const newPayer = new Account(Buffer.from(response.accountKey, "hex"));
-    this.updatePayerAccount(newPayer, this._connection);
   };
 
-  private updatePayerAccount = (account: Account, connection: Connection) => {
-    if (this._payerAccount?.publicKey.equals(account.publicKey)) return;
-    this._payerAccount = account;
-
-    if (this.payerSubscriptionId) {
-      connection.removeAccountChangeListener(this.payerSubscriptionId);
+  private usePayerAccount = (): boolean => {
+    if (this._remainingCapacity === 0) return false;
+    this._remainingCapacity--;
+    if (this._remainingCapacity <= 50) {
+      this.refreshPayerAccount();
     }
-    this.payerSubscriptionId = connection.onAccountChange(
-      account.publicKey,
-      this.onPayerAccount
-    );
+    return true;
   };
 
   private updateProgramId = (
