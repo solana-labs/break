@@ -4,8 +4,7 @@ import {
   SystemProgram,
   TransactionSignature,
   KeyedAccountInfo,
-  SignatureSuccess,
-  TransactionError
+  SignatureResult
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as ITransaction from "@/reducers/transactions/model";
@@ -215,10 +214,7 @@ export class TransactionService {
     return parseFloat(((now - sentAt) / 1000).toFixed(3));
   };
 
-  private onSignature = (
-    signature: string,
-    statusResult: SignatureSuccess | TransactionError
-  ) => {
+  private onSignature = (signature: string, statusResult: SignatureResult) => {
     this.pendingTransactions.forEach(
       (pendingTransaction: PendingTransaction, accountId: string) => {
         if (pendingTransaction.signature === signature) {
@@ -231,9 +227,9 @@ export class TransactionService {
           );
           const userSent = true;
           let status: ITransaction.Status = "success";
-          if ("Err" in statusResult) {
+          if (statusResult.err) {
             status = {
-              msg: JSON.stringify(statusResult.Err) || "Unknown Error"
+              msg: JSON.stringify(statusResult.err) || "Unknown Error"
             };
           }
 
