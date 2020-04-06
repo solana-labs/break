@@ -1,5 +1,5 @@
-// To connect to a public testnet, set `export LIVE=1` in your
-// environment. By default, `LIVE=1` will connect to the stable testnet.
+// To connect to a public cluster, set `export LIVE=1` in your
+// environment. By default, `LIVE=1` will connect to the devnet cluster.
 
 import { clusterApiUrl, Cluster } from "@solana/web3.js";
 
