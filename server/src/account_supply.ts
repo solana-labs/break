@@ -33,7 +33,7 @@ export default class AccountSupply {
     feeCalculator: FeeCalculator
   ): Promise<AccountSupply> {
     const rentExemptBalance = await connection.getMinimumBalanceForRentExemption(
-      0
+      4 // Each account holds 4 bytes
     );
     const { slotsPerEpoch } = await connection.getEpochSchedule();
     const slotsPerSecond = 0.4;

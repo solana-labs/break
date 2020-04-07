@@ -37,7 +37,8 @@ dependencies = [
 name = "break-solana-program"
 version = "0.1.0"
 dependencies = [
- "solana-sdk 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-sdk 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-sdk-bpf-test 1.2.0",
 ]
 
 [[package]]
@@ -235,7 +236,7 @@ dependencies = [
 
 [[package]]
 name = "solana-sdk"
-version = "1.0.9"
+version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bincode 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -253,13 +254,17 @@ dependencies = [
  "serde_bytes 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "solana-sdk-macro 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "solana-sdk-macro 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
+name = "solana-sdk-bpf-test"
+version = "1.2.0"
+
+[[package]]
 name = "solana-sdk-macro"
-version = "1.0.9"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bs58 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -342,8 +347,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum serde_bytes 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "325a073952621257820e7a3469f55ba4726d8b28657e7e36653d1c36dc2c84ae"
 "checksum serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)" = "128f9e303a5a29922045a830221b8f78ec74a5f544944f3d5984f8ec3895ef64"
 "checksum sha2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "27044adfd2e1f077f649f59deb9490d3941d674002f7d062870a60ebe9bd47a0"
-"checksum solana-sdk 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)" = "33ff4aad064cf78a348293f2e03e5861a01784e860a2f2e1b7cc5673afb54fa6"
-"checksum solana-sdk-macro 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)" = "f28d68ba579ca5315e3c7e1f360dc96d20d42c9bca01b312c87bc0771ddbc000"
+"checksum solana-sdk 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)" = "6f80669fb48fec97a6005daad9b76b540fbd46c516903cbd0c8b89f5cfb79425"
+"checksum solana-sdk-macro 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e106dae87a97c8373a041c4e7ade2d5db994b4218ab72756f923429f8c69ab86"
 "checksum subtle 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2d67a5a62ba6e01cb2192ff309324cb4875d0c451d55fe2319433abe7a05a8ee"
 "checksum syn 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)" = "af6f3550d8dff9ef7dc34d384ac6f107e5d31c8f57d9f28e0081503f547ac8f5"
 "checksum thiserror 1.0.9 (registry+https://github.com/rust-lang/crates.io-index)" = "6f357d1814b33bc2dc221243f8424104bfe72dbe911d5b71b3816a2dff1c977e"
