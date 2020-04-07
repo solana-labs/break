@@ -4,6 +4,7 @@ import { useConfig } from "../api";
 import { useAccountIds } from "../solana";
 import { TpsProvider, TpsContext } from "./tps";
 import { CreateTxProvider, CreateTxContext } from "./create";
+import { SelectedTxProvider } from "./selected";
 
 export type PendingTransaction = {
   sentAt: number;
@@ -195,9 +196,11 @@ export function TransactionsProvider({ children }: ProviderProps) {
   return (
     <StateContext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
-        <TpsProvider>
-          <CreateTxProvider>{children}</CreateTxProvider>
-        </TpsProvider>
+        <SelectedTxProvider>
+          <TpsProvider>
+            <CreateTxProvider>{children}</CreateTxProvider>
+          </TpsProvider>
+        </SelectedTxProvider>
       </DispatchContext.Provider>
     </StateContext.Provider>
   );

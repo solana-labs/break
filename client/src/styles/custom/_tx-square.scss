@@ -1,0 +1,58 @@
+.square {
+  width: 3.3rem;
+  height: 3.3rem;
+  margin: 0.5rem;
+  border-radius: 5px;
+  background-color: #3D3D3D;
+  border: 1px solid #3D3D3D;
+  animation-duration: 0.1s;
+  opacity: 1;
+  font-size: 1.3rem;
+  line-height: 1.7;
+
+  &:hover, &:focus {
+    span  {
+    color: black;
+      display: inline;
+    }
+  }
+
+  span  {
+    display: none;
+  }
+
+  @include media-breakpoint-down(md) { 
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0.3rem;
+  }
+
+  &.completed {
+    &.success {
+      background-color: $green;
+    }
+
+    &.error {
+      background-color: $red;
+    }
+
+    &.timeout {
+      background-color: $orange;
+    }
+
+    &.not-user-sent {
+      background-color: $pink;
+      cursor: default;
+    }
+
+    &.hovered{
+      opacity: 0.8;
+    }
+  }
+
+  &.no-event{
+    background-color: #3D3D3D;
+    border: 1px solid #3D3D3D;
+    pointer-events: none;
+  }
+}
