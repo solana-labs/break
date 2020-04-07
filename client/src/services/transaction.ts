@@ -129,7 +129,6 @@ export class TransactionService {
   private _reconnectLoop = async () => {
     while (!this.disconnected()) {
       try {
-        console.log("Connecting...");
         await this._reconnect();
         this.reconnecting = false;
         return;
@@ -142,6 +141,7 @@ export class TransactionService {
   };
 
   private _reconnect = async () => {
+    console.debug("Connecting...");
     await this.solanaService.init(this.onProgramAccountChange);
     await this.blockhashPoller.start(this.solanaService.connection);
     await this.webSocket.connect();
@@ -151,6 +151,7 @@ export class TransactionService {
     }
     this.connection = this.solanaService.connection;
     this.onConnect && this.onConnect(this.solanaService.getClusterParam());
+    console.debug("Connected");
   };
 
   private onTimeout = (signature: string) => {
