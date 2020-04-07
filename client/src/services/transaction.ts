@@ -87,7 +87,7 @@ export class TransactionService {
       fromPubkey: payerAccount.publicKey,
       newAccountPubkey: newAccount.publicKey,
       lamports: this.solanaService.minAccountBalance,
-      space: 0,
+      space: 4, // Each account holds 4 bytes
       programId: this.solanaService.programId
     });
 
