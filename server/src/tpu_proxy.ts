@@ -26,6 +26,7 @@ export default class TpuProxy {
     // eslint-disable-next-line no-constant-condition
     while (this.tpu === undefined) {
       try {
+        console.log("TPU Proxy Connecting...");
         await this.reconnect();
       } catch (err) {
         console.error("TPU Proxy failed to connect, reconnecting", err);
@@ -39,7 +40,14 @@ export default class TpuProxy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onTransaction = (data: any): void => {
     if (this.tpu) {
-      this.tpu.send(data, this.onTpuResult);
+      try {
+        this.tpu.send(data, this.onTpuResult);
+      } catch (err) {
+        this.onTpuResult(err);
+      }
+    } else {
+      this.connect();
+      console.error("TPU Proxy disconnected, dropping message");
     }
   };
 
@@ -64,8 +72,8 @@ export default class TpuProxy {
     const port = Number.parseInt(portStr);
     const tpu = dgram.createSocket("udp4");
     await new Promise(resolve => {
-      tpu.connect(port, host, resolve);
       tpu.on("error", this.onTpuResult);
+      tpu.connect(port, host, resolve);
     });
 
     this.tpu = tpu;
@@ -77,8 +85,8 @@ export default class TpuProxy {
       if (this.tpu) {
         this.tpu.off("error", this.onTpuResult);
         this.tpu = undefined;
+        this.connect();
       }
-      this.connect();
     }
   };
 }
