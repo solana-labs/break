@@ -7,6 +7,9 @@
 // Custom variables
 @import 'custom-variables';
 
+// Dark mode variables
+@import 'dashkit/dark/variables-dark';
+
 // Dashkit variables
 @import 'dashkit/variables';
 
@@ -15,6 +18,9 @@
 
 // Dashkit core
 @import 'dashkit/dashkit';
+
+// Dark mode overrides
+@import 'dashkit/dark/overrides-dark';
 
 // Custom core
 @import 'custom';

@@ -1,6 +1,21 @@
+$path-to-img: "../../images/dashkit" !default;
+$path-to-fonts: "../../fonts" !default;
+
+$font-family-sans-serif: 'Exo 2', sans-serif !default;
+$font-family-base: $font-family-sans-serif !default;
+
+$border-radius: 0.125rem !default;
+$gray-700-dark: #444 !default;
+$gray-800-dark: #222 !default;
+$gray-900-dark: #111 !default;
+$black-dark: #000000;
+
 $black: #000000;
 $white: #FFFFFF;
 $green: #00FFAD;
-$pink: #D148A3;
+$pink: #FF00A8;
+$purple: #ac62dd;
 $red: #B81F48;
 $orange: #E8873F;
+
+$primary: $green;
