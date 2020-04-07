@@ -5,7 +5,7 @@ import debounce from "lodash/debounce";
 
 import "./index.scss";
 import * as ITransaction from "../../../reducers/transactions/model";
-import TransactionSquare from "../transaction-square";
+import { TransactionContainer } from "../transaction-container";
 import { IRootAppReducerState } from "../../../reducer/model";
 import { addTransaction } from "../../../actions/add-transaction";
 import { updateTransaction } from "../../../actions/set-transaction-info";
@@ -15,7 +15,6 @@ import { TransactionService } from "../../../services/transaction";
 import { setStatusLoader } from "../../../actions/set-status-loader";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 
-import tapIcon from "@images/icons/tap.svg";
 import shareTwitterIcon from "@images/share-twitter.svg";
 import shareFacebookIcon from "@images/share-facebook-2.svg";
 import { setTransactionsPerSecond } from "@/actions/set-transactions-per-second";
@@ -39,6 +38,13 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
   _timeoutId?: number;
   _updateDebounced = debounce(this.forceUpdate, 1000 / 60, { leading: true });
 
+  constructor(props: IProps) {
+    super(props);
+    this.state = {
+      clusterParam: ""
+    };
+  }
+
   shouldComponentUpdate() {
     this._updateDebounced();
     return false;
@@ -56,7 +62,6 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
       console.error("failed to send transaction", err);
       this.props.transactionService.reconnect();
     }
-    this.updateScroll();
   };
 
   private onTransaction = (transaction: ITransaction.Model) => {
@@ -65,15 +70,6 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
       this.props.dispatch(addTransaction(signature));
     }
     this.props.dispatch(updateTransaction(transaction));
-  };
-
-  private updateScroll = () => {
-    const scrollSquareContainer: HTMLElement | null = document.getElementById(
-      "scroll-square-container"
-    );
-    if (scrollSquareContainer) {
-      scrollSquareContainer.scrollTop = scrollSquareContainer.scrollHeight;
-    }
   };
 
   private onConnected = (clusterParam: string) => {
@@ -145,33 +141,11 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
               <p>{tps}</p>
             </div>
 
-            <div className={`square-container-wrapper`}>
-              <div
-                id={"scroll-square-container"}
-                className={`square-container`}
-                tabIndex={0}
-              >
-                {transactions &&
-                  transactions.map((item: ITransaction.Model) => (
-                    <TransactionSquare
-                      key={item.info.signature}
-                      status={item.status}
-                      information={item.info}
-                      clusterParam={this.state.clusterParam}
-                    />
-                  ))}
-              </div>
-            </div>
-
-            <button className={`click-zone`} onClick={this.makeTransaction}>
-              <div className={"tap-icon-wrapper"}>
-                <img src={tapIcon} alt="tap" />
-                <p>
-                  tap <br /> here
-                </p>
-              </div>
-              <p className={"info"}>Or use keyboard button</p>
-            </button>
+            <TransactionContainer
+              transactions={transactions}
+              clusterParam={this.state.clusterParam}
+              onTap={this.makeTransaction}
+            />
           </div>
           <div className={"share-block-wrapper"}>
             <a
