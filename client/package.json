@@ -26,7 +26,7 @@
     "buffer": "^5.4.3",
     "gsap": "^3.0.4",
     "lodash.debounce": "^4.0.8",
-    "react": "^16.8.6",
+    "react": "^16.13.1",
     "react-dom": "^16.8.6",
     "react-helmet": "^5.2.1",
     "react-player": "^1.13.0",
