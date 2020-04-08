@@ -19,11 +19,10 @@ const transactionReducer = (
 ): ITransaction.ModelState => {
   switch (action.type) {
     case ADD_TRANSACTION: {
-      const { accountId, signature } = action.payload;
+      const { signature } = action.payload;
       const newTransaction: ITransaction.Model = {
         status: "sent",
         info: {
-          accountId,
           signature,
           confirmationTime: 0,
           userSent: false
@@ -40,7 +39,7 @@ const transactionReducer = (
 
       const transactions: ITransaction.Model[] = state.transactions.map(
         (item: ITransaction.Model) => {
-          if (item.info.accountId === info.accountId) {
+          if (item.info.signature === info.signature) {
             return {
               ...item,
               status,

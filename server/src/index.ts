@@ -7,7 +7,11 @@ import WebSocket from "ws";
 import Program from "./program";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { cluster, url, urlTls } from "./urls";
-import AccountSupply, { NUM_FUNDED_TRANSACTIONS } from "./account_supply";
+import {
+  PayerAccountSupply,
+  ProgramAccountSupply,
+  TX_PER_ACCOUNT
+} from "./account_supply";
 import TpuProxy from "./tpu_proxy";
 import Faucet from "./faucet";
 
@@ -17,25 +21,35 @@ function sleep(ms: number): Promise<void> {
 
 class Server {
   programId?: PublicKey;
-  accountSupply?: AccountSupply;
+  payerAccountSupply?: PayerAccountSupply;
+  programAccountSupply?: ProgramAccountSupply;
 
   init = async (connection: Connection, tpuProxy: TpuProxy): Promise<void> => {
     const program = new Program(connection);
-    let programId, accountSupply;
+    let programId, payerAccountSupply, programAccountSupply;
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         const { feeCalculator } = await connection.getRecentBlockhash();
-        const faucet = new Faucet(connection, feeCalculator);
-        accountSupply = await AccountSupply.create(
+        const faucet = await Faucet.init(connection);
+        console.log(
+          `Airdrops ${faucet.airdropEnabled ? "enabled" : "disabled"}`
+        );
+        await tpuProxy.connect();
+        programId = await program.load(faucet, feeCalculator);
+        console.log("Program Loaded");
+        payerAccountSupply = await PayerAccountSupply.create(
           connection,
           faucet,
           feeCalculator
         );
-        console.log("Account Supply Created");
-        await tpuProxy.connect();
-        programId = await program.load(faucet, feeCalculator);
-        console.log("Program Loaded");
+        console.log("Payer Account Supply Created");
+        programAccountSupply = await ProgramAccountSupply.create(
+          connection,
+          faucet,
+          programId
+        );
+        console.log("Program Account Supply Created");
         break;
       } catch (err) {
         console.error("Failed to initialize server", err);
@@ -45,7 +59,8 @@ class Server {
     }
 
     this.programId = programId;
-    this.accountSupply = accountSupply;
+    this.payerAccountSupply = payerAccountSupply;
+    this.programAccountSupply = programAccountSupply;
   };
 }
 
@@ -65,23 +80,53 @@ class Server {
   console.log(`Connecting to cluster: ${url}`);
   server.init(connection, tpuProxy);
 
+  app.get("/refresh", async (req, res) => {
+    const payerAccountSupply = server.payerAccountSupply;
+    if (!payerAccountSupply) {
+      res.status(500).send("Server has not initialized, try again");
+      return;
+    }
+
+    const payerAccount = payerAccountSupply.pop();
+    if (!payerAccount) {
+      res.status(500).send("Payer account supply empty, try again");
+      return;
+    }
+
+    res
+      .send(
+        JSON.stringify({
+          accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
+          accountCapacity: TX_PER_ACCOUNT
+        })
+      )
+      .end();
+  });
+
   app.get("/init", async (req, res) => {
     const programId = server.programId;
-    const accountSupply = server.accountSupply;
+    const payerAccountSupply = server.payerAccountSupply;
+    const programAccountSupply = server.programAccountSupply;
 
     if (!tpuProxy.connected()) {
       res.status(500).send("Tpu proxy reconnecting, try again");
       return;
     }
 
-    if (!programId || !accountSupply) {
+    if (!programId || !payerAccountSupply || !programAccountSupply) {
       res.status(500).send("Server has not initialized, try again");
       return;
     }
 
-    const account = accountSupply.pop();
-    if (!account) {
-      res.status(500).send("Account supply empty, try again");
+    const payerAccount = payerAccountSupply.pop();
+    if (!payerAccount) {
+      res.status(500).send("Payer account supply empty, try again");
+      return;
+    }
+
+    const programAccount = programAccountSupply.pop();
+    if (!programAccount) {
+      res.status(500).send("Program account supply empty, try again");
       return;
     }
 
@@ -89,10 +134,11 @@ class Server {
       .send(
         JSON.stringify({
           programId: programId.toString(),
-          accountKey: Buffer.from(account.secretKey).toString("hex"),
-          accountCapacity: NUM_FUNDED_TRANSACTIONS,
-          minAccountBalance: accountSupply.minAccountBalance,
-          creationFee: accountSupply.creationFee,
+          programAccount: programAccount.publicKey.toString(),
+          accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
+          accountCapacity: TX_PER_ACCOUNT,
+          minAccountBalance: payerAccountSupply.minBalance,
+          signatureFee: payerAccountSupply.signatureFee,
           clusterUrl: urlTls,
           cluster
         })

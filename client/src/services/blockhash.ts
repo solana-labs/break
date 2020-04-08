@@ -1,6 +1,6 @@
 import { Blockhash, Connection } from "@solana/web3.js";
 
-const BLOCKHASH_INTERVAL_MS = 60000;
+const BLOCKHASH_INTERVAL_MS = 5000;
 
 export class BlockhashService {
   blockhash?: Blockhash;

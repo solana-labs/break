@@ -1,19 +1,18 @@
 import {
-  Account,
   Connection,
-  SystemProgram,
   TransactionSignature,
-  KeyedAccountInfo,
-  SignatureResult
+  AccountInfo,
+  Transaction,
+  TransactionInstruction
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as ITransaction from "@/reducers/transactions/model";
 import { WebSocketService } from "./websocket";
 import { BlockhashService } from "./blockhash";
 import { SolanaService } from "./solana";
+import * as Bytes from "../utils/bytes";
 
 export type SentTransaction = {
-  accountId: string;
   signature: string;
 };
 
@@ -22,12 +21,10 @@ export type OnTransaction = (tx: ITransaction.Model) => void;
 type PendingTransaction = {
   sentAt: number;
   timeoutId?: number;
-  subscriptionId?: number;
   signature: TransactionSignature;
 };
 
 const ACCOUNT_TIMEOUT_MS = 5000;
-const SIGNATURE_TIMEOUT_MS = 15000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -39,7 +36,9 @@ export class TransactionService {
   onTransaction?: OnTransaction;
   connection?: Connection;
 
-  pendingTransactions: Map<string, PendingTransaction> = new Map();
+  idCounter = 0;
+  idBits: Map<number, boolean> = new Map();
+  pendingTransactions: Map<number, PendingTransaction> = new Map();
   reconnecting = false;
   webSocket = new WebSocketService();
   blockhashPoller = new BlockhashService();
@@ -72,52 +71,62 @@ export class TransactionService {
       if (value.timeoutId) {
         clearTimeout(value.timeoutId);
       }
-      if (this.connection && value.subscriptionId) {
-        this.connection.removeSignatureListener(value.subscriptionId);
-      }
     }, this);
     this.pendingTransactions.clear();
     this.connection = undefined;
   };
 
+  private nextId = () => {
+    const maxId = this.solanaService.programAccountSpace * 8;
+    if (this.pendingTransactions.size >= maxId) return;
+    while (this.pendingTransactions.has(this.idCounter + 1)) {
+      this.idCounter = (this.idCounter + 1) % maxId;
+    }
+    const id = this.idCounter + 1;
+    this.idCounter = (this.idCounter + 1) % maxId;
+    return id;
+  };
+
   sendTransaction = () => {
-    const newAccount = new Account();
-    const payerAccount = this.solanaService.payerAccount;
-    const transaction = SystemProgram.createAccount({
-      fromPubkey: payerAccount.publicKey,
-      newAccountPubkey: newAccount.publicKey,
-      lamports: this.solanaService.minAccountBalance,
-      space: 4, // Each account holds 4 bytes
-      programId: this.solanaService.programId
+    const {
+      payerAccount,
+      programAccount,
+      programId,
+      programAccountSpace
+    } = this.solanaService;
+    const nextId = this.nextId();
+    if (!nextId) throw new Error("no ids available");
+
+    console.log(nextId, programAccountSpace * 8);
+    const instruction = new TransactionInstruction({
+      keys: [{ pubkey: programAccount, isWritable: true, isSigner: false }],
+      programId,
+      data: Buffer.from(Bytes.fromId(nextId, programAccountSpace))
     });
 
+    const transaction = new Transaction();
+    transaction.add(instruction);
+
     const sentAt = performance.now();
-    const accountId = newAccount.publicKey.toBase58();
     transaction.recentBlockhash = this.blockhashPoller.current;
-    transaction.sign(payerAccount, newAccount);
+    transaction.sign(payerAccount);
     const signatureBuffer = transaction.signature;
     if (!signatureBuffer) throw new Error("Failed to sign transaction");
     const signature = bs58.encode(signatureBuffer);
 
     const wireTransaction = transaction.serialize();
     const pendingTransaction: PendingTransaction = { sentAt, signature };
-    this.pendingTransactions.set(accountId, pendingTransaction);
+    this.idBits.set(nextId, !this.idBits.get(nextId));
+    this.pendingTransactions.set(nextId, pendingTransaction);
     this.webSocket.send(wireTransaction);
+    // enable if TPU is not accessible (i.e. local docker setup)
+    // this.connection?.sendRawTransaction(wireTransaction);
 
     pendingTransaction.timeoutId = window.setTimeout(() => {
-      pendingTransaction.timeoutId = window.setTimeout(
-        () => this.onTimeout(signature),
-        SIGNATURE_TIMEOUT_MS - ACCOUNT_TIMEOUT_MS
-      );
-      if (this.connection) {
-        pendingTransaction.subscriptionId = this.connection.onSignature(
-          signature,
-          result => this.onSignature(signature, result)
-        );
-      }
+      this.onTimeout(nextId, signature);
     }, ACCOUNT_TIMEOUT_MS);
 
-    return { accountId, signature };
+    return { signature };
   };
 
   public reconnect = () => {
@@ -154,95 +163,44 @@ export class TransactionService {
     console.debug("Connected");
   };
 
-  private onTimeout = (signature: string) => {
-    this.pendingTransactions.forEach(
-      (pendingTransaction: PendingTransaction, accountId: string) => {
-        if (pendingTransaction.signature === signature) {
-          this.pendingTransactions.delete(accountId);
-          pendingTransaction.timeoutId = undefined;
-          if (this.connection && pendingTransaction.subscriptionId) {
-            this.connection.removeSignatureListener(
-              pendingTransaction.subscriptionId
-            );
-          }
-          if (this.onTransaction) {
-            const userSent = true;
-            const confirmationTime = Number.MAX_VALUE;
-            this.onTransaction({
-              status: "timeout",
-              info: { accountId, signature, confirmationTime, userSent }
-            });
-          }
-        }
-      },
-      this
-    );
-  };
-
-  private onProgramAccountChange = (accountInfo: KeyedAccountInfo) => {
-    const accountId = accountInfo.accountId.toString();
-
-    // Info defaults
-    let userSent = false;
-    let signature = "";
-    let confirmationTime = 0;
-
-    // Check if the user sent the transaction that created this account
-    const pendingTransaction = this.pendingTransactions.get(accountId);
-    if (pendingTransaction) {
-      userSent = true;
-      confirmationTime = this.confirmationTime(pendingTransaction.sentAt);
-      signature = pendingTransaction.signature;
-      this.pendingTransactions.delete(accountId);
-      clearTimeout(pendingTransaction.timeoutId);
-      if (this.connection && pendingTransaction.subscriptionId) {
-        this.connection.removeSignatureListener(
-          pendingTransaction.subscriptionId
-        );
-      }
-    }
-
+  private onTimeout = (id: number, signature: string) => {
+    const pendingTransaction = this.pendingTransactions.get(id);
+    if (!pendingTransaction) return;
+    this.pendingTransactions.delete(id);
     if (this.onTransaction) {
+      const userSent = true;
+      const confirmationTime = Number.MAX_VALUE;
       this.onTransaction({
-        status: "success",
-        info: { accountId, signature, confirmationTime, userSent }
+        status: "timeout",
+        info: { signature, confirmationTime, userSent }
       });
     }
+  };
+
+  private onProgramAccountChange = (accountInfo: AccountInfo) => {
+    const ids = new Set(Bytes.toIds(accountInfo.data));
+    this.pendingTransactions.forEach((pendingTransaction, id) => {
+      const expectedBit = this.idBits.get(id);
+      if ((expectedBit && ids.has(id)) || (!expectedBit && !ids.has(id))) {
+        const confirmationTime = this.confirmationTime(
+          pendingTransaction.sentAt
+        );
+        const signature = pendingTransaction.signature;
+        this.pendingTransactions.delete(id);
+        clearTimeout(pendingTransaction.timeoutId);
+
+        if (this.onTransaction) {
+          this.onTransaction({
+            status: "success",
+            info: { signature, confirmationTime, userSent: true }
+          });
+        }
+      }
+    });
   };
 
   private confirmationTime = (sentAt: number): number => {
     const now = performance.now();
     return parseFloat(((now - sentAt) / 1000).toFixed(3));
-  };
-
-  private onSignature = (signature: string, statusResult: SignatureResult) => {
-    this.pendingTransactions.forEach(
-      (pendingTransaction: PendingTransaction, accountId: string) => {
-        if (pendingTransaction.signature === signature) {
-          this.pendingTransactions.delete(accountId);
-          // RPC Service auto unsubscribes signature subscriptions
-          pendingTransaction.subscriptionId = undefined;
-
-          const confirmationTime = this.confirmationTime(
-            pendingTransaction.sentAt
-          );
-          const userSent = true;
-          let status: ITransaction.Status = "success";
-          if (statusResult.err) {
-            status = {
-              msg: JSON.stringify(statusResult.err) || "Unknown Error"
-            };
-          }
-
-          if (this.onTransaction) {
-            this.onTransaction({
-              status,
-              info: { accountId, signature, confirmationTime, userSent }
-            });
-          }
-        }
-      },
-      this
-    );
   };
 }

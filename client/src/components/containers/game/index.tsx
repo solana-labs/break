@@ -46,11 +46,8 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
 
   private makeTransaction = () => {
     try {
-      const {
-        accountId,
-        signature
-      } = this.props.transactionService.sendTransaction();
-      this.props.dispatch(addTransaction(accountId, signature));
+      const { signature } = this.props.transactionService.sendTransaction();
+      this.props.dispatch(addTransaction(signature));
     } catch (err) {
       console.error("failed to send transaction", err);
       this.props.transactionService.reconnect();
@@ -59,9 +56,9 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
   };
 
   private onTransaction = (transaction: ITransaction.Model) => {
-    const { userSent, accountId, signature } = transaction.info;
+    const { userSent, signature } = transaction.info;
     if (!userSent) {
-      this.props.dispatch(addTransaction(accountId, signature));
+      this.props.dispatch(addTransaction(signature));
     }
     this.props.dispatch(updateTransaction(transaction));
   };
@@ -153,7 +150,7 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
                 {transactions &&
                   transactions.map((item: ITransaction.Model) => (
                     <TransactionSquare
-                      key={item.info.accountId}
+                      key={item.info.signature}
                       status={item.status}
                       information={item.info}
                       clusterParam={this.state.clusterParam}

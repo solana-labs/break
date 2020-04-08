@@ -4,7 +4,7 @@ import { Buffer } from "buffer";
 import {
   Account,
   clusterApiUrl,
-  ProgramAccountChangeCallback,
+  AccountChangeCallback,
   PublicKey,
   Cluster,
   Connection
@@ -15,15 +15,17 @@ export class SolanaService {
   _clusterUrl?: string;
   _connection?: Connection;
   _programId?: PublicKey;
+  _programAccount?: PublicKey;
   _payerAccount?: Account;
   _minAccountBalance?: number;
-  _creationFee?: number;
-  _remainingCapacity = 0;
+  _signatureFee?: number;
+  _accountCapacity = 0;
+  _accountSubscriptionId?: number;
 
   initializing = false;
+  remainingCapacity = 0;
   refreshingPayer = false;
-  onProgramAccountChange?: ProgramAccountChangeCallback;
-  programSubscriptionId?: number;
+  onAccountChange?: AccountChangeCallback;
 
   get connection(): Connection {
     if (!this._connection) throw new Error("Not initialized");
@@ -33,6 +35,16 @@ export class SolanaService {
   get programId(): PublicKey {
     if (!this._programId) throw new Error("Not initialized");
     return this._programId;
+  }
+
+  get programAccount(): PublicKey {
+    if (!this._programAccount) throw new Error("Not initialized");
+    return this._programAccount;
+  }
+
+  get programAccountSpace(): number {
+    if (!this._accountCapacity) throw new Error("Not initialized");
+    return Math.ceil(this._accountCapacity / 8);
   }
 
   get payerAccount(): Account {
@@ -46,9 +58,9 @@ export class SolanaService {
     return this._minAccountBalance;
   }
 
-  get creationFee(): number {
-    if (!this._creationFee) throw new Error("Not initialized");
-    return this._creationFee;
+  get signatureFee(): number {
+    if (!this._signatureFee) throw new Error("Not initialized");
+    return this._signatureFee;
   }
 
   getClusterParam = (): string => {
@@ -61,9 +73,7 @@ export class SolanaService {
     }
   };
 
-  init = async (
-    onProgramAccountChange: ProgramAccountChangeCallback
-  ): Promise<void> => {
+  init = async (onAccountChange: AccountChangeCallback): Promise<void> => {
     if (this.initializing) return;
     this.initializing = true;
 
@@ -74,10 +84,11 @@ export class SolanaService {
         response = await fetcher.get(Path.Init);
         invalidResponse =
           !("programId" in response) ||
+          !("programAccount" in response) ||
           !("accountKey" in response) ||
           !("accountCapacity" in response) ||
           !("minAccountBalance" in response) ||
-          !("creationFee" in response) ||
+          !("signatureFee" in response) ||
           !("cluster" in response || "clusterUrl" in response);
         if (invalidResponse) {
           throw new Error("Failed server init request");
@@ -95,19 +106,21 @@ export class SolanaService {
       this._connection = new Connection(endpoint, "recent");
       this._cluster = response.cluster;
       this._clusterUrl = response.clusterUrl;
+    } else if (this._accountSubscriptionId) {
+      this._connection.removeAccountChangeListener(this._accountSubscriptionId);
     }
 
-    const newProgramId = new PublicKey(response.programId);
-    this.updateProgramId(
-      newProgramId,
-      this._connection,
-      onProgramAccountChange
-    );
-
-    this._remainingCapacity = response.accountCapacity;
+    this._programId = new PublicKey(response.programId);
+    this._programAccount = new PublicKey(response.programAccount);
+    this._accountCapacity = response.accountCapacity;
     this._payerAccount = new Account(Buffer.from(response.accountKey, "hex"));
-    this._creationFee = response.creationFee;
+    this._signatureFee = response.signatureFee;
     this._minAccountBalance = response.minAccountBalance;
+    this._accountSubscriptionId = this._connection.onAccountChange(
+      this._programAccount,
+      onAccountChange
+    );
+    this.remainingCapacity = this._accountCapacity;
     this.initializing = false;
   };
 
@@ -117,11 +130,11 @@ export class SolanaService {
 
   uninit = () => {
     if (this._connection) {
-      if (this.programSubscriptionId) {
-        this.connection.removeProgramAccountChangeListener(
-          this.programSubscriptionId
+      if (this._accountSubscriptionId) {
+        this.connection.removeAccountChangeListener(
+          this._accountSubscriptionId
         );
-        this.programSubscriptionId = undefined;
+        this._accountSubscriptionId = undefined;
       }
       this._connection = undefined;
     }
@@ -133,12 +146,13 @@ export class SolanaService {
     this.refreshingPayer = true;
 
     try {
-      const response = await fetcher.get(Path.Init);
+      const response = await fetcher.get(Path.Refresh);
       if (!("accountKey" in response) || !("accountCapacity" in response)) {
         throw new Error("Failed to refresh payer");
       }
 
-      this._remainingCapacity = response.accountCapacity;
+      this._accountCapacity = response.accountCapacity;
+      this.remainingCapacity = response.accountCapacity;
       this._payerAccount = new Account(Buffer.from(response.accountKey, "hex"));
     } catch (err) {
       console.error(err);
@@ -148,28 +162,11 @@ export class SolanaService {
   };
 
   private usePayerAccount = (): boolean => {
-    if (this._remainingCapacity === 0) return false;
-    this._remainingCapacity--;
-    if (this._remainingCapacity <= 50) {
+    if (this.remainingCapacity === 0) return false;
+    this.remainingCapacity--;
+    if (this.remainingCapacity <= 50) {
       this.refreshPayerAccount();
     }
     return true;
-  };
-
-  private updateProgramId = (
-    programId: PublicKey,
-    connection: Connection,
-    onProgramAccount: ProgramAccountChangeCallback
-  ) => {
-    if (this._programId?.equals(programId)) return;
-    this._programId = programId;
-
-    if (this.programSubscriptionId) {
-      connection.removeProgramAccountChangeListener(this.programSubscriptionId);
-    }
-    this.programSubscriptionId = connection.onProgramAccountChange(
-      programId,
-      onProgramAccount
-    );
   };
 }

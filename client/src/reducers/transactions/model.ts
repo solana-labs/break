@@ -9,7 +9,6 @@ export interface Model {
 }
 
 export interface Info {
-  accountId: string;
   signature: string;
   confirmationTime: number;
   userSent: boolean;
