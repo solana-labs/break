@@ -3,7 +3,8 @@ import {
   TransactionSignature,
   AccountInfo,
   Transaction,
-  TransactionInstruction
+  TransactionInstruction,
+  Account
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as ITransaction from "@/reducers/transactions/model";
@@ -97,9 +98,12 @@ export class TransactionService {
     const nextId = this.nextId();
     if (!nextId) throw new Error("no ids available");
 
-    console.log(nextId, programAccountSpace * 8);
+    const nonce = new Account().publicKey;
     const instruction = new TransactionInstruction({
-      keys: [{ pubkey: programAccount, isWritable: true, isSigner: false }],
+      keys: [
+        { pubkey: programAccount, isWritable: true, isSigner: false },
+        { pubkey: nonce, isWritable: false, isSigner: false }
+      ],
       programId,
       data: Buffer.from(Bytes.fromId(nextId, programAccountSpace))
     });
