@@ -72,7 +72,7 @@ class AccountSupply {
   }
 
   pop(): Account | undefined {
-    const popped = this.funded.pop();
+    const popped = this.funded.shift();
     this.replenish();
     return popped;
   }
