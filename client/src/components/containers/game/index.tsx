@@ -46,7 +46,11 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
 
   private makeTransaction = () => {
     try {
-      const { signature } = this.props.transactionService.sendTransaction();
+      const signature = this.props.transactionService.sendTransaction();
+      if (!signature) {
+        console.error("failed to create transaction, please retry");
+        return;
+      }
       this.props.dispatch(addTransaction(signature));
     } catch (err) {
       console.error("failed to send transaction", err);

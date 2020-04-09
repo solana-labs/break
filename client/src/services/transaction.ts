@@ -25,7 +25,7 @@ type PendingTransaction = {
   signature: TransactionSignature;
 };
 
-const ACCOUNT_TIMEOUT_MS = 5000;
+const ACCOUNT_TIMEOUT_MS = 10000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -88,7 +88,7 @@ export class TransactionService {
     return id;
   };
 
-  sendTransaction = () => {
+  sendTransaction = (): string | null => {
     const {
       payerAccount,
       programAccount,
@@ -96,7 +96,7 @@ export class TransactionService {
       programAccountSpace
     } = this.solanaService;
     const nextId = this.nextId();
-    if (!nextId) throw new Error("no ids available");
+    if (!nextId) return null;
 
     const nonce = new Account().publicKey;
     const instruction = new TransactionInstruction({
@@ -130,7 +130,7 @@ export class TransactionService {
       this.onTimeout(nextId, signature);
     }, ACCOUNT_TIMEOUT_MS);
 
-    return { signature };
+    return signature;
   };
 
   public reconnect = () => {
