@@ -2,11 +2,11 @@ import { Account, Connection, FeeCalculator, PublicKey } from "@solana/web3.js";
 
 import Faucet from "./faucet";
 
-export const TX_PER_ACCOUNT =
-  parseInt(process.env.TX_PER_ACCOUNT || "") || 1000;
+export const TX_PER_PAYER = parseInt(process.env.TX_PER_PAYER || "") || 1000;
 const SUPPLY_SIZE = 50;
 const BATCH_SIZE = 10;
 const TX_PER_BYTE = 8;
+const TPS_PER_ACCOUNT = 50;
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -97,7 +97,7 @@ export class PayerAccountSupply {
   ): Promise<PayerAccountSupply> {
     const minBalance = await AccountSupply.minBalance(connection, 0);
     const signatureFee = feeCalculator.lamportsPerSignature;
-    const fundAmount = TX_PER_ACCOUNT * (signatureFee + minBalance);
+    const fundAmount = TX_PER_PAYER * (signatureFee + minBalance);
     const supply = new AccountSupply(
       "Payer Account Supply",
       (account: Account) => {
@@ -110,7 +110,7 @@ export class PayerAccountSupply {
 
 // Provides program accounts for break game clients
 export class ProgramAccountSupply {
-  constructor(private supply: AccountSupply) {}
+  constructor(private supply: AccountSupply, public accountSpace: number) {}
 
   pop(): Account | undefined {
     return this.supply.pop();
@@ -121,20 +121,19 @@ export class ProgramAccountSupply {
     faucet: Faucet,
     programId: PublicKey
   ): Promise<ProgramAccountSupply> {
-    const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
+    const space = Math.ceil(TPS_PER_ACCOUNT / TX_PER_BYTE);
     const minBalance = await AccountSupply.minBalance(connection, space);
-    const fundAmount = TX_PER_ACCOUNT * minBalance;
     const supply = new AccountSupply(
       "Program Account Supply",
       (account: Account) => {
         return faucet.createProgramAccount(
           account,
-          fundAmount,
+          minBalance,
           programId,
           space
         );
       }
     );
-    return new ProgramAccountSupply(supply);
+    return new ProgramAccountSupply(supply, space);
   }
 }

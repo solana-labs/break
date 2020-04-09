@@ -16,6 +16,7 @@ export class SolanaService {
   _connection?: Connection;
   _programId?: PublicKey;
   _programAccount?: PublicKey;
+  _programAccountSpace?: number;
   _payerAccount?: Account;
   _minAccountBalance?: number;
   _signatureFee?: number;
@@ -43,8 +44,8 @@ export class SolanaService {
   }
 
   get programAccountSpace(): number {
-    if (!this._accountCapacity) throw new Error("Not initialized");
-    return Math.ceil(this._accountCapacity / 8);
+    if (!this._programAccountSpace) throw new Error("Not initialized");
+    return this._programAccountSpace;
   }
 
   get payerAccount(): Account {
@@ -85,6 +86,7 @@ export class SolanaService {
         invalidResponse =
           !("programId" in response) ||
           !("programAccount" in response) ||
+          !("programAccountSpace" in response) ||
           !("accountKey" in response) ||
           !("accountCapacity" in response) ||
           !("minAccountBalance" in response) ||
@@ -112,6 +114,7 @@ export class SolanaService {
 
     this._programId = new PublicKey(response.programId);
     this._programAccount = new PublicKey(response.programAccount);
+    this._programAccountSpace = response.programAccountSpace;
     this._accountCapacity = response.accountCapacity;
     this._payerAccount = new Account(Buffer.from(response.accountKey, "hex"));
     this._signatureFee = response.signatureFee;

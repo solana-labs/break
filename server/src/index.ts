@@ -10,7 +10,7 @@ import { cluster, url, urlTls } from "./urls";
 import {
   PayerAccountSupply,
   ProgramAccountSupply,
-  TX_PER_ACCOUNT
+  TX_PER_PAYER
 } from "./account_supply";
 import TpuProxy from "./tpu_proxy";
 import Faucet from "./faucet";
@@ -97,7 +97,7 @@ class Server {
       .send(
         JSON.stringify({
           accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
-          accountCapacity: TX_PER_ACCOUNT
+          accountCapacity: TX_PER_PAYER
         })
       )
       .end();
@@ -135,8 +135,9 @@ class Server {
         JSON.stringify({
           programId: programId.toString(),
           programAccount: programAccount.publicKey.toString(),
+          programAccountSpace: programAccountSupply.accountSpace,
           accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
-          accountCapacity: TX_PER_ACCOUNT,
+          accountCapacity: TX_PER_PAYER,
           minAccountBalance: payerAccountSupply.minBalance,
           signatureFee: payerAccountSupply.signatureFee,
           clusterUrl: urlTls,
