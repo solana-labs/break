@@ -155,10 +155,26 @@ class Server {
   const httpServer = http.createServer(app);
 
   // Start websocket server
+  let activeClients = 0;
+  let lastNotifiedCount = 0;
   const wss = new WebSocket.Server({ server: httpServer });
   wss.on("connection", function connection(ws) {
+    activeClients++;
+    ws.on("close", () => activeClients--);
     ws.on("message", tpuProxy.onTransaction);
   });
+
+  // Start active user broadcast loop
+  setInterval(() => {
+    if (activeClients !== lastNotifiedCount) {
+      lastNotifiedCount = activeClients;
+      wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({ activeUsers: activeClients }));
+        }
+      });
+    }
+  }, 1000);
 
   const port = process.env.PORT || 8080;
   httpServer.listen(port);
