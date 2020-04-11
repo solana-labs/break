@@ -1,23 +1,29 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
-
 import { BrowserRouter } from "react-router-dom";
-import { Provider } from "react-redux";
 
 import "shared/styles/global.scss";
 
 import App from "./app";
-import appStore from "./store";
-import Service from "./services";
-import { ServiceProvider } from "./components/context/service-context";
+import { ApiProvider } from "providers/api";
+import { SolanaProvider } from "providers/solana";
+import { BlockhashProvider } from "providers/blockhash";
+import { TransactionsProvider } from "providers/transactions";
+import { SocketProvider } from "providers/socket";
 
 ReactDOM.render(
-  <Provider store={appStore}>
-    <ServiceProvider value={new Service()}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ServiceProvider>
-  </Provider>,
+  <ApiProvider>
+    <SocketProvider>
+      <SolanaProvider>
+        <BlockhashProvider>
+          <TransactionsProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </TransactionsProvider>
+        </BlockhashProvider>
+      </SolanaProvider>
+    </SocketProvider>
+  </ApiProvider>,
   document.getElementById("root")
 );

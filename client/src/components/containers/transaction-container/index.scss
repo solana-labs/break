@@ -20,11 +20,10 @@
         height: 100%;
         padding-right: 1.2rem;
         overflow-x: hidden;
-        overflow-y: auto;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, 3.2rem);
-        grid-template-rows: repeat(auto-fit, 3.2rem);
-        grid-gap: 0.8rem;
+        overflow-y: scroll;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: flex-start;
 
         -webkit-user-select: none;
         -moz-user-select: none;

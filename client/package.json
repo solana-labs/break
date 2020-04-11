@@ -12,6 +12,7 @@
     "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|md)\""
   },
   "dependencies": {
+    "@react-hook/throttle": "^1.0.12",
     "@solana/web3.js": "^0.43.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -23,7 +24,6 @@
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "@types/react-popover": "^0.5.3",
-    "@types/react-redux": "^7.1.7",
     "@types/react-router-dom": "^5.1.3",
     "@types/react-select": "^3.0.11",
     "@types/react-share": "^3.0.3",
@@ -36,15 +36,12 @@
     "node-sass": "^4.13.1",
     "prettier": "^1.19.1",
     "react": "^16.13.1",
-    "react-dom": "^16.13.0",
+    "react-dom": "^16.13.1",
     "react-player": "^1.13.0",
     "react-popover": "^0.5.10",
-    "react-redux": "^7.1.1",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
     "react-share": "^3.0.1",
-    "redux": "^4.0.4",
-    "redux-thunk": "^2.3.0",
     "typescript": "^3.8.0"
   },
   "eslintConfig": {

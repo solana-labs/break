@@ -1,22 +1,24 @@
 import React, { useRef, useEffect } from "react";
+import useThrottle from "@react-hook/throttle";
 
 import "./index.scss";
 import TransactionSquare from "../transaction-square";
-import * as Transaction from "../../../reducers/transactions/model";
 import tapIcon from "shared/images/icons/tap.svg";
+import { useTransactions } from "providers/transactions";
+import { useConfig } from "providers/api";
+import { useCreateTx } from "providers/transactions";
 
-interface Props {
-  transactions: Transaction.Model[];
-  clusterParam: string;
-  onTap: () => void;
-}
-
-export function TransactionContainer({
-  transactions,
-  clusterParam,
-  onTap
-}: Props) {
+export function TransactionContainer() {
   const scrollEl = useRef<HTMLDivElement>(null);
+  const { clusterParam } = useConfig();
+  const createTx = useCreateTx();
+  const rawTransactions = useTransactions();
+  const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
+
+  useEffect(() => {
+    setTransactions(rawTransactions);
+  }, [rawTransactions, setTransactions]);
+
   useEffect(() => {
     const current = scrollEl.current;
     if (current) {
@@ -28,18 +30,17 @@ export function TransactionContainer({
     <>
       <div className={`square-container-wrapper`}>
         <div ref={scrollEl} className={`square-container`} tabIndex={0}>
-          {transactions.map(item => (
+          {transactions.map(tx => (
             <TransactionSquare
-              key={item.info.signature}
-              status={item.status}
-              information={item.info}
+              key={tx.signature}
+              transaction={tx}
               clusterParam={clusterParam}
             />
           ))}
         </div>
       </div>
 
-      <button className={`click-zone`} onClick={onTap}>
+      <button className={`click-zone`} onClick={createTx}>
         <div className={"tap-icon-wrapper"}>
           <img src={tapIcon} alt="tap" />
           <p>
