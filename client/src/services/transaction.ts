@@ -7,11 +7,11 @@ import {
   Account
 } from "@solana/web3.js";
 import bs58 from "bs58";
-import * as ITransaction from "@/reducers/transactions/model";
+import * as ITransaction from "reducers/transactions/model";
 import { WebSocketService } from "./websocket";
 import { BlockhashService } from "./blockhash";
 import { SolanaService } from "./solana";
-import * as Bytes from "../utils/bytes";
+import * as Bytes from "utils/bytes";
 
 export type SentTransaction = {
   signature: string;

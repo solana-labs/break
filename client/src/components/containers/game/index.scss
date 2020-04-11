@@ -1,5 +1,5 @@
-@import '~@styles/variables/colors';
-@import '~@styles/tools/transitions';
+@import '~shared/styles/variables/colors';
+@import '~shared/styles/tools/transitions';
 
 .game-wrapper{
     padding: 3.2rem 0 10rem 0;
@@ -83,22 +83,22 @@
 
         .timer{
             grid-area: timer;
-            background-image: url("~@images/icons/timer.svg");
+            background-image: url("~shared/images/icons/timer.svg");
         }
 
         .counter{
             grid-area: counter;
-            background-image: url("~@images/icons/arrows.svg");
+            background-image: url("~shared/images/icons/arrows.svg");
         }
 
         .capacity{
             grid-area: capacity;
-            background-image: url("~@images/icons/capacity.svg");
+            background-image: url("~shared/images/icons/capacity.svg");
         }
 
         .speed{
             grid-area: speed;
-            background-image: url("~@images/icons/processing.svg");
+            background-image: url("~shared/images/icons/processing.svg");
         }
     }
 
