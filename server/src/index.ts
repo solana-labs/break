@@ -69,8 +69,8 @@ class Server {
   app.use(cors());
   app.use(express.json()); // for parsing application/json
 
-  const publicPath = process.env.PUBLIC_PATH || "public";
-  const staticPath = path.join(__dirname, publicPath);
+  const rootPath = path.join(__dirname, "..", "..");
+  const staticPath = path.join(rootPath, "client", "build");
   app.use("/", express.static(staticPath));
   console.log(`Serving static files from: ${staticPath}`);
 

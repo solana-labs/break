@@ -2,7 +2,7 @@ import * as React from "react";
 import gsap, { TimelineMax, Power0, Cubic } from "gsap";
 
 import "./index.scss";
-import heroImage from "@images/hero.svg";
+import heroImage from "shared/images/hero.svg";
 
 interface IProps {
   className: string;
@@ -102,6 +102,7 @@ export default class CircleAnimation extends React.Component<IProps, {}> {
 
   render() {
     return (
+      // eslint-disable-next-line
       <object
         id={this.props.className}
         data={heroImage}

@@ -3,30 +3,6 @@
 @import "./typography/typography.scss";
 @import "/animate.scss";
 
-@font-face {
-    font-family: 'Exo';
-    src: url('~@fonts/Exo-Light.ttf') format('truetype');
-    font-weight: 300;
-}
-
-@font-face {
-    font-family: 'Exo';
-    src: url('~@fonts/Exo-Regular.ttf') format('truetype');
-    font-weight: 400;
-}
-
-@font-face {
-    font-family: 'Exo';
-    src: url('~@fonts/Exo-SemiBold.ttf') format('truetype');
-    font-weight: 600;
-}
-
-@font-face {
-    font-family: 'Exo';
-    src: url('~@fonts/Exo-Bold.ttf') format('truetype');
-    font-weight: 700;
-}
-
 * {
     padding: 0;
     margin: 0;

@@ -1,5 +1,5 @@
 import { Action, SET_STATISTICS_GAME } from "../types";
-import IGame from "../../reducers/game/model";
+import * as IGame from "../../reducers/game/model";
 
 export const setStatisticsGame = (
   statistics: IGame.ModelStatistics

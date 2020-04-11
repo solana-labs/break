@@ -12,7 +12,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "start": "node ./dist/server.js",
-    "start:dev": "PUBLIC_PATH=../dist/public ts-node src/index.ts",
+    "start:dev": "ts-node src/index.ts",
     "build:dev": "webpack --mode development",
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",

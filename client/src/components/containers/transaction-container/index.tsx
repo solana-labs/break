@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from "react";
 import "./index.scss";
 import TransactionSquare from "../transaction-square";
 import * as Transaction from "../../../reducers/transactions/model";
-import tapIcon from "@images/icons/tap.svg";
+import tapIcon from "shared/images/icons/tap.svg";
 
 interface Props {
   transactions: Transaction.Model[];

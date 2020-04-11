@@ -1,5 +1,5 @@
-import fetcher from "@/api/fetcher";
-import Path from "@/api/paths";
+import fetcher from "api/fetcher";
+import Path from "api/paths";
 import { Buffer } from "buffer";
 import {
   Account,

@@ -2,7 +2,7 @@ export function toIds(bytes: Uint8Array): Array<number> {
   const ids = new Array<number>();
   bytes.forEach((byte, i) => {
     for (let j = 7; j >= 0; j--) {
-      if ((byte & (1 << j)) == 1 << j) {
+      if ((byte & (1 << j)) === 1 << j) {
         ids.push(8 * i + (8 - j));
       }
     }

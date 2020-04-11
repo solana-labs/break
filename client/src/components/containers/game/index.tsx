@@ -15,9 +15,9 @@ import { TransactionService } from "../../../services/transaction";
 import { setStatusLoader } from "../../../actions/set-status-loader";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 
-import shareTwitterIcon from "@images/share-twitter.svg";
-import shareFacebookIcon from "@images/share-facebook-2.svg";
-import { setTransactionsPerSecond } from "@/actions/set-transactions-per-second";
+import shareTwitterIcon from "shared/images/share-twitter.svg";
+import shareFacebookIcon from "shared/images/share-facebook-2.svg";
+import { setTransactionsPerSecond } from "actions/set-transactions-per-second";
 
 interface IDispatchProps {
   dispatch: Dispatch;
@@ -162,14 +162,14 @@ class Game extends React.Component<IProps, { clusterParam: string }> {
                 title={`Currently, all players online are creating ${tps} TPS, which means they are using ${percentCapacity}% of Solana capacity. \n\nYou can join us and try to break Solana:`}
                 url={"https://break.solana.com/"}
               >
-                <img src={shareTwitterIcon} />
+                <img src={shareTwitterIcon} alt="share on twitter" />
               </TwitterShareButton>
               <FacebookShareButton
                 className={"share-button"}
                 quote={`Currently, all players online are creating ${tps} TPS, which means they are using ${percentCapacity}% of Solana capacity. \n\nYou can join us and try to break Solana:`}
                 url={"https://break.solana.com/"}
               >
-                <img src={shareFacebookIcon} />
+                <img src={shareFacebookIcon} alt="share on facebook" />
               </FacebookShareButton>
             </div>
           </div>

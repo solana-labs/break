@@ -101,15 +101,18 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
         refreshIntervalMs={undefined}
         preferPlace={"right"}
       >
-        <a
-          key={0}
-          href={explorerLink}
-          target={"_blank"}
-          rel="noopener noreferrer"
-          onMouseOver={() => this.toggle(true)}
-          onMouseOut={() => this.toggle(false)}
-          className={`square slideInRight ${statusClass} ${completedClass} ${hovered} ${notUserSent} ${noEvent}`}
-        />
+        {
+          // eslint-disable-next-line
+          <a
+            key={0}
+            href={explorerLink}
+            target={"_blank"}
+            rel="noopener noreferrer"
+            onMouseOver={() => this.toggle(true)}
+            onMouseOut={() => this.toggle(false)}
+            className={`square slideInRight ${statusClass} ${completedClass} ${hovered} ${notUserSent} ${noEvent}`}
+          />
+        }
       </Popover>
     );
   }
