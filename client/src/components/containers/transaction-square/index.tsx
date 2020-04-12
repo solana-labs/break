@@ -1,12 +1,11 @@
 import * as React from "react";
 
 import "./index.scss";
-import * as ITransaction from "../../../reducers/transactions/model";
 import Popover from "react-popover";
+import { UserTransaction } from "providers/transactions";
 
 interface IProps {
-  status: ITransaction.Status;
-  information: ITransaction.Info;
+  transaction: UserTransaction;
   clusterParam: string;
 }
 
@@ -26,16 +25,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
   };
 
   private squareInfo = () => {
-    const { status } = this.props;
-    const { confirmationTime, signature, userSent } = this.props.information;
-
-    function displaySentBy() {
-      if (!userSent) {
-        return <p>Sent by another user</p>;
-      }
-
-      return null;
-    }
+    const { signature, confirmationTime, status } = this.props.transaction;
 
     function displaySignature() {
       if (signature) {
@@ -55,15 +45,14 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
     }
 
     function displayErrorMsg() {
-      if (typeof status === "object" && "msg" in status) {
-        return <p>Error: {status.msg}</p>;
+      if (typeof status === "object") {
+        return <p>Error: {JSON.stringify(status)}</p>;
       }
       return null;
     }
 
     return (
       <div className={"square-info-container"}>
-        {displaySentBy()}
         {displayConfTime()}
         {displaySignature()}
         {displayErrorMsg()}
@@ -72,11 +61,10 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
   };
 
   render() {
-    const { status, clusterParam } = this.props;
-    const { signature, userSent } = this.props.information;
+    const { transaction, clusterParam } = this.props;
+    const { status, signature } = transaction;
     const hovered = this.state.popoverOpen ? "hovered" : "";
-    const notUserSent = userSent ? "" : "not-user-sent";
-    const noEvent = !signature && userSent ? "no-event" : "";
+    const noEvent = !signature ? "no-event" : "";
 
     let statusClass = "";
     if (status === "success") {
@@ -110,7 +98,7 @@ export default class TransactionSquare extends React.Component<IProps, IState> {
             rel="noopener noreferrer"
             onMouseOver={() => this.toggle(true)}
             onMouseOut={() => this.toggle(false)}
-            className={`square slideInRight ${statusClass} ${completedClass} ${hovered} ${notUserSent} ${noEvent}`}
+            className={`square slideInRight ${statusClass} ${completedClass} ${hovered} ${noEvent}`}
           />
         }
       </Popover>

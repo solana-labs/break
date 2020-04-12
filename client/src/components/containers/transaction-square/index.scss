@@ -14,11 +14,14 @@
 }
 
 .square {
-  width: 3.2rem;
-  height: 3.2rem;
+  display: block;
+  width: 5.3rem;
+  height: 5.3rem;
+  margin: 0.5rem;
+  border-radius: 5px;
   background-color: #3D3D3D;
   border: 1px solid #3D3D3D;
-  animation-duration: 0.4s;
+  animation-duration: 0.1s;
   opacity: 1;
   pointer-events: none;
   @include transition;

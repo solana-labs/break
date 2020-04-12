@@ -9,6 +9,8 @@ function notUndefined<T>(x: T | undefined): x is T {
   return x !== undefined;
 }
 
+const TPU_DISABLED = !!process.env.TPU_DISABLED;
+
 // Proxy for sending transactions
 export default class TpuProxy {
   tpu?: dgram.Socket;
@@ -39,6 +41,11 @@ export default class TpuProxy {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onTransaction = (data: any): void => {
+    if (TPU_DISABLED) {
+      this.connection.sendRawTransaction(data);
+      return;
+    }
+
     if (this.tpu) {
       try {
         this.tpu.send(data, this.onTpuResult);
