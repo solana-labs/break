@@ -3,7 +3,7 @@ import useThrottle from "@react-hook/throttle";
 
 import "./index.scss";
 import TransactionSquare from "../transaction-square";
-import tapIcon from "shared/images/icons/tap.svg";
+import tapIcon from "images/icons/tap.svg";
 import { useTransactions } from "providers/transactions";
 import { useConfig } from "providers/api";
 import { useCreateTx } from "providers/transactions";

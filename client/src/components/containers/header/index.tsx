@@ -5,7 +5,7 @@ import { withRouter } from "react-router-dom";
 
 import "./index.scss";
 
-import logo from "shared/images/logo.svg";
+import logo from "images/logo.svg";
 
 interface IProps extends RouteComponentProps {
   history: H.History;

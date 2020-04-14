@@ -1,5 +1,5 @@
-@import '~shared/styles/variables/colors';
-@import '~shared/styles/tools/transitions';
+@import '~styles/variables/colors';
+@import '~styles/tools/transitions';
 
 .start-head-wrapper{
     width: 100%;
@@ -56,18 +56,18 @@
     }
 
     .timer{
-        background-image: url("../../../shared/images/icons/timer.svg");
+        background-image: url("../../../images/icons/timer.svg");
     }
 
     .counter{
-        background-image: url("../../../shared/images/icons/arrows.svg");
+        background-image: url("../../../images/icons/arrows.svg");
     }
 
     .capacity{
-        background-image: url("../../../shared/images/icons/capacity.svg");
+        background-image: url("../../../images/icons/capacity.svg");
     }
 
     .speed{
-        background-image: url("../../../shared/images/icons/processing.svg");
+        background-image: url("../../../images/icons/processing.svg");
     }
 }

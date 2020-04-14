@@ -3,8 +3,8 @@ import * as React from "react";
 import "./index.scss";
 import { TransactionContainer } from "components/containers/transaction-container";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
-import shareTwitterIcon from "shared/images/share-twitter.svg";
-import shareFacebookIcon from "shared/images/share-facebook-2.svg";
+import shareTwitterIcon from "images/share-twitter.svg";
+import shareFacebookIcon from "images/share-facebook-2.svg";
 import {
   useCreateTx,
   useTps,
