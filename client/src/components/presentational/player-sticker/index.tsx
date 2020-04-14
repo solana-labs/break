@@ -2,7 +2,7 @@ import * as React from "react";
 
 import "./index.scss";
 
-import userImg from "shared/images/icons/user.svg";
+import userImg from "images/icons/user.svg";
 
 interface IProps {
   name: string;

@@ -4,8 +4,8 @@ import "./index.scss";
 import { Button } from "../../ui/button";
 import { FacebookShareButton, TwitterShareButton } from "react-share";
 
-import shareTwitterIcon from "shared/images/share-twitter.svg";
-import shareFacebookIcon from "shared/images/share-facebook.svg";
+import shareTwitterIcon from "images/share-twitter.svg";
+import shareFacebookIcon from "images/share-facebook.svg";
 
 interface IProps {
   completedCount: number;

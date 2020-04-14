@@ -2,7 +2,7 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 
-import "shared/styles/global.scss";
+import "styles/global.scss";
 
 import App from "./app";
 import { ApiProvider } from "providers/api";

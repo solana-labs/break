@@ -2,7 +2,7 @@ import * as React from "react";
 
 import "./index.scss";
 
-import loaderImg from "shared/images/icons/loader.svg";
+import loaderImg from "images/icons/loader.svg";
 
 interface IProps {
   isOpen: boolean;
