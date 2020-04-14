@@ -2,7 +2,6 @@ import * as React from "react";
 
 import "./index.scss";
 import { Button } from "../../ui/button";
-import CircleAnimation from "../circle-animation";
 import { GlitchH1 } from "../../ui/glitch-h1";
 
 export default class Home extends React.Component {
@@ -26,7 +25,6 @@ export default class Home extends React.Component {
             </div>
           </div>
         </div>
-        <CircleAnimation className={"hero"} />
       </div>
     );
   }

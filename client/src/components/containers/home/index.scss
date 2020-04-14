@@ -125,15 +125,4 @@
         //    width: 100%;
         //}
     }
-
-    #hero{
-        height: 100vh;
-        margin: auto;
-        position: fixed;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        opacity: 0.15;
-        z-index: -1;
-    }
 }
