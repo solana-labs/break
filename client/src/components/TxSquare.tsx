@@ -4,34 +4,28 @@ import { UserTransaction } from "providers/transactions";
 import { useSelectTransaction } from "providers/transactions/selected";
 
 interface Props {
-  key: string;
   transaction: UserTransaction;
 }
 
-export function TransactionSquare({ transaction, key }: Props) {
+export function TransactionSquare({ transaction }: Props) {
   const { status, signature } = transaction;
   const selectTransaction = useSelectTransaction();
 
-  const noEvent = !signature ? "no-event" : "";
-
   let statusClass = "";
   if (status === "success") {
-    statusClass = "success";
+    statusClass = "primary";
   } else if (status === "timeout") {
-    statusClass = "timeout";
+    statusClass = "warning";
   } else if (typeof status === "object" && "msg" in status) {
-    statusClass = "error";
+    statusClass = "danger";
+  } else {
+    statusClass = "dark";
   }
-
-  const completedClass = status !== "sent" ? "completed" : "";
 
   return (
     <div
-      key={key}
       onClick={() => selectTransaction(signature)}
-      className={`btn square slideInRight ${statusClass} ${completedClass} ${noEvent}`}
-    >
-      <span className="fe fe-info"></span>
-    </div>
+      className={`btn square slideInRight btn-${statusClass}`}
+    />
   );
 }
