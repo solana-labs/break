@@ -3,7 +3,7 @@ import { TransactionSignature, TransactionError } from "@solana/web3.js";
 import { useConfig } from "../api";
 import { useAccountIds } from "../solana";
 import { TpsProvider, TpsContext } from "./tps";
-import { CreateTxProvider, CreateTxContext } from "./create";
+import { CreateTxHelper } from "./create";
 import { SelectedTxProvider } from "./selected";
 
 export type PendingTransaction = {
@@ -27,6 +27,7 @@ type PendingTransactions = { [id: number]: PendingTransaction };
 type State = {
   maxId: number;
   idBits: { [id: number]: boolean };
+  reservedIds: number[];
   pendingTransactions: PendingTransactions;
   userTransactions: UserTransaction[];
   createdCount: number;
@@ -36,6 +37,7 @@ type State = {
 const DEFAULT_STATE: State = {
   maxId: 0,
   idBits: {},
+  reservedIds: [],
   pendingTransactions: {},
   userTransactions: [],
   createdCount: 0,
@@ -46,7 +48,8 @@ export enum ActionType {
   NewProgramAccount,
   NewTransaction,
   UpdateIds,
-  SendTimeout
+  SendTimeout,
+  ReserveNextId
 }
 
 type UpdateIds = {
@@ -70,7 +73,16 @@ type SendTimeout = {
   trackingId: number;
 };
 
-type Action = NewProgramAccount | NewTransaction | UpdateIds | SendTimeout;
+type ReserveNextId = {
+  type: ActionType.ReserveNextId;
+};
+
+type Action =
+  | NewProgramAccount
+  | NewTransaction
+  | UpdateIds
+  | SendTimeout
+  | ReserveNextId;
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SendTimeout: {
@@ -140,21 +152,37 @@ function reducer(state: State, action: Action): State {
       return Object.assign({}, state, {
         maxId: action.maxId,
         idBits: {},
-        pendingTransactions: {}
+        pendingTransactions: {},
+        reservedIds: []
+      });
+    }
+
+    case ActionType.ReserveNextId: {
+      let nextId = 1;
+      while (
+        state.pendingTransactions[nextId] ||
+        state.reservedIds.includes(nextId)
+      ) {
+        nextId++;
+        if (nextId > state.maxId) return state;
+      }
+      return Object.assign({}, state, {
+        reservedIds: [...state.reservedIds, nextId]
       });
     }
 
     case ActionType.NewTransaction: {
       const { trackingId, pendingTransaction } = action;
+      const reservedIndex = state.reservedIds.indexOf(trackingId);
+      if (reservedIndex < 0) return state;
+      const reservedIds = [...state.reservedIds];
+      reservedIds.splice(reservedIndex, 1);
+
       const newBitValue = !state.idBits[trackingId];
       const signature = pendingTransaction.signature;
-      let userTransactions;
-      if (state.userTransactions.length >= 100) {
-        userTransactions = state.userTransactions.slice(10);
-      } else {
-        userTransactions = state.userTransactions;
-      }
+      const userTransactions = state.userTransactions;
       return Object.assign({}, state, {
+        reservedIds,
         createdCount: state.createdCount + 1,
         idBits: Object.assign({}, state.idBits, {
           [trackingId]: newBitValue
@@ -198,7 +226,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
       <DispatchContext.Provider value={dispatch}>
         <SelectedTxProvider>
           <TpsProvider>
-            <CreateTxProvider>{children}</CreateTxProvider>
+            <CreateTxHelper>{children}</CreateTxHelper>
           </TpsProvider>
         </SelectedTxProvider>
       </DispatchContext.Provider>
@@ -218,6 +246,17 @@ export function useDispatch() {
   }
 
   return dispatch;
+}
+
+export function useReservedIds() {
+  const state = React.useContext(StateContext);
+  if (!state) {
+    throw new Error(
+      `useReservedIds must be used within a TransactionsProvider`
+    );
+  }
+
+  return state.reservedIds;
 }
 
 export function useTransactions() {
@@ -259,22 +298,12 @@ export function useTps() {
 }
 
 export function useCreateTx() {
-  return React.useContext(CreateTxContext);
-}
+  const dispatch = React.useContext(DispatchContext);
+  if (!dispatch) {
+    throw new Error(`useCreateTx must be used within a TransactionsProvider`);
+  }
 
-export function useNextId() {
-  const state = React.useContext(StateContext);
-  if (state === undefined)
-    throw new Error(`useNextId must be used within a TransactionsProvider`);
-
-  const nextId = React.useMemo(() => {
-    let nextId = 1;
-    while (state.pendingTransactions[nextId]) {
-      nextId++;
-      if (nextId > state.maxId) return;
-    }
-    return nextId;
-  }, [state.pendingTransactions, state.maxId]);
-
-  return nextId;
+  return () => {
+    dispatch({ type: ActionType.ReserveNextId });
+  };
 }
