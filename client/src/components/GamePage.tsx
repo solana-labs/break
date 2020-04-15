@@ -54,55 +54,41 @@ function Stats() {
 
   return (
     <div className="row">
-      <StatCard>
-        <div className="col">
-          <h6 className="text-uppercase mb-2">Transactions Sent</h6>
-          <span className="h2 mb-0 text-primary">{createdCount}</span>
-        </div>
-        <div className="col-auto">
-          <span className="h2 fe fe-send text-primary mb-0"></span>
-        </div>
-      </StatCard>
-
-      <StatCard>
-        <div className="col">
-          <h6 className="text-uppercase mb-2">Transactions Confirmed</h6>
-          <span className="h2 mb-0 text-primary">{confirmedCount}</span>
-        </div>
-        <div className="col-auto">
-          <span className="h2 fe fe-check-circle text-primary mb-0"></span>
-        </div>
-      </StatCard>
-
-      <StatCard>
-        <div className="col">
-          <h6 className="text-uppercase mb-2">Solana Capacity Used</h6>
-          <span className="h2 mb-0 text-primary">{percentCapacity}%</span>
-        </div>
-        <div className="col-auto">
-          <span className="h2 fe fe-disc text-primary mb-0"></span>
-        </div>
-      </StatCard>
-
-      <StatCard>
-        <div className="col">
-          <h6 className="text-uppercase mb-2">Transactions per Second</h6>
-          <span className="h2 mb-0 text-primary">{tps}</span>
-        </div>
-        <div className="col-auto">
-          <span className="h2 fe fe-zap text-primary mb-0"></span>
-        </div>
-      </StatCard>
+      <StatCard label="Transactions Sent" value={createdCount} icon="send" />
+      <StatCard
+        label="Transactions Confirmed"
+        value={confirmedCount}
+        icon="check-circle"
+      />
+      <StatCard
+        label="Solana Capacity Used"
+        value={`${percentCapacity}%`}
+        icon="disc"
+      />
+      <StatCard label="Transactions per Second" value={tps} icon="zap" />
     </div>
   );
 }
 
-function StatCard({ children }: { children: React.ReactChild[] }) {
+type StatProps = {
+  label: React.ReactNode;
+  value: React.ReactNode;
+  icon: string;
+};
+function StatCard({ label, value, icon }: StatProps) {
   return (
-    <div className="col-6 col-lg-3 d-flex flex-column">
+    <div className="col-12 col-sm-6 col-lg-3 d-flex flex-column">
       <div className="card flex-grow-1">
         <div className="card-body">
-          <div className="row align-items-center">{children}</div>
+          <div className="row align-items-center">
+            <div className="col">
+              <h6 className="text-uppercase text-truncate mb-2">{label}</h6>
+              <span className="h2 mb-0 text-primary">{value}</span>
+            </div>
+            <div className="col-auto d-none d-md-block">
+              <span className={`h2 fe fe-${icon} text-primary mb-0`}></span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

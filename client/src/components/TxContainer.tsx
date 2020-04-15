@@ -24,8 +24,10 @@ export function TransactionContainer() {
   return (
     <div className="card h-100 mb-0">
       <div className="card-header">
-        <div>Live Transaction Status</div>
-        <div className="text-primary">Press any key to send a transaction</div>
+        <div className="text-truncate">Live Transaction Status</div>
+        <div className="text-primary d-none d-md-block">
+          Press any key to send a transaction
+        </div>
       </div>
       <div className="card-body">
         <div className="tx-wrapper border-1 border-primary h-100 position-relative">
@@ -37,8 +39,11 @@ export function TransactionContainer() {
         </div>
       </div>
       <div className="card-footer d-lg-none">
-        <span className="btn btn-pink w-100 text-uppercase" onClick={createTx}>
-          <span className="fe fe-bolt mr-2"></span>
+        <span
+          className="btn btn-pink w-100 text-uppercase text-truncate"
+          onClick={createTx}
+        >
+          <span className="fe fe-zap mr-2"></span>
           Send new transaction
         </span>
       </div>
