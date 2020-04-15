@@ -8,8 +8,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "echo \"lint is run during build\"",
-    "format": "prettier -c \"**/*.+(js|jsx|ts|tsx|json|css|md)\"",
-    "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|md)\""
+    "format": "prettier -c \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\"",
+    "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\""
   },
   "dependencies": {
     "@react-hook/throttle": "^1.0.12",

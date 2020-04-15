@@ -1,7 +1,7 @@
-@mixin transition(){
+@mixin transition() {
   transition: 0.2s ease-in-out;
 }
 
-@mixin transition-hover(){
+@mixin transition-hover() {
   transition: 0.5s ease-in-out;
 }
