@@ -1,25 +1,25 @@
 import * as React from "react";
-import { useConfirmedCount } from "./index";
+import { useCreatedCount } from "./index";
 
-const TPS_REFRESH_MS = 250;
-const TPS_LOOK_BACK = 4;
+const TPS_REFRESH_MS = 100;
+const TPS_LOOK_BACK = 10;
 
 export const TpsContext = React.createContext<number | undefined>(undefined);
 type ProviderProps = { children: React.ReactNode };
 export function TpsProvider({ children }: ProviderProps) {
   const recentCounts = React.useRef<number[]>([]);
   const [tps, setTps] = React.useState(0);
-  const confirmedCount = useConfirmedCount();
-  const confirmedCountRef = React.useRef(confirmedCount);
+  const createdCount = useCreatedCount();
+  const createdCountRef = React.useRef(createdCount);
 
   React.useEffect(() => {
-    confirmedCountRef.current = confirmedCount;
-  }, [confirmedCount]);
+    createdCountRef.current = createdCount;
+  }, [createdCount]);
 
   React.useEffect(() => {
     recentCounts.current = [];
     const timerId = setInterval(() => {
-      recentCounts.current.push(confirmedCountRef.current);
+      recentCounts.current.push(createdCountRef.current);
       while (recentCounts.current.length - 1 > TPS_LOOK_BACK) {
         recentCounts.current.shift();
       }
