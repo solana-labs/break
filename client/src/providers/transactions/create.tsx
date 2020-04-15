@@ -10,7 +10,7 @@ import * as Bytes from "utils/bytes";
 import { Config } from "../api/config";
 import { useBlockhash } from "../blockhash";
 import {
-  useNextId,
+  useReservedIds,
   useDispatch,
   Dispatch,
   PendingTransaction,
@@ -22,38 +22,33 @@ import { useSpendFees } from "providers/solana";
 
 const SEND_TIMEOUT_MS = 10000;
 
-type CreateTx = () => void;
-export const CreateTxContext = React.createContext<CreateTx | undefined>(
-  undefined
-);
-
-type ProviderProps = { children: React.ReactNode };
-export function CreateTxProvider({ children }: ProviderProps) {
+type Props = { children: React.ReactNode };
+export function CreateTxHelper({ children }: Props) {
   const blockhash = useBlockhash();
   const dispatch = useDispatch();
   const config = useConfig().config;
   const socket = useSocket();
-  const nextTrackingId = useNextId();
   const spendFees = useSpendFees();
+  const reservedIds = useReservedIds();
 
-  let createTx;
-  if (blockhash && config && nextTrackingId && socket) {
-    createTx = () =>
-      createTransaction(
-        blockhash,
-        config,
-        nextTrackingId,
-        dispatch,
-        socket,
-        spendFees
-      );
+  // Use state to track ids that are being used to create transactions
+  const [creating, setCreating] = React.useState<number[]>([]);
+  const stillCreating = creating.filter(id => reservedIds.includes(id));
+  const toCreate = reservedIds.filter(id => !stillCreating.includes(id));
+  if (blockhash && config && socket && toCreate.length > 0) {
+    setCreating(stillCreating.concat(toCreate));
+
+    // Create on next tick
+    setTimeout(() => {
+      toCreate.forEach(id => {
+        createTransaction(blockhash, config, id, dispatch, socket, spendFees);
+      });
+    }, 1);
+  } else if (creating.length > stillCreating.length) {
+    setCreating(stillCreating);
   }
 
-  return (
-    <CreateTxContext.Provider value={createTx}>
-      {children}
-    </CreateTxContext.Provider>
-  );
+  return <>{children}</>;
 }
 
 function createTransaction(
@@ -101,5 +96,8 @@ function createTransaction(
     pendingTransaction,
     trackingId
   });
-  socket.send(transaction.serialize());
+
+  setTimeout(() => {
+    socket.send(transaction.serialize());
+  }, 1);
 }
