@@ -1,16 +1,16 @@
 .introduction {
-    line-height: 3rem;
-    font-weight: 100;
-    font-size: 1.5rem;
+  line-height: 3rem;
+  font-weight: 100;
+  font-size: 1.5rem;
 
-    @include media-breakpoint-down(sm) { 
-        line-height: 2rem;
-        font-size: 1.2rem;
-     }
+  @include media-breakpoint-down(sm) {
+    line-height: 2rem;
+    font-size: 1.2rem;
+  }
 }
 
-@include media-breakpoint-down(md) { 
-    .home-page {
-        max-width: 768px;
-    }
+@include media-breakpoint-down(md) {
+  .home-page {
+    max-width: 768px;
+  }
 }

@@ -1,5 +1,6 @@
 import * as React from "react";
 
+import "styles/animate.scss";
 import { UserTransaction } from "providers/transactions";
 import { useSelectTransaction } from "providers/transactions/selected";
 

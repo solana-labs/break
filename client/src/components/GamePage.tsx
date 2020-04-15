@@ -77,7 +77,7 @@ type StatProps = {
 };
 function StatCard({ label, value, icon }: StatProps) {
   return (
-    <div className="col-12 col-sm-6 col-lg-3 d-flex flex-column">
+    <div className="col-6 col-lg-3 d-flex flex-column">
       <div className="card flex-grow-1">
         <div className="card-body">
           <div className="row align-items-center">

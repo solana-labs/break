@@ -3,8 +3,7 @@
 //example
 // @include box-shadow(3);
 
-@mixin box-shadow ($level) {
-
+@mixin box-shadow($level) {
   @if $level == 1 {
     box-shadow: 1px 1px 8px rgba(0, 7, 43, 0.04);
   } @else if $level == 2 {
@@ -22,7 +21,7 @@
 }
 
 //Active Inputs Shadow
-@mixin active-input-shadow{
+@mixin active-input-shadow {
   box-shadow: 1px 1px 4px rgba(0, 85, 255, 0.08);
 }
 
