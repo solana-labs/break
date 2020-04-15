@@ -6,7 +6,7 @@ import {
   useCreateTx,
   useTps,
   useCreatedCount,
-  useConfirmedCount
+  useAvgConfirmationTime
 } from "providers/transactions";
 import { Header } from "./Header";
 
@@ -48,7 +48,7 @@ export default function Game() {
 
 function Stats() {
   const createdCount = useCreatedCount();
-  const confirmedCount = useConfirmedCount();
+  const avgConfTime = useAvgConfirmationTime().toFixed(2);
   const tps = useTps();
   const percentCapacity = parseFloat(((tps / 50000) * 100).toFixed(4));
 
@@ -56,9 +56,9 @@ function Stats() {
     <div className="row">
       <StatCard label="Transactions Sent" value={createdCount} icon="send" />
       <StatCard
-        label="Transactions Confirmed"
-        value={confirmedCount}
-        icon="check-circle"
+        label="Avg. Confirmation Time"
+        value={`${avgConfTime}s`}
+        icon="check-timer"
       />
       <StatCard
         label="Solana Capacity Used"

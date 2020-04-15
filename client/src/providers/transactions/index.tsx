@@ -6,6 +6,8 @@ import { TpsProvider, TpsContext } from "./tps";
 import { CreateTxHelper } from "./create";
 import { SelectedTxProvider } from "./selected";
 
+const CONFIRMATION_TIME_LOOK_BACK = 75;
+
 export type PendingTransaction = {
   sentAt: number;
   timeoutId?: number;
@@ -278,6 +280,28 @@ export function useConfirmedCount() {
     );
   }
   return state.confirmedCount;
+}
+
+export function useAvgConfirmationTime() {
+  const state = React.useContext(StateContext);
+  if (!state) {
+    throw new Error(
+      `useAvgConfirmationTime must be used within a TransactionsProvider`
+    );
+  }
+  const start = Math.max(
+    state.userTransactions.length - CONFIRMATION_TIME_LOOK_BACK,
+    0
+  );
+  const transactions = state.userTransactions
+    .filter(
+      tx => tx.confirmationTime > 0 && tx.confirmationTime !== Number.MAX_VALUE
+    )
+    .slice(start);
+  const count = transactions.length;
+  if (count === 0) return 0;
+  const sum = transactions.reduce((sum, tx) => sum + tx.confirmationTime, 0);
+  return sum / count;
 }
 
 export function useCreatedCount() {
