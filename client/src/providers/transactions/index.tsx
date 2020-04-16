@@ -108,7 +108,11 @@ function reducer(state: State, action: Action): State {
         }
       });
 
+      const previousBitValue = !state.idBits[trackingId];
       return Object.assign({}, state, {
+        idBits: Object.assign({}, state.idBits, {
+          [trackingId]: previousBitValue
+        }),
         pendingTransactions,
         userTransactions
       });
