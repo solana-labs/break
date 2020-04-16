@@ -19,7 +19,7 @@ export function TransactionContainer() {
     if (current) {
       current.scrollTop = current.scrollHeight;
     }
-  }, [transactions]);
+  }, [transactions.length]);
 
   return (
     <div className="card h-100 mb-0">
