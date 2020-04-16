@@ -4,8 +4,8 @@ import cors from "cors";
 import path from "path";
 import WebSocket from "ws";
 
-import Program from "./program";
-import { Connection, PublicKey } from "@solana/web3.js";
+import ProgramLoader from "./program";
+import { Connection, PublicKey, Account } from "@solana/web3.js";
 import { cluster, url, urlTls } from "./urls";
 import {
   FeeAccountSupply,
@@ -25,7 +25,7 @@ class Server {
   programDataAccountSupply?: ProgramDataAccountSupply;
 
   init = async (connection: Connection, tpuProxy: TpuProxy): Promise<void> => {
-    const program = new Program(connection);
+    const programLoader = new ProgramLoader(connection);
     let programId, feeAccountSupply, programDataAccountSupply;
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -36,7 +36,7 @@ class Server {
           `Airdrops ${faucet.airdropEnabled ? "enabled" : "disabled"}`
         );
         await tpuProxy.connect();
-        programId = await program.load(faucet, feeCalculator);
+        programId = await programLoader.load(faucet, feeCalculator);
         console.log("Program Loaded");
         feeAccountSupply = await FeeAccountSupply.create(
           connection,

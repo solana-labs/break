@@ -6,7 +6,6 @@ import {
   sendAndConfirmTransaction,
   LAMPORTS_PER_SOL
 } from "@solana/web3.js";
-import bs58 from "bs58";
 
 const ENCODED_PAYER_KEY = process.env.ENCODED_PAYER_KEY;
 const AIRDROP_AMOUNT = 100 * LAMPORTS_PER_SOL;
@@ -24,7 +23,7 @@ export default class Faucet {
     let feeAccount = new Account(),
       airdropEnabled = true;
     if (ENCODED_PAYER_KEY) {
-      feeAccount = new Account(bs58.decode(ENCODED_PAYER_KEY));
+      feeAccount = new Account(Buffer.from(ENCODED_PAYER_KEY, "base64"));
       airdropEnabled = false;
     } else {
       await connection.requestAirdrop(feeAccount.publicKey, AIRDROP_AMOUNT);
