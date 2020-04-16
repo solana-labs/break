@@ -138,8 +138,6 @@ class Server {
           programAccountSpace: programAccountSupply.accountSpace,
           accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
           accountCapacity: TX_PER_PAYER,
-          minAccountBalance: payerAccountSupply.minBalance,
-          signatureFee: payerAccountSupply.signatureFee,
           clusterUrl: urlTls,
           cluster
         })

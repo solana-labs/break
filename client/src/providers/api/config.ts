@@ -7,8 +7,6 @@ export interface Config {
   programAccount: PublicKey;
   programAccountSpace: number;
   payerAccount: Account;
-  minAccountBalance: number;
-  signatureFee: number;
   accountCapacity: number;
 }
 
@@ -34,8 +32,6 @@ export function configFromResponse(response: any): Config {
     programAccount: new PublicKey(response.programAccount),
     programAccountSpace: response.programAccountSpace,
     accountCapacity: response.accountCapacity,
-    payerAccount: new Account(Buffer.from(response.accountKey, "hex")),
-    signatureFee: response.signatureFee,
-    minAccountBalance: response.minAccountBalance
+    payerAccount: new Account(Buffer.from(response.accountKey, "hex"))
   };
 }
