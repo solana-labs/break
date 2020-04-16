@@ -31,8 +31,8 @@ class AccountSupply {
       space
     );
     const { slotsPerEpoch } = await connection.getEpochSchedule();
-    const slotsPerSecond = 0.4;
-    const slotsPerYear = (365.25 * 24.0 * 60.0 * 60.0) / slotsPerSecond;
+    const slotsPerSecond = 2.5;
+    const slotsPerYear = 365.25 * 24.0 * 60.0 * 60.0 * slotsPerSecond;
     const epochsPerYear = slotsPerYear / slotsPerEpoch;
     const paddingMultiplier = 2.0;
     const minBalanceForOneEpoch = rentExemptBalance / (2.0 * epochsPerYear);
@@ -80,11 +80,7 @@ class AccountSupply {
 
 // Provides pre-funded accounts for break game clients
 export class PayerAccountSupply {
-  constructor(
-    private supply: AccountSupply,
-    public signatureFee: number,
-    public minBalance: number
-  ) {}
+  constructor(private supply: AccountSupply) {}
 
   pop(): Account | undefined {
     return this.supply.pop();
@@ -104,7 +100,7 @@ export class PayerAccountSupply {
         return faucet.fundAccount(account.publicKey, fundAmount);
       }
     );
-    return new PayerAccountSupply(supply, signatureFee, minBalance);
+    return new PayerAccountSupply(supply);
   }
 }
 
