@@ -6,7 +6,7 @@ export const TX_PER_PAYER = parseInt(process.env.TX_PER_PAYER || "") || 1000;
 const SUPPLY_SIZE = 50;
 const BATCH_SIZE = 10;
 const TX_PER_BYTE = 8;
-const TPS_PER_ACCOUNT = 50;
+const TPS_PER_ACCOUNT = 200;
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
