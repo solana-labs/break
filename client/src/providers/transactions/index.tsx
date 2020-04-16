@@ -293,15 +293,14 @@ export function useAvgConfirmationTime() {
       `useAvgConfirmationTime must be used within a TransactionsProvider`
     );
   }
+  const confirmedTransactions = state.userTransactions.filter(
+    tx => tx.confirmationTime > 0 && tx.confirmationTime !== Number.MAX_VALUE
+  );
   const start = Math.max(
-    state.userTransactions.length - CONFIRMATION_TIME_LOOK_BACK,
+    confirmedTransactions.length - CONFIRMATION_TIME_LOOK_BACK,
     0
   );
-  const transactions = state.userTransactions
-    .filter(
-      tx => tx.confirmationTime > 0 && tx.confirmationTime !== Number.MAX_VALUE
-    )
-    .slice(start);
+  const transactions = confirmedTransactions.slice(start);
   const count = transactions.length;
   if (count === 0) return 0;
   const sum = transactions.reduce((sum, tx) => sum + tx.confirmationTime, 0);
