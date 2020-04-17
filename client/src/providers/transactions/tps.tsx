@@ -19,6 +19,12 @@ export function TpsProvider({ children }: ProviderProps) {
   React.useEffect(() => {
     recentCounts.current = [];
     const timerId = setInterval(() => {
+      if (createdCountRef.current === 0) {
+        recentCounts.current = [];
+        setTps(0);
+        return;
+      }
+
       recentCounts.current.push(createdCountRef.current);
       while (recentCounts.current.length - 1 > TPS_LOOK_BACK) {
         recentCounts.current.shift();

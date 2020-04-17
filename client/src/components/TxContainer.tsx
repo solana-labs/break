@@ -2,13 +2,15 @@ import React, { useRef, useEffect } from "react";
 import useThrottle from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
-import { useTransactions, useCreateTx } from "providers/transactions";
+import { useTransactions } from "providers/transactions";
+import { COUNTDOWN_SECS } from "providers/countdown";
+import { useRouteMatch } from "react-router-dom";
 
-export function TransactionContainer() {
+export function TransactionContainer({ createTx }: { createTx: () => void }) {
   const scrollEl = useRef<HTMLDivElement>(null);
   const rawTransactions = useTransactions();
   const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
-  const createTx = useCreateTx();
+  const isGameRoute = !!useRouteMatch("/game");
 
   useEffect(() => {
     setTransactions(rawTransactions);
@@ -31,6 +33,14 @@ export function TransactionContainer() {
       </div>
       <div className="card-body">
         <div className="tx-wrapper border-1 border-primary h-100 position-relative">
+          {!transactions.length && isGameRoute ? (
+            <div className="d-flex h-100 justify-content-center align-items-center p-3">
+              <h2 className="text-center">
+                Try to break Solana's network by sending as many transactions as
+                you can in {COUNTDOWN_SECS} seconds!
+              </h2>
+            </div>
+          ) : null}
           <div ref={scrollEl} className="square-container" tabIndex={0}>
             {transactions.map(tx => (
               <TransactionSquare key={tx.signature} transaction={tx} />
@@ -38,7 +48,7 @@ export function TransactionContainer() {
           </div>
         </div>
       </div>
-      <div className="card-footer d-lg-none">
+      <div className="card-footer">
         <span
           className="btn btn-pink w-100 text-uppercase text-truncate"
           onClick={createTx}

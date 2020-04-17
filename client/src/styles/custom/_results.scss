@@ -1,0 +1,26 @@
+.stat-circle {
+  min-height: 200px;
+  min-width: 300px;
+}
+
+.results-summary h3 {
+  line-height: 1.5rem;
+  font-weight: 100;
+}
+
+.donut-content {
+  &.allow-events {
+    pointer-events: none;
+  }
+
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
