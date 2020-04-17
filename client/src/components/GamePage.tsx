@@ -10,26 +10,27 @@ import {
 } from "providers/transactions";
 import { Header } from "./Header";
 import { useActiveUsers } from "providers/socket";
+import { useCountdown, COUNTDOWN_SECS } from "providers/countdown";
 
 export default function Game() {
   const createTx = useCreateTx();
-  const createTxRef = React.useRef(createTx);
+  const [countdown, setCountdown] = useCountdown();
 
-  React.useEffect(() => {
-    createTxRef.current = createTx;
-  }, [createTx]);
-
-  React.useEffect(() => {
-    const makeTransaction = () => {
-      const createTx = createTxRef.current;
-      if (createTx) {
-        createTx();
+  const makeTransaction = React.useCallback(() => {
+    if (createTx) {
+      createTx();
+      if (countdown === undefined) {
+        setCountdown(COUNTDOWN_SECS);
       }
-    };
+    }
+  }, [createTx, countdown, setCountdown]);
 
+  React.useEffect(() => {
     document.addEventListener("keyup", makeTransaction);
-    return () => document.removeEventListener("keyup", makeTransaction);
-  }, []);
+    return () => {
+      document.removeEventListener("keyup", makeTransaction);
+    };
+  }, [makeTransaction]);
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
@@ -39,7 +40,7 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          <TransactionContainer />
+          <TransactionContainer createTx={makeTransaction} />
         </div>
       </div>
       <TransactionModal />

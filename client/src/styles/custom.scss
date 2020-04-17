@@ -1,6 +1,7 @@
 @import "custom/app";
 @import "custom/home";
 @import "custom/header";
+@import "custom/results";
 @import "custom/tx-container";
 @import "custom/tx-square";
 
@@ -17,6 +18,10 @@
 }
 
 .btn-pink {
+  &.btn-secondary {
+    border-color: darken($pink, 10%);
+  }
+
   background-color: $pink;
 
   @include hover-focus {

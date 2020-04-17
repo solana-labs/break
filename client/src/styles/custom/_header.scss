@@ -1,3 +1,11 @@
+.solana-header .btn-group {
+  pointer-events: none;
+  cursor: default;
+  &.countdown {
+    min-width: 60px;
+  }
+}
+
 .solana-header img.break {
   height: 40px;
   @include media-breakpoint-down(md) {

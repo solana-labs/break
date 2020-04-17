@@ -3,13 +3,14 @@ import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 
 import Home from "components/HomePage";
 import Game from "components/GamePage";
+import Results from "components/ResultsPage";
 import { LoadingModal } from "components/LoadingModal";
 import { useBlockhash } from "providers/blockhash";
 import { useSocket } from "providers/socket";
 import { useConfig } from "providers/api";
 
 export default function App() {
-  const isGameRoute = !!useRouteMatch("/game");
+  const notHome = !useRouteMatch("/");
   const blockhash = useBlockhash();
   const config = useConfig().config;
   const socket = useSocket();
@@ -20,10 +21,11 @@ export default function App() {
       <Switch>
         <Route path="/" exact component={Home} />
         <Route path="/game" exact component={Game} />
+        <Route path="/results" exact component={Results} />
         <Redirect from="*" to="/" exact />
       </Switch>
-      <LoadingModal show={isGameRoute && isLoading} />
-      <Overlay show={isGameRoute && isLoading} />
+      <LoadingModal show={notHome && isLoading} />
+      <Overlay show={notHome && isLoading} />
     </div>
   );
 }

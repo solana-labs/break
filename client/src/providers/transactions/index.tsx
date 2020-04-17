@@ -34,6 +34,7 @@ type State = {
   userTransactions: UserTransaction[];
   createdCount: number;
   confirmedCount: number;
+  droppedCount: number;
 };
 
 const DEFAULT_STATE: State = {
@@ -43,7 +44,8 @@ const DEFAULT_STATE: State = {
   pendingTransactions: {},
   userTransactions: [],
   createdCount: 0,
-  confirmedCount: 0
+  confirmedCount: 0,
+  droppedCount: 0
 };
 
 export enum ActionType {
@@ -51,7 +53,8 @@ export enum ActionType {
   NewTransaction,
   UpdateIds,
   SendTimeout,
-  ReserveNextId
+  ReserveNextId,
+  ResetStats
 }
 
 type UpdateIds = {
@@ -79,12 +82,17 @@ type ReserveNextId = {
   type: ActionType.ReserveNextId;
 };
 
+type ResetStats = {
+  type: ActionType.ResetStats;
+};
+
 type Action =
   | NewProgramAccount
   | NewTransaction
   | UpdateIds
   | SendTimeout
-  | ReserveNextId;
+  | ReserveNextId
+  | ResetStats;
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.SendTimeout: {
@@ -96,8 +104,10 @@ function reducer(state: State, action: Action): State {
       delete pendingTransactions[trackingId];
       const signature = pendingTransaction.signature;
 
+      let droppedCount = state.droppedCount;
       const userTransactions = state.userTransactions.map(tx => {
         if (signature === tx.signature) {
+          droppedCount++;
           return {
             signature,
             confirmationTime: Number.MAX_VALUE,
@@ -113,6 +123,7 @@ function reducer(state: State, action: Action): State {
         idBits: Object.assign({}, state.idBits, {
           [trackingId]: previousBitValue
         }),
+        droppedCount,
         pendingTransactions,
         userTransactions
       });
@@ -160,6 +171,15 @@ function reducer(state: State, action: Action): State {
         idBits: {},
         pendingTransactions: {},
         reservedIds: []
+      });
+    }
+
+    case ActionType.ResetStats: {
+      return Object.assign({}, state, {
+        userTransactions: [],
+        createdCount: 0,
+        confirmedCount: 0,
+        droppedCount: 0
       });
     }
 
@@ -284,6 +304,16 @@ export function useConfirmedCount() {
     );
   }
   return state.confirmedCount;
+}
+
+export function useDroppedCount() {
+  const state = React.useContext(StateContext);
+  if (!state) {
+    throw new Error(
+      `useDroppedCount must be used within a TransactionsProvider`
+    );
+  }
+  return state.droppedCount;
 }
 
 export function useAvgConfirmationTime() {
