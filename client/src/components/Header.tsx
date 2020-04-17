@@ -2,31 +2,48 @@ import * as React from "react";
 
 import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
-import {
-  useCountdown,
-  COUNTDOWN_SECS,
-  PAUSE_COUNTDOWN
-} from "providers/countdown";
+import { useGameState, COUNTDOWN_SECS } from "providers/game";
 import { useHistory } from "react-router-dom";
 import { useDispatch, ActionType } from "providers/transactions";
 
 export function Header() {
-  const [countdown, setCountdown] = useCountdown();
+  const [gameState, setGameState] = useGameState();
   const history = useHistory();
   const dispatch = useDispatch();
+  const [, setRefresh] = React.useState<boolean>(false);
 
-  const timerValue = countdown !== undefined ? countdown : COUNTDOWN_SECS;
   const resetGame = () => {
     dispatch({ type: ActionType.ResetStats });
-    setCountdown(undefined);
+    setGameState("ready");
     history.push("/game");
   };
 
+  React.useEffect(() => {
+    if (typeof gameState === "number") {
+      const timerId = setInterval(() => {
+        setRefresh(r => !r);
+      }, 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [gameState]);
+
   const cta = () => {
-    if (timerValue > PAUSE_COUNTDOWN) {
-      let text = `${timerValue}s`;
-      if (timerValue <= 0) {
-        text = "Finished";
+    if (gameState !== "reset") {
+      let text;
+      switch (gameState) {
+        case "ready": {
+          text = `${COUNTDOWN_SECS}s`;
+          break;
+        }
+        case "paused": {
+          text = "Finished";
+          break;
+        }
+        default: {
+          const timer =
+            COUNTDOWN_SECS - Math.floor((performance.now() - gameState) / 1000);
+          text = `${timer}s`;
+        }
       }
 
       return (
@@ -34,7 +51,7 @@ export function Header() {
           <div className="btn btn-pink btn-secondary">
             <span className="fe fe-clock" />
           </div>
-          <div className="btn btn-pink btn-secondary countdown text-center">
+          <div className="btn btn-pink btn-secondary gameState text-center">
             {text}
           </div>
         </div>

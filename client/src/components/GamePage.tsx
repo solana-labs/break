@@ -10,20 +10,20 @@ import {
 } from "providers/transactions";
 import { Header } from "./Header";
 import { useActiveUsers } from "providers/socket";
-import { useCountdown, COUNTDOWN_SECS } from "providers/countdown";
+import { useGameState } from "providers/game";
 
 export default function Game() {
   const createTx = useCreateTx();
-  const [countdown, setCountdown] = useCountdown();
+  const [gameState, setGameState] = useGameState();
 
   const makeTransaction = React.useCallback(() => {
     if (createTx) {
       createTx();
-      if (countdown === undefined) {
-        setCountdown(COUNTDOWN_SECS);
+      if (gameState === "ready") {
+        setGameState(performance.now());
       }
     }
-  }, [createTx, countdown, setCountdown]);
+  }, [createTx, gameState, setGameState]);
 
   React.useEffect(() => {
     document.addEventListener("keyup", makeTransaction);

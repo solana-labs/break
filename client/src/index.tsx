@@ -10,7 +10,7 @@ import { SolanaProvider } from "providers/solana";
 import { BlockhashProvider } from "providers/blockhash";
 import { TransactionsProvider } from "providers/transactions";
 import { SocketProvider } from "providers/socket";
-import { CountdownProvider } from "providers/countdown";
+import { GameStateProvider } from "providers/game";
 
 ReactDOM.render(
   <ApiProvider>
@@ -19,9 +19,9 @@ ReactDOM.render(
         <BlockhashProvider>
           <TransactionsProvider>
             <BrowserRouter>
-              <CountdownProvider>
+              <GameStateProvider>
                 <App />
-              </CountdownProvider>
+              </GameStateProvider>
             </BrowserRouter>
           </TransactionsProvider>
         </BlockhashProvider>

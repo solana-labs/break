@@ -11,22 +11,24 @@ import {
   useAvgConfirmationTime
 } from "providers/transactions";
 import { Header } from "./Header";
-import { useCountdown, COUNTDOWN_SECS } from "providers/countdown";
+import { useGameState, COUNTDOWN_SECS } from "providers/game";
 
 export default function Results() {
   const createTx = useCreateTx();
-  const [countdown, setCountdown] = useCountdown();
-  const pauseEnabled = !countdown || countdown > -5;
+  const [gameState, setGameState] = useGameState();
 
   React.useEffect(() => {
-    setCountdown(0);
-  }, [setCountdown]);
+    setGameState("paused");
+    setTimeout(() => {
+      setGameState("reset");
+    }, 5000);
+  }, [setGameState]);
 
   const makeTransaction = React.useCallback(() => {
-    if (createTx && !pauseEnabled) {
+    if (createTx && gameState === "reset") {
       createTx();
     }
-  }, [createTx, pauseEnabled]);
+  }, [createTx, gameState]);
 
   React.useEffect(() => {
     document.addEventListener("keyup", makeTransaction);

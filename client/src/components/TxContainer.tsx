@@ -3,7 +3,7 @@ import useThrottle from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
 import { useTransactions } from "providers/transactions";
-import { COUNTDOWN_SECS } from "providers/countdown";
+import { COUNTDOWN_SECS } from "providers/game";
 import { useRouteMatch } from "react-router-dom";
 
 export function TransactionContainer({ createTx }: { createTx: () => void }) {
