@@ -13,7 +13,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 class AccountSupply {
-  private funded: Array<Account> = [];
+  private funded: Array<[Account, Date]> = [];
   private replenishing = false;
 
   constructor(
@@ -23,7 +23,7 @@ class AccountSupply {
     this.replenish();
   }
 
-  static async minBalance(
+  static async calculateRent(
     connection: Connection,
     space: number
   ): Promise<number> {
@@ -34,9 +34,13 @@ class AccountSupply {
     const slotsPerSecond = 2.5;
     const slotsPerYear = 365.25 * 24.0 * 60.0 * 60.0 * slotsPerSecond;
     const epochsPerYear = slotsPerYear / slotsPerEpoch;
+    const epochsPerWeek = epochsPerYear / (365.25 / 7);
     const paddingMultiplier = 2.0;
-    const minBalanceForOneEpoch = rentExemptBalance / (2.0 * epochsPerYear);
-    return 2 * Math.round(paddingMultiplier * minBalanceForOneEpoch);
+    const rentPerEpoch = Math.round(
+      (paddingMultiplier * rentExemptBalance) / (2.0 * epochsPerYear)
+    );
+    const rentEpochsToCover = Math.max(epochsPerWeek, 2);
+    return rentPerEpoch * rentEpochsToCover;
   }
 
   private async replenish(): Promise<void> {
@@ -62,7 +66,9 @@ class AccountSupply {
       );
 
       for (const account of batch) {
-        if (account) this.funded.push(account);
+        const expiration = new Date();
+        expiration.setDate(expiration.getDate() + 7);
+        if (account) this.funded.push([account, expiration]);
       }
 
       console.log(`${this.name}: ${this.funded.length}`);
@@ -72,9 +78,15 @@ class AccountSupply {
   }
 
   pop(): Account | undefined {
-    const popped = this.funded.shift();
+    let popped = this.funded.shift();
+
+    const now = new Date();
+    while (popped && popped[1] < now) {
+      popped = this.funded.shift();
+    }
+
     this.replenish();
-    return popped;
+    return popped && popped[0];
   }
 }
 
@@ -91,9 +103,9 @@ export class PayerAccountSupply {
     faucet: Faucet,
     feeCalculator: FeeCalculator
   ): Promise<PayerAccountSupply> {
-    const minBalance = await AccountSupply.minBalance(connection, 0);
+    const rent = await AccountSupply.calculateRent(connection, 0);
     const signatureFee = feeCalculator.lamportsPerSignature;
-    const fundAmount = TX_PER_PAYER * (signatureFee + minBalance);
+    const fundAmount = TX_PER_PAYER * (signatureFee + rent) + rent;
     const supply = new AccountSupply(
       "Payer Account Supply",
       (account: Account) => {
@@ -118,16 +130,11 @@ export class ProgramAccountSupply {
     programId: PublicKey
   ): Promise<ProgramAccountSupply> {
     const space = Math.ceil(TPS_PER_ACCOUNT / TX_PER_BYTE);
-    const minBalance = await AccountSupply.minBalance(connection, space);
+    const rent = await AccountSupply.calculateRent(connection, space);
     const supply = new AccountSupply(
       "Program Account Supply",
       (account: Account) => {
-        return faucet.createProgramAccount(
-          account,
-          minBalance,
-          programId,
-          space
-        );
+        return faucet.createProgramAccount(account, rent, programId, space);
       }
     );
     return new ProgramAccountSupply(supply, space);
