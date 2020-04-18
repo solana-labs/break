@@ -39,6 +39,10 @@ export function Header() {
           text = "Finished";
           break;
         }
+        case "loading": {
+          text = "Loading";
+          break;
+        }
         default: {
           const timer =
             COUNTDOWN_SECS - Math.floor((performance.now() - gameState) / 1000);
