@@ -1,9 +1,12 @@
 import React from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useRouteMatch } from "react-router-dom";
+import { useConfig } from "providers/api";
+import { useSocket } from "providers/socket";
+import { useBlockhash } from "providers/blockhash";
 
 export const COUNTDOWN_SECS = 15;
 
-type GameState = number | "ready" | "paused" | "reset";
+type GameState = number | "ready" | "paused" | "reset" | "loading";
 type SetGameState = React.Dispatch<React.SetStateAction<GameState>>;
 const GameStateContext = React.createContext<
   [GameState, SetGameState] | undefined
@@ -11,9 +14,22 @@ const GameStateContext = React.createContext<
 
 type Props = { children: React.ReactNode };
 export function GameStateProvider({ children }: Props) {
-  const [gameState, setGameState] = React.useState<GameState>("ready");
+  const [gameState, setGameState] = React.useState<GameState>("loading");
   const resultsTimerRef = React.useRef<NodeJS.Timer | undefined>(undefined);
   const history = useHistory();
+  const blockhash = useBlockhash();
+  const config = useConfig().config;
+  const socket = useSocket();
+  const isGameRoute = !!useRouteMatch("/game");
+
+  React.useEffect(() => {
+    const isLoading = !blockhash || !config || !socket;
+    if (isLoading) {
+      setGameState("loading");
+    } else if (gameState === "loading") {
+      setGameState(isGameRoute ? "ready" : "reset");
+    }
+  }, [isGameRoute, gameState, blockhash, config, socket]);
 
   React.useEffect(() => {
     if (typeof gameState === "number") {
