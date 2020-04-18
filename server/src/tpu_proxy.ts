@@ -1,4 +1,4 @@
-import { Connection } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import dgram from "dgram";
 
 function sleep(ms: number): Promise<void> {
@@ -10,23 +10,35 @@ function notUndefined<T>(x: T | undefined): x is T {
 }
 
 const TPU_DISABLED = !!process.env.TPU_DISABLED;
+const MAX_PROXIES = 10;
+
+type Tpu = {
+  socket?: dgram.Socket;
+};
 
 // Proxy for sending transactions
 export default class TpuProxy {
-  tpu?: dgram.Socket;
+  tpus: Map<PublicKey, Tpu> = new Map();
   connecting = false;
 
   constructor(private connection: Connection) {}
 
   connected = (): boolean => {
-    return this.tpu !== undefined && !this.connecting;
+    return this.activeProxies() > 0;
+  };
+
+  activeProxies = (): number => {
+    let active = 0;
+    this.tpus.forEach(({ socket }) => {
+      if (socket !== undefined) active++;
+    });
+    return active;
   };
 
   connect = async (): Promise<void> => {
     if (this.connecting) return;
     this.connecting = true;
-    // eslint-disable-next-line no-constant-condition
-    while (this.tpu === undefined) {
+    while (!this.connected()) {
       try {
         console.log("TPU Proxy Connecting...");
         await this.reconnect();
@@ -35,7 +47,8 @@ export default class TpuProxy {
         await sleep(1000);
       }
     }
-    console.log("TPU Proxy Connected");
+    const activeProxies = this.activeProxies();
+    console.log(activeProxies, "TPUs Connected");
     this.connecting = false;
   };
 
@@ -46,16 +59,21 @@ export default class TpuProxy {
       return;
     }
 
-    if (this.tpu) {
-      try {
-        this.tpu.send(data, this.onTpuResult);
-      } catch (err) {
-        this.onTpuResult(err);
-      }
-    } else {
+    if (!this.connected()) {
       this.connect();
       console.error("TPU Proxy disconnected, dropping message");
+      return;
     }
+
+    this.tpus.forEach(({ socket }, key) => {
+      if (socket) {
+        try {
+          socket.send(data, () => this.onTpuResult);
+        } catch (err) {
+          this.onTpuResult(key, err);
+        }
+      }
+    });
   };
 
   private reconnect = async (): Promise<void> => {
@@ -69,29 +87,31 @@ export default class TpuProxy {
       nodes[rpcIndex] = tmp;
     }
 
-    // Pick a TPU address
-    const tpuAddresses = nodes.map(info => info.tpu).filter(notUndefined);
-    if (tpuAddresses.length == 0) throw new Error("No nodes available");
-    const tpuAddr = tpuAddresses[0];
+    const tpuNodes = nodes.filter(({ tpu }) => notUndefined(tpu));
+    if (tpuNodes.length == 0) throw new Error("No nodes available");
+    for (let a = 0; a < tpuNodes.length && a < MAX_PROXIES; a++) {
+      const { tpu, pubkey } = tpuNodes[0];
+      const nodeKey = new PublicKey(pubkey);
+      if (!tpu) continue;
+      if (this.tpus.has(nodeKey)) continue;
 
-    // Connect to TPU port
-    const [host, portStr] = tpuAddr.split(":");
-    const port = Number.parseInt(portStr);
-    const tpu = dgram.createSocket("udp4");
-    await new Promise(resolve => {
-      tpu.on("error", this.onTpuResult);
-      tpu.connect(port, host, resolve);
-    });
+      // Connect to TPU port
+      const [host, portStr] = tpu.split(":");
+      const port = Number.parseInt(portStr);
+      const socket = dgram.createSocket("udp4");
+      await new Promise(resolve => {
+        socket.on("error", err => this.onTpuResult(nodeKey, err));
+        socket.connect(port, host, resolve);
+      });
 
-    this.tpu = tpu;
+      this.tpus.set(nodeKey, { socket });
+    }
   };
 
-  private onTpuResult = (err: Error | null): void => {
+  private onTpuResult = (key: PublicKey, err: Error | null): void => {
     if (err) {
       console.error("Error proxying transaction", err);
-      if (this.tpu) {
-        this.tpu.off("error", this.onTpuResult);
-        this.tpu = undefined;
+      if (this.tpus.delete(key)) {
         this.connect();
       }
     }
