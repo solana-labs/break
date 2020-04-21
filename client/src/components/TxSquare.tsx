@@ -16,7 +16,7 @@ export function TransactionSquare({ transaction }: Props) {
   if (status === "success") {
     statusClass = "primary";
   } else if (status === "timeout") {
-    statusClass = "warning";
+    statusClass = "danger";
   } else if (typeof status === "object" && "msg" in status) {
     statusClass = "danger";
   } else {
