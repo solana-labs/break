@@ -20,16 +20,16 @@ export function GameStateProvider({ children }: Props) {
   const blockhash = useBlockhash();
   const config = useConfig().config;
   const socket = useSocket();
-  const isGameRoute = !!useRouteMatch("/game");
+  const isResultsRoute = !!useRouteMatch("/results");
 
   React.useEffect(() => {
     const isLoading = !blockhash || !config || !socket;
     if (isLoading) {
       setGameState("loading");
     } else if (gameState === "loading") {
-      setGameState(isGameRoute ? "ready" : "reset");
+      setGameState(isResultsRoute ? "reset" : "ready");
     }
-  }, [isGameRoute, gameState, blockhash, config, socket]);
+  }, [isResultsRoute, gameState, blockhash, config, socket]);
 
   React.useEffect(() => {
     if (typeof gameState === "number") {
