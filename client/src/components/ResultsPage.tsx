@@ -68,7 +68,7 @@ function Summary() {
         </span>{" "}
         of Solana’s capacity.
       </h3>
-      <h3 className="text-center">
+      {/* <h3 className="text-center">
         Today, players around the world have submitted{" "}
         <span className="text-primary font-weight-bold">{confirmedCount}</span>{" "}
         transactions, which is{" "}
@@ -76,7 +76,7 @@ function Summary() {
           {capacityUsed.toFixed(3)}%
         </span>{" "}
         of Solana’s capacity.
-      </h3>
+      </h3> */}
     </div>
   );
 }
@@ -96,7 +96,7 @@ function Stats() {
       {
         data: [confirmedCount, droppedCount, processingCount],
         borderColor: ["#000", "#000", "#000"],
-        backgroundColor: ["#00ffad", "#ff00a8", "#2A2A2A"]
+        backgroundColor: ["#00ffad", "#ea134d", "#2A2A2A"]
       }
     ]
   };
