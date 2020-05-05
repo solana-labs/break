@@ -2,21 +2,12 @@ import * as React from "react";
 
 import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
-import { useGameState, COUNTDOWN_SECS } from "providers/game";
-import { useHistory } from "react-router-dom";
-import { useDispatch, ActionType } from "providers/transactions";
+import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
 
 export function Header() {
-  const [gameState, setGameState] = useGameState();
-  const history = useHistory();
-  const dispatch = useDispatch();
+  const [gameState] = useGameState();
   const [, setRefresh] = React.useState<boolean>(false);
-
-  const resetGame = () => {
-    dispatch({ type: ActionType.ResetStats });
-    setGameState("ready");
-    history.push("/game");
-  };
+  const resetGame = useResetGame();
 
   React.useEffect(() => {
     if (typeof gameState === "number") {
@@ -33,10 +24,6 @@ export function Header() {
       switch (gameState) {
         case "ready": {
           text = `${COUNTDOWN_SECS}s`;
-          break;
-        }
-        case "paused": {
-          text = "Finished";
           break;
         }
         case "loading": {

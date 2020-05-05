@@ -1,41 +1,27 @@
 import * as React from "react";
 import { Doughnut } from "react-chartjs-2";
+import { useHistory } from "react-router-dom";
 
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
 import {
-  useCreateTx,
   useConfirmedCount,
   useCreatedCount,
   useDroppedCount,
   useAvgConfirmationTime
 } from "providers/transactions";
 import { Header } from "./Header";
-import { useGameState, COUNTDOWN_SECS } from "providers/game";
+import { COUNTDOWN_SECS } from "providers/game";
 
 export default function Results() {
-  const createTx = useCreateTx();
-  const [gameState, setGameState] = useGameState();
+  const history = useHistory();
+  const createdCount = useCreatedCount();
 
   React.useEffect(() => {
-    setGameState("paused");
-    setTimeout(() => {
-      setGameState("reset");
-    }, 5000);
-  }, [setGameState]);
-
-  const makeTransaction = React.useCallback(() => {
-    if (createTx && gameState === "reset") {
-      createTx();
+    if (createdCount === 0) {
+      history.push("/game");
     }
-  }, [createTx, gameState]);
-
-  React.useEffect(() => {
-    document.addEventListener("keyup", makeTransaction);
-    return () => {
-      document.removeEventListener("keyup", makeTransaction);
-    };
-  }, [makeTransaction]);
+  }, [createdCount, history]);
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
@@ -46,7 +32,7 @@ export default function Results() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          <TransactionContainer createTx={makeTransaction} />
+          <TransactionContainer />
         </div>
       </div>
       <TransactionModal />
