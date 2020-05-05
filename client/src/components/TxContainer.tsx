@@ -1,16 +1,36 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import useThrottle from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
-import { useTransactions } from "providers/transactions";
-import { COUNTDOWN_SECS } from "providers/game";
+import { useCreateTx, useTransactions } from "providers/transactions";
+import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
 import { useRouteMatch } from "react-router-dom";
 
-export function TransactionContainer({ createTx }: { createTx: () => void }) {
+export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const scrollEl = useRef<HTMLDivElement>(null);
   const rawTransactions = useTransactions();
   const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
   const isGameRoute = !!useRouteMatch("/game");
+  const createTx = useCreateTx();
+  const [gameState, setGameState] = useGameState();
+
+  const makeTransaction = useCallback(() => {
+    if (enabled) {
+      if (typeof gameState === "number") {
+        createTx();
+      } else if (gameState === "ready") {
+        createTx();
+        setGameState(performance.now());
+      }
+    }
+  }, [enabled, createTx, gameState, setGameState]);
+
+  useEffect(() => {
+    document.addEventListener("keyup", makeTransaction);
+    return () => {
+      document.removeEventListener("keyup", makeTransaction);
+    };
+  }, [makeTransaction]);
 
   useEffect(() => {
     setTransactions(rawTransactions);
@@ -28,7 +48,7 @@ export function TransactionContainer({ createTx }: { createTx: () => void }) {
       <div className="card-header">
         <div className="text-truncate">Live Transaction Status</div>
         <div className="text-primary d-none d-md-block">
-          Press any key to send a transaction
+          {enabled ? "Press any key to send a transaction" : "Game finished"}
         </div>
       </div>
       <div className="card-body">
@@ -48,15 +68,28 @@ export function TransactionContainer({ createTx }: { createTx: () => void }) {
           </div>
         </div>
       </div>
-      <div className="card-footer">
-        <span
-          className="btn btn-pink w-100 text-uppercase text-truncate"
-          onClick={createTx}
-        >
-          <span className="fe fe-zap mr-2"></span>
-          Send new transaction
-        </span>
-      </div>
+      <ContainerFooter enabled={enabled} />
+    </div>
+  );
+}
+
+function ContainerFooter({ enabled }: { enabled?: boolean }) {
+  const createTx = useCreateTx();
+  const resetGame = useResetGame();
+
+  const onClick = enabled ? createTx : resetGame;
+  const icon = enabled ? "zap" : "repeat";
+  const text = enabled ? "Send new transaction" : "Play again";
+
+  return (
+    <div className="card-footer">
+      <span
+        className="btn btn-pink w-100 text-uppercase text-truncate"
+        onClick={onClick}
+      >
+        <span className={`fe fe-${icon} mr-2`}></span>
+        {text}
+      </span>
     </div>
   );
 }

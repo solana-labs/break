@@ -3,10 +3,11 @@ import { useHistory, useRouteMatch } from "react-router-dom";
 import { useConfig } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
+import { useDispatch, ActionType } from "providers/transactions";
 
 export const COUNTDOWN_SECS = 15;
 
-type GameState = number | "ready" | "paused" | "reset" | "loading";
+type GameState = "loading" | "ready" | number | "reset";
 type SetGameState = React.Dispatch<React.SetStateAction<GameState>>;
 const GameStateContext = React.createContext<
   [GameState, SetGameState] | undefined
@@ -35,6 +36,7 @@ export function GameStateProvider({ children }: Props) {
     if (typeof gameState === "number") {
       if (!resultsTimerRef.current) {
         resultsTimerRef.current = setTimeout(() => {
+          setGameState("reset");
           history.push("/results");
         }, COUNTDOWN_SECS * 1000);
       }
@@ -42,7 +44,7 @@ export function GameStateProvider({ children }: Props) {
       clearTimeout(resultsTimerRef.current);
       resultsTimerRef.current = undefined;
     }
-  }, [gameState, setGameState, history]);
+  }, [gameState, history]);
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
@@ -57,4 +59,16 @@ export function useGameState() {
     throw new Error(`useGameState must be used within a GameStateProvider`);
   }
   return context;
+}
+
+export function useResetGame() {
+  const [, setGameState] = useGameState();
+  const history = useHistory();
+  const dispatch = useDispatch();
+
+  return () => {
+    dispatch({ type: ActionType.ResetStats });
+    setGameState("ready");
+    history.push("/game");
+  };
 }

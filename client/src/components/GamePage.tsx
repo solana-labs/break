@@ -3,35 +3,14 @@ import * as React from "react";
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
 import {
-  useCreateTx,
   useTps,
   useCreatedCount,
   useAvgConfirmationTime
 } from "providers/transactions";
 import { Header } from "./Header";
 import { useActiveUsers } from "providers/socket";
-import { useGameState } from "providers/game";
 
 export default function Game() {
-  const createTx = useCreateTx();
-  const [gameState, setGameState] = useGameState();
-
-  const makeTransaction = React.useCallback(() => {
-    if (createTx) {
-      createTx();
-      if (gameState === "ready") {
-        setGameState(performance.now());
-      }
-    }
-  }, [createTx, gameState, setGameState]);
-
-  React.useEffect(() => {
-    document.addEventListener("keyup", makeTransaction);
-    return () => {
-      document.removeEventListener("keyup", makeTransaction);
-    };
-  }, [makeTransaction]);
-
   return (
     <div className="container min-vh-100 d-flex flex-column">
       <div>
@@ -40,7 +19,7 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          <TransactionContainer createTx={makeTransaction} />
+          <TransactionContainer enabled />
         </div>
       </div>
       <TransactionModal />
