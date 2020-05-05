@@ -2,11 +2,11 @@ import { Account, Connection, FeeCalculator, PublicKey } from "@solana/web3.js";
 
 import Faucet from "./faucet";
 
-export const TX_PER_PAYER = parseInt(process.env.TX_PER_PAYER || "") || 1000;
+export const TX_PER_ACCOUNT =
+  parseInt(process.env.TX_PER_ACCOUNT || "") || 1000;
 const SUPPLY_SIZE = 50;
 const BATCH_SIZE = 10;
 const TX_PER_BYTE = 8;
-const TPS_PER_ACCOUNT = 200;
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -105,7 +105,7 @@ export class PayerAccountSupply {
   ): Promise<PayerAccountSupply> {
     const rent = await AccountSupply.calculateRent(connection, 0);
     const signatureFee = feeCalculator.lamportsPerSignature;
-    const fundAmount = TX_PER_PAYER * (signatureFee + rent) + rent;
+    const fundAmount = TX_PER_ACCOUNT * (signatureFee + rent) + rent;
     const supply = new AccountSupply(
       "Payer Account Supply",
       (account: Account) => {
@@ -129,7 +129,7 @@ export class ProgramAccountSupply {
     faucet: Faucet,
     programId: PublicKey
   ): Promise<ProgramAccountSupply> {
-    const space = Math.ceil(TPS_PER_ACCOUNT / TX_PER_BYTE);
+    const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
     const rent = await AccountSupply.calculateRent(connection, space);
     const supply = new AccountSupply(
       "Program Account Supply",

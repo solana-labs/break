@@ -2,7 +2,7 @@ import React from "react";
 import fetcher from "api/fetcher";
 import Path from "api/paths";
 import { Buffer } from "buffer";
-import { Account } from "@solana/web3.js";
+import { Account, PublicKey } from "@solana/web3.js";
 import { Config, configFromResponse } from "./config";
 import { sleep } from "utils";
 
@@ -36,6 +36,8 @@ interface Refreshed {
   status: ConfigStatus.Refreshed;
   accountCapacity: number;
   payerAccount: Account;
+  programAccount: PublicKey;
+  programAccountSpace: number;
 }
 
 interface Failure {
@@ -59,7 +61,9 @@ function configReducer(state: State, action: Action): State {
           status: action.status,
           config: Object.assign({}, state.config, {
             accountCapacity: action.accountCapacity,
-            payerAccount: action.payerAccount
+            payerAccount: action.payerAccount,
+            programAccount: action.programAccount,
+            programAccountSpace: action.programAccountSpace
           })
         });
       }
@@ -112,7 +116,7 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
   }
 }
 
-export async function refreshPayer(dispatch: Dispatch) {
+async function refreshAccounts(dispatch: Dispatch) {
   dispatch({
     status: ConfigStatus.Refreshing
   });
@@ -127,6 +131,8 @@ export async function refreshPayer(dispatch: Dispatch) {
       refreshed = true;
       dispatch({
         status: ConfigStatus.Refreshed,
+        programAccount: new PublicKey(response.programAccount),
+        programAccountSpace: response.programAccountSpace,
         accountCapacity: response.accountCapacity,
         payerAccount: new Account(Buffer.from(response.accountKey, "hex"))
       });
@@ -143,10 +149,22 @@ export function useConfig() {
   if (!context) {
     throw new Error(`useConfig must be used within a ApiProvider`);
   }
-  return { ...context, clusterParam: getClusterParam(context.config) };
+  if (
+    context.config &&
+    (context.status === ConfigStatus.Refreshed ||
+      context.status === ConfigStatus.Initialized)
+  ) {
+    return context.config;
+  }
+  return undefined;
 }
 
-function getClusterParam(config?: Config): string {
+export function useClusterParam(): string {
+  const context = React.useContext(StateContext);
+  if (!context) {
+    throw new Error(`useClusterParam must be used within a ApiProvider`);
+  }
+  const config = context?.config;
   if (!config) return `cluster=devnet`;
   const { cluster, clusterUrl } = config;
   if (cluster) {
@@ -156,12 +174,12 @@ function getClusterParam(config?: Config): string {
   }
 }
 
-export function useRefreshPayer() {
+export function useRefreshAccounts() {
   const dispatch = React.useContext(DispatchContext);
   if (!dispatch) {
-    throw new Error(`useRefreshPayer must be used within a ApiProvider`);
+    throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
   return () => {
-    refreshPayer(dispatch);
+    refreshAccounts(dispatch);
   };
 }

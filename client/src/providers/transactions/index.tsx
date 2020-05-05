@@ -1,10 +1,12 @@
 import * as React from "react";
-import { TransactionSignature, TransactionError } from "@solana/web3.js";
+import { TransactionSignature } from "@solana/web3.js";
 import { useConfig } from "../api";
+import { useBlockhash } from "../blockhash";
 import { useAccountIds } from "../solana";
 import { TpsProvider, TpsContext } from "./tps";
-import { CreateTxHelper } from "./create";
+import { createTransaction } from "./create";
 import { SelectedTxProvider } from "./selected";
+import { useSocket } from "../socket";
 
 const CONFIRMATION_TIME_LOOK_BACK = 75;
 
@@ -12,52 +14,34 @@ export type PendingTransaction = {
   sentAt: number;
   retryId?: number;
   timeoutId?: number;
+};
+
+type SuccessState = {
+  status: "success";
+  confirmationTime: number;
   signature: TransactionSignature;
 };
 
-export type TransactionStatus =
-  | "sent"
-  | "success"
-  | "timeout"
-  | TransactionError;
-
-export type UserTransaction = {
-  status: TransactionStatus;
-  signature: string;
-  confirmationTime: number;
+type TimeoutState = {
+  status: "timeout";
+  signature: TransactionSignature;
 };
 
-type PendingTransactions = { [id: number]: PendingTransaction };
-
-type State = {
-  maxId: number;
-  idBits: { [id: number]: boolean };
-  reservedIds: number[];
-  pendingTransactions: PendingTransactions;
-  userTransactions: UserTransaction[];
-  createdCount: number;
-  confirmedCount: number;
-  droppedCount: number;
+type PendingState = {
+  status: "pending";
+  pending: PendingTransaction;
+  signature: TransactionSignature;
 };
 
-const DEFAULT_STATE: State = {
-  maxId: 0,
-  idBits: {},
-  reservedIds: [],
-  pendingTransactions: {},
-  userTransactions: [],
-  createdCount: 0,
-  confirmedCount: 0,
-  droppedCount: 0
-};
+export type TransactionStatus = "success" | "timeout" | "pending";
+
+export type TransactionState = SuccessState | TimeoutState | PendingState;
 
 export enum ActionType {
-  NewProgramAccount,
   NewTransaction,
   UpdateIds,
   TimeoutTransaction,
-  ReserveNextId,
-  ResetStats
+  ResetState
 }
 
 type UpdateIds = {
@@ -65,14 +49,10 @@ type UpdateIds = {
   activeIds: Set<number>;
 };
 
-type NewProgramAccount = {
-  type: ActionType.NewProgramAccount;
-  maxId: number;
-};
-
 type NewTransaction = {
   type: ActionType.NewTransaction;
   trackingId: number;
+  signature: TransactionSignature;
   pendingTransaction: PendingTransaction;
 };
 
@@ -81,152 +61,71 @@ type TimeoutTransaction = {
   trackingId: number;
 };
 
-type ReserveNextId = {
-  type: ActionType.ReserveNextId;
+type ResetState = {
+  type: ActionType.ResetState;
 };
 
-type ResetStats = {
-  type: ActionType.ResetStats;
-};
+type Action = NewTransaction | UpdateIds | TimeoutTransaction | ResetState;
 
-type Action =
-  | NewProgramAccount
-  | NewTransaction
-  | UpdateIds
-  | TimeoutTransaction
-  | ReserveNextId
-  | ResetStats;
-
+type State = TransactionState[];
 function reducer(state: State, action: Action): State {
   switch (action.type) {
+    case ActionType.NewTransaction: {
+      const { signature, pendingTransaction } = action;
+      return [
+        ...state,
+        {
+          signature,
+          status: "pending",
+          pending: pendingTransaction
+        }
+      ];
+    }
+
     case ActionType.TimeoutTransaction: {
       const trackingId = action.trackingId;
-      const pendingTransaction = state.pendingTransactions[trackingId];
-      if (!pendingTransaction) return state;
-      clearInterval(pendingTransaction.retryId);
+      if (trackingId >= state.length) return state;
+      const timeout = state[trackingId];
+      if (timeout.status !== "pending") return state;
+      clearInterval(timeout.pending.retryId);
 
-      const pendingTransactions = Object.assign({}, state.pendingTransactions);
-      delete pendingTransactions[trackingId];
-      const signature = pendingTransaction.signature;
-
-      let droppedCount = state.droppedCount;
-      const userTransactions = state.userTransactions.map(tx => {
-        if (signature === tx.signature) {
-          droppedCount++;
+      return state.map(tx => {
+        if (tx.signature === timeout.signature) {
           return {
-            signature,
-            confirmationTime: Number.MAX_VALUE,
-            status: "timeout"
+            status: "timeout",
+            signature: tx.signature
           };
         } else {
           return tx;
         }
       });
-
-      const previousBitValue = !state.idBits[trackingId];
-      return Object.assign({}, state, {
-        idBits: Object.assign({}, state.idBits, {
-          [trackingId]: previousBitValue
-        }),
-        droppedCount,
-        pendingTransactions,
-        userTransactions
-      });
     }
 
     case ActionType.UpdateIds: {
       const ids = action.activeIds;
-      const pendingTransactions = Object.assign({}, state.pendingTransactions);
-      const updateTransactions: { [signature: string]: UserTransaction } = {};
-      let confirmedCount = state.confirmedCount;
-      Object.entries(state.pendingTransactions).forEach(
-        ([idString, pendingTransaction]) => {
-          const id = parseInt(idString);
-          const expectedBit = state.idBits[id];
-          if ((expectedBit && ids.has(id)) || (!expectedBit && !ids.has(id))) {
-            confirmedCount++;
-            delete pendingTransactions[id];
-            clearTimeout(pendingTransaction.timeoutId);
-            clearInterval(pendingTransaction.retryId);
-            const signature = pendingTransaction.signature;
-            const confirmationTime = timeElapsed(pendingTransaction.sentAt);
-            updateTransactions[signature] = {
-              signature,
-              confirmationTime,
-              status: "success"
-            };
-          }
+      return state.map((tx, id) => {
+        if (tx.status === "pending" && ids.has(id)) {
+          clearTimeout(tx.pending.timeoutId);
+          clearInterval(tx.pending.retryId);
+          const confirmationTime = timeElapsed(tx.pending.sentAt);
+          return {
+            status: "success",
+            signature: tx.signature,
+            confirmationTime
+          };
         }
-      );
-
-      const userTransactions = state.userTransactions.map(tx => {
-        const newTransaction = updateTransactions[tx.signature];
-        return newTransaction ? newTransaction : tx;
-      });
-
-      return Object.assign({}, state, {
-        confirmedCount,
-        pendingTransactions,
-        userTransactions
+        return tx;
       });
     }
 
-    case ActionType.NewProgramAccount: {
-      return Object.assign({}, state, {
-        maxId: action.maxId,
-        idBits: {},
-        pendingTransactions: {},
-        reservedIds: []
+    case ActionType.ResetState: {
+      state.forEach(tx => {
+        if (tx.status === "pending") {
+          clearTimeout(tx.pending.timeoutId);
+          clearInterval(tx.pending.retryId);
+        }
       });
-    }
-
-    case ActionType.ResetStats: {
-      return Object.assign({}, state, {
-        userTransactions: [],
-        createdCount: 0,
-        confirmedCount: 0,
-        droppedCount: 0
-      });
-    }
-
-    case ActionType.ReserveNextId: {
-      let nextId = 1;
-      while (
-        state.pendingTransactions[nextId] ||
-        state.reservedIds.includes(nextId)
-      ) {
-        nextId++;
-        if (nextId > state.maxId) return state;
-      }
-      return Object.assign({}, state, {
-        reservedIds: [...state.reservedIds, nextId]
-      });
-    }
-
-    case ActionType.NewTransaction: {
-      const { trackingId, pendingTransaction } = action;
-      const reservedIndex = state.reservedIds.indexOf(trackingId);
-      if (reservedIndex < 0) return state;
-      const reservedIds = [...state.reservedIds];
-      reservedIds.splice(reservedIndex, 1);
-
-      const newBitValue = !state.idBits[trackingId];
-      const signature = pendingTransaction.signature;
-      const userTransactions = state.userTransactions;
-      return Object.assign({}, state, {
-        reservedIds,
-        createdCount: state.createdCount + 1,
-        idBits: Object.assign({}, state.idBits, {
-          [trackingId]: newBitValue
-        }),
-        pendingTransactions: Object.assign({}, state.pendingTransactions, {
-          [trackingId]: pendingTransaction
-        }),
-        userTransactions: [
-          ...userTransactions,
-          { status: "sent", signature, confirmationTime: 0 }
-        ]
-      });
+      return [];
     }
   }
 }
@@ -237,17 +136,16 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
 type ProviderProps = { children: React.ReactNode };
 export function TransactionsProvider({ children }: ProviderProps) {
-  const [state, dispatch] = React.useReducer(reducer, DEFAULT_STATE);
-  const config = useConfig().config;
+  const [state, dispatch] = React.useReducer(reducer, []);
+  const config = useConfig();
   const activeIds = useAccountIds();
 
   React.useEffect(() => {
     if (!config) return;
     dispatch({
-      type: ActionType.NewProgramAccount,
-      maxId: config.programAccountSpace * 8
+      type: ActionType.ResetState
     });
-  }, [config?.programAccount]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [config]);
 
   React.useEffect(() => {
     dispatch({ type: ActionType.UpdateIds, activeIds });
@@ -257,9 +155,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
     <StateContext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
         <SelectedTxProvider>
-          <TpsProvider>
-            <CreateTxHelper>{children}</CreateTxHelper>
-          </TpsProvider>
+          <TpsProvider>{children}</TpsProvider>
         </SelectedTxProvider>
       </DispatchContext.Provider>
     </StateContext.Provider>
@@ -280,17 +176,6 @@ export function useDispatch() {
   return dispatch;
 }
 
-export function useReservedIds() {
-  const state = React.useContext(StateContext);
-  if (!state) {
-    throw new Error(
-      `useReservedIds must be used within a TransactionsProvider`
-    );
-  }
-
-  return state.reservedIds;
-}
-
 export function useTransactions() {
   const state = React.useContext(StateContext);
   if (!state) {
@@ -299,7 +184,7 @@ export function useTransactions() {
     );
   }
 
-  return state.userTransactions;
+  return state;
 }
 
 export function useConfirmedCount() {
@@ -309,7 +194,7 @@ export function useConfirmedCount() {
       `useConfirmedCount must be used within a TransactionsProvider`
     );
   }
-  return state.confirmedCount;
+  return state.filter(({ status }) => status === "success").length;
 }
 
 export function useDroppedCount() {
@@ -319,7 +204,7 @@ export function useDroppedCount() {
       `useDroppedCount must be used within a TransactionsProvider`
     );
   }
-  return state.droppedCount;
+  return state.filter(({ status }) => status === "timeout").length;
 }
 
 export function useAvgConfirmationTime() {
@@ -329,17 +214,19 @@ export function useAvgConfirmationTime() {
       `useAvgConfirmationTime must be used within a TransactionsProvider`
     );
   }
-  const confirmedTransactions = state.userTransactions.filter(
-    tx => tx.confirmationTime > 0 && tx.confirmationTime !== Number.MAX_VALUE
-  );
-  const start = Math.max(
-    confirmedTransactions.length - CONFIRMATION_TIME_LOOK_BACK,
-    0
-  );
-  const transactions = confirmedTransactions.slice(start);
+
+  const confirmed = state.reduce((confirmed: number[], tx) => {
+    if (tx.status === "success") {
+      confirmed.push(tx.confirmationTime);
+    }
+    return confirmed;
+  }, []);
+
+  const start = Math.max(confirmed.length - CONFIRMATION_TIME_LOOK_BACK, 0);
+  const transactions = confirmed.slice(start);
   const count = transactions.length;
   if (count === 0) return 0;
-  const sum = transactions.reduce((sum, tx) => sum + tx.confirmationTime, 0);
+  const sum = transactions.reduce((sum, time) => sum + time, 0);
   return sum / count;
 }
 
@@ -350,7 +237,7 @@ export function useCreatedCount() {
       `useCreatedCount must be used within a TransactionsProvider`
     );
   }
-  return state.createdCount;
+  return state.length;
 }
 
 export function useTps() {
@@ -361,12 +248,28 @@ export function useTps() {
 }
 
 export function useCreateTx() {
-  const dispatch = React.useContext(DispatchContext);
-  if (!dispatch) {
-    throw new Error(`useCreateTx must be used within a TransactionsProvider`);
-  }
+  const config = useConfig();
+  const idCounter = React.useRef<number>(0);
+  const programAccount = config?.programAccount;
+
+  // Reset counter when program account is set
+  React.useEffect(() => {
+    idCounter.current = 0;
+  }, [programAccount]);
+
+  const blockhash = useBlockhash();
+  const dispatch = useDispatch();
+  const socket = useSocket();
+
+  if (!blockhash || !socket || !config) return undefined;
 
   return () => {
-    dispatch({ type: ActionType.ReserveNextId });
+    const id = idCounter.current;
+    if (id < config.accountCapacity) {
+      idCounter.current++;
+      createTransaction(blockhash, config, id, dispatch, socket);
+    } else {
+      console.error("Exceeded account capacity");
+    }
   };
 }

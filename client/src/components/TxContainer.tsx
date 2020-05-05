@@ -15,7 +15,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const [gameState, setGameState] = useGameState();
 
   const makeTransaction = useCallback(() => {
-    if (enabled) {
+    if (enabled && createTx) {
       if (typeof gameState === "number") {
         createTx();
       } else if (gameState === "ready") {

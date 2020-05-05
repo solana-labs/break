@@ -3,7 +3,7 @@ export function toIds(bytes: Uint8Array): Array<number> {
   bytes.forEach((byte, i) => {
     for (let j = 7; j >= 0; j--) {
       if ((byte & (1 << j)) === 1 << j) {
-        ids.push(8 * i + (8 - j));
+        ids.push(8 * i + (7 - j));
       }
     }
   });
@@ -11,13 +11,13 @@ export function toIds(bytes: Uint8Array): Array<number> {
 }
 
 export function fromId(id: number, length: number): Uint8Array {
-  if (id > 8 * length || id <= 0 || !Number.isInteger(id)) {
+  if (id >= 8 * length || id < 0 || !Number.isInteger(id)) {
     throw new Error("invalid id");
   }
 
   const bytes = new Uint8Array(length);
-  const byteIndex = Math.floor((id - 1) / 8);
-  const bitIndex = (id - 1) % 8;
+  const byteIndex = Math.floor(id / 8);
+  const bitIndex = id % 8;
   bytes[byteIndex] = 1 << (7 - bitIndex);
   return bytes;
 }
