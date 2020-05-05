@@ -20,7 +20,8 @@ import { useConfig } from "../api";
 import { useSocket } from "../socket";
 import { useSpendFees } from "providers/solana";
 
-const SEND_TIMEOUT_MS = 10000;
+const SEND_TIMEOUT_MS = 45000;
+const RETRY_INTERVAL_MS = 500;
 
 type Props = { children: React.ReactNode };
 export function CreateTxHelper({ children }: Props) {
@@ -87,7 +88,7 @@ function createTransaction(
   const signature = bs58.encode(signatureBuffer);
   const pendingTransaction: PendingTransaction = { sentAt, signature };
   pendingTransaction.timeoutId = window.setTimeout(() => {
-    dispatch({ type: ActionType.SendTimeout, trackingId });
+    dispatch({ type: ActionType.TimeoutTransaction, trackingId });
   }, SEND_TIMEOUT_MS);
 
   spendFees();
@@ -98,6 +99,10 @@ function createTransaction(
   });
 
   setTimeout(() => {
-    socket.send(transaction.serialize());
+    const serialized = transaction.serialize();
+    socket.send(serialized);
+    pendingTransaction.retryId = window.setInterval(() => {
+      socket.send(serialized);
+    }, RETRY_INTERVAL_MS);
   }, 1);
 }
