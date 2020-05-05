@@ -13,6 +13,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const isGameRoute = !!useRouteMatch("/game");
   const createTx = useCreateTx();
   const [gameState, setGameState] = useGameState();
+  const resetGame = useResetGame();
 
   const makeTransaction = useCallback(() => {
     if (enabled && createTx) {
@@ -68,28 +69,15 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
           </div>
         </div>
       </div>
-      <ContainerFooter enabled={enabled} />
-    </div>
-  );
-}
-
-function ContainerFooter({ enabled }: { enabled?: boolean }) {
-  const createTx = useCreateTx();
-  const resetGame = useResetGame();
-
-  const onClick = enabled ? createTx : resetGame;
-  const icon = enabled ? "zap" : "repeat";
-  const text = enabled ? "Send new transaction" : "Play again";
-
-  return (
-    <div className="card-footer">
-      <span
-        className="btn btn-pink w-100 text-uppercase text-truncate"
-        onClick={onClick}
-      >
-        <span className={`fe fe-${icon} mr-2`}></span>
-        {text}
-      </span>
+      <div className="card-footer">
+        <span
+          className="btn btn-pink w-100 text-uppercase text-truncate"
+          onClick={enabled ? makeTransaction : resetGame}
+        >
+          <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
+          {enabled ? "Send new transaction" : "Play again"}
+        </span>
+      </div>
     </div>
   );
 }
