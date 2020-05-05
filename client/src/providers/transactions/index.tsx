@@ -10,6 +10,7 @@ const CONFIRMATION_TIME_LOOK_BACK = 75;
 
 export type PendingTransaction = {
   sentAt: number;
+  retryId?: number;
   timeoutId?: number;
   signature: TransactionSignature;
 };
@@ -19,6 +20,7 @@ export type TransactionStatus =
   | "success"
   | "timeout"
   | TransactionError;
+
 export type UserTransaction = {
   status: TransactionStatus;
   signature: string;
@@ -26,6 +28,7 @@ export type UserTransaction = {
 };
 
 type PendingTransactions = { [id: number]: PendingTransaction };
+
 type State = {
   maxId: number;
   idBits: { [id: number]: boolean };
@@ -52,7 +55,7 @@ export enum ActionType {
   NewProgramAccount,
   NewTransaction,
   UpdateIds,
-  SendTimeout,
+  TimeoutTransaction,
   ReserveNextId,
   ResetStats
 }
@@ -73,8 +76,8 @@ type NewTransaction = {
   pendingTransaction: PendingTransaction;
 };
 
-type SendTimeout = {
-  type: ActionType.SendTimeout;
+type TimeoutTransaction = {
+  type: ActionType.TimeoutTransaction;
   trackingId: number;
 };
 
@@ -90,15 +93,17 @@ type Action =
   | NewProgramAccount
   | NewTransaction
   | UpdateIds
-  | SendTimeout
+  | TimeoutTransaction
   | ReserveNextId
   | ResetStats;
+
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case ActionType.SendTimeout: {
+    case ActionType.TimeoutTransaction: {
       const trackingId = action.trackingId;
       const pendingTransaction = state.pendingTransactions[trackingId];
       if (!pendingTransaction) return state;
+      clearInterval(pendingTransaction.retryId);
 
       const pendingTransactions = Object.assign({}, state.pendingTransactions);
       delete pendingTransactions[trackingId];
@@ -142,6 +147,7 @@ function reducer(state: State, action: Action): State {
             confirmedCount++;
             delete pendingTransactions[id];
             clearTimeout(pendingTransaction.timeoutId);
+            clearInterval(pendingTransaction.retryId);
             const signature = pendingTransaction.signature;
             const confirmationTime = timeElapsed(pendingTransaction.sentAt);
             updateTransactions[signature] = {
