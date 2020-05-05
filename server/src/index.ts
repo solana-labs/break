@@ -10,7 +10,7 @@ import { cluster, url, urlTls } from "./urls";
 import {
   PayerAccountSupply,
   ProgramAccountSupply,
-  TX_PER_PAYER
+  TX_PER_ACCOUNT
 } from "./account_supply";
 import TpuProxy from "./tpu_proxy";
 import Faucet from "./faucet";
@@ -82,7 +82,9 @@ class Server {
 
   app.get("/refresh", async (req, res) => {
     const payerAccountSupply = server.payerAccountSupply;
-    if (!payerAccountSupply) {
+    const programAccountSupply = server.programAccountSupply;
+
+    if (!payerAccountSupply || !programAccountSupply) {
       res.status(500).send("Server has not initialized, try again");
       return;
     }
@@ -93,11 +95,19 @@ class Server {
       return;
     }
 
+    const programAccount = programAccountSupply.pop();
+    if (!programAccount) {
+      res.status(500).send("Program account supply empty, try again");
+      return;
+    }
+
     res
       .send(
         JSON.stringify({
+          programAccount: programAccount.publicKey.toString(),
+          programAccountSpace: programAccountSupply.accountSpace,
           accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
-          accountCapacity: TX_PER_PAYER
+          accountCapacity: TX_PER_ACCOUNT
         })
       )
       .end();
@@ -137,7 +147,7 @@ class Server {
           programAccount: programAccount.publicKey.toString(),
           programAccountSpace: programAccountSupply.accountSpace,
           accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
-          accountCapacity: TX_PER_PAYER,
+          accountCapacity: TX_PER_ACCOUNT,
           clusterUrl: urlTls,
           cluster
         })

@@ -12,7 +12,7 @@ import { useConfig } from "providers/api";
 export default function App() {
   const notHome = !useRouteMatch("/")?.isExact;
   const blockhash = useBlockhash();
-  const config = useConfig().config;
+  const config = useConfig();
   const socket = useSocket();
   const isLoading = !blockhash || !config || !socket;
 

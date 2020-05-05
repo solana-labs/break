@@ -1,17 +1,17 @@
 import * as React from "react";
-import { UserTransaction } from "providers/transactions";
+import { TransactionState } from "providers/transactions";
 import {
   useSelectTransaction,
   useSelectedTransaction
 } from "providers/transactions/selected";
-import { useConfig } from "providers/api";
+import { useClusterParam } from "providers/api";
 
 export function TransactionModal() {
   const selectedTx = useSelectedTransaction();
   const selectTx = useSelectTransaction();
   const onClose = () => selectTx(undefined);
   const show = !!selectedTx;
-  const { clusterParam } = useConfig();
+  const clusterParam = useClusterParam();
 
   const renderContent = () => {
     if (!selectedTx) return null;
@@ -68,17 +68,15 @@ function Overlay({ show }: { show: boolean }) {
 export function TransactionDetails({
   transaction
 }: {
-  transaction?: UserTransaction;
+  transaction: TransactionState;
 }) {
   if (!transaction) return null;
 
-  const { signature, confirmationTime, status } = transaction;
-
   function displaySignature() {
-    if (signature) {
+    if (transaction.signature) {
       return (
         <p>
-          Signature: <code className="text-white">{signature}</code>
+          Signature: <code className="text-white">{transaction.signature}</code>
         </p>
       );
     }
@@ -87,27 +85,20 @@ export function TransactionDetails({
   }
 
   function displayConfTime() {
-    if (confirmationTime === Number.MAX_VALUE) {
-      return <p>Unconfirmed: Timed out</p>;
-    } else if (confirmationTime > 0) {
-      return <p>Confirmation Time: {confirmationTime} sec</p>;
-    } else {
-      return <p>Processing</p>;
+    switch (transaction.status) {
+      case "success":
+        return <p>Confirmation Time: {transaction.confirmationTime} sec</p>;
+      case "pending":
+        return <p>Processing</p>;
+      case "timeout":
+        return <p>Unconfirmed: Timed out</p>;
     }
-  }
-
-  function displayErrorMsg() {
-    if (typeof status === "object") {
-      return <p>Error: {JSON.stringify(status)}</p>;
-    }
-    return null;
   }
 
   return (
     <div className={"square-info-container"}>
       {displayConfTime()}
       {displaySignature()}
-      {displayErrorMsg()}
     </div>
   );
 }

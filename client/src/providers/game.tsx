@@ -1,6 +1,6 @@
 import React from "react";
 import { useHistory, useRouteMatch } from "react-router-dom";
-import { useConfig } from "providers/api";
+import { useConfig, useRefreshAccounts } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
 import { useDispatch, ActionType } from "providers/transactions";
@@ -19,7 +19,7 @@ export function GameStateProvider({ children }: Props) {
   const resultsTimerRef = React.useRef<NodeJS.Timer | undefined>(undefined);
   const history = useHistory();
   const blockhash = useBlockhash();
-  const config = useConfig().config;
+  const config = useConfig();
   const socket = useSocket();
   const isResultsRoute = !!useRouteMatch("/results");
 
@@ -62,13 +62,13 @@ export function useGameState() {
 }
 
 export function useResetGame() {
-  const [, setGameState] = useGameState();
+  const refreshAccounts = useRefreshAccounts();
   const history = useHistory();
   const dispatch = useDispatch();
 
   return () => {
-    dispatch({ type: ActionType.ResetStats });
-    setGameState("ready");
+    refreshAccounts();
+    dispatch({ type: ActionType.ResetState });
     history.push("/game");
   };
 }

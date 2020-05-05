@@ -1,9 +1,9 @@
 import * as React from "react";
-import { useTransactions, UserTransaction } from "./index";
+import { useTransactions, TransactionState } from "./index";
 
 type SetSelected = React.Dispatch<React.SetStateAction<string | undefined>>;
 export const SelectedContext = React.createContext<
-  [UserTransaction | undefined, SetSelected] | undefined
+  [TransactionState | undefined, SetSelected] | undefined
 >(undefined);
 type ProviderProps = { children: React.ReactNode };
 export function SelectedTxProvider({ children }: ProviderProps) {
@@ -12,7 +12,7 @@ export function SelectedTxProvider({ children }: ProviderProps) {
     undefined
   );
   const [transaction, selectTransaction] = React.useState<
-    UserTransaction | undefined
+    TransactionState | undefined
   >(undefined);
 
   React.useEffect(() => {

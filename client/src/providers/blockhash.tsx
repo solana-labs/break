@@ -46,7 +46,7 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 type BlockhashProviderProps = { children: React.ReactNode };
 export function BlockhashProvider({ children }: BlockhashProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, {});
-  const clusterUrl = useConfig().config?.clusterUrl;
+  const clusterUrl = useConfig()?.clusterUrl;
 
   React.useEffect(() => {
     if (!clusterUrl) return;
