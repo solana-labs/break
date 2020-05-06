@@ -2,7 +2,7 @@ import * as React from "react";
 import { TransactionSignature } from "@solana/web3.js";
 import { useConfig } from "../api";
 import { useBlockhash } from "../blockhash";
-import { useAccountIds } from "../solana";
+import { ConfirmedHelper } from "./confirmed";
 import { TpsProvider, TpsContext } from "./tps";
 import { createTransaction } from "./create";
 import { SelectedTxProvider } from "./selected";
@@ -18,8 +18,10 @@ export type PendingTransaction = {
 
 type SuccessState = {
   status: "success";
-  confirmationTime: number;
   signature: TransactionSignature;
+  slot: number;
+  confirmationTime: number;
+  pending?: PendingTransaction;
 };
 
 type TimeoutState = {
@@ -41,12 +43,14 @@ export enum ActionType {
   NewTransaction,
   UpdateIds,
   TimeoutTransaction,
-  ResetState
+  ResetState,
+  RecordRoot
 }
 
 type UpdateIds = {
   type: ActionType.UpdateIds;
   activeIds: Set<number>;
+  slot: number;
 };
 
 type NewTransaction = {
@@ -65,7 +69,17 @@ type ResetState = {
   type: ActionType.ResetState;
 };
 
-type Action = NewTransaction | UpdateIds | TimeoutTransaction | ResetState;
+type RecordRoot = {
+  type: ActionType.RecordRoot;
+  root: number;
+};
+
+type Action =
+  | NewTransaction
+  | UpdateIds
+  | TimeoutTransaction
+  | ResetState
+  | RecordRoot;
 
 type State = TransactionState[];
 function reducer(state: State, action: Action): State {
@@ -105,13 +119,19 @@ function reducer(state: State, action: Action): State {
       const ids = action.activeIds;
       return state.map((tx, id) => {
         if (tx.status === "pending" && ids.has(id)) {
-          clearTimeout(tx.pending.timeoutId);
-          clearInterval(tx.pending.retryId);
           const confirmationTime = timeElapsed(tx.pending.sentAt);
           return {
             status: "success",
             signature: tx.signature,
-            confirmationTime
+            slot: action.slot,
+            confirmationTime,
+            pending: { ...tx.pending }
+          };
+        } else if (tx.status === "success" && tx.pending && !ids.has(id)) {
+          return {
+            status: "pending",
+            signature: tx.signature,
+            pending: { ...tx.pending }
           };
         }
         return tx;
@@ -123,9 +143,32 @@ function reducer(state: State, action: Action): State {
         if (tx.status === "pending") {
           clearTimeout(tx.pending.timeoutId);
           clearInterval(tx.pending.retryId);
+        } else if (tx.status === "success" && tx.pending) {
+          clearTimeout(tx.pending.timeoutId);
+          clearInterval(tx.pending.retryId);
         }
       });
       return [];
+    }
+
+    case ActionType.RecordRoot: {
+      const foundRooted = state.find(tx => {
+        return tx.status === "success" && tx.slot === action.root;
+      });
+      if (!foundRooted) return state;
+
+      return state.map(tx => {
+        if (tx.status === "success" && tx.pending && tx.slot === action.root) {
+          clearInterval(tx.pending.retryId);
+          clearTimeout(tx.pending.timeoutId);
+          return {
+            ...tx,
+            pending: undefined
+          };
+        } else {
+          return tx;
+        }
+      });
     }
   }
 }
@@ -138,7 +181,6 @@ type ProviderProps = { children: React.ReactNode };
 export function TransactionsProvider({ children }: ProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, []);
   const config = useConfig();
-  const activeIds = useAccountIds();
 
   React.useEffect(() => {
     if (!config) return;
@@ -147,15 +189,13 @@ export function TransactionsProvider({ children }: ProviderProps) {
     });
   }, [config]);
 
-  React.useEffect(() => {
-    dispatch({ type: ActionType.UpdateIds, activeIds });
-  }, [activeIds]);
-
   return (
     <StateContext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
         <SelectedTxProvider>
-          <TpsProvider>{children}</TpsProvider>
+          <ConfirmedHelper>
+            <TpsProvider>{children}</TpsProvider>
+          </ConfirmedHelper>
         </SelectedTxProvider>
       </DispatchContext.Provider>
     </StateContext.Provider>

@@ -6,7 +6,6 @@ import "styles/index.scss";
 
 import App from "./app";
 import { ApiProvider } from "providers/api";
-import { SolanaProvider } from "providers/solana";
 import { BlockhashProvider } from "providers/blockhash";
 import { TransactionsProvider } from "providers/transactions";
 import { SocketProvider } from "providers/socket";
@@ -15,17 +14,15 @@ import { GameStateProvider } from "providers/game";
 ReactDOM.render(
   <ApiProvider>
     <SocketProvider>
-      <SolanaProvider>
-        <BlockhashProvider>
-          <TransactionsProvider>
-            <BrowserRouter>
-              <GameStateProvider>
-                <App />
-              </GameStateProvider>
-            </BrowserRouter>
-          </TransactionsProvider>
-        </BlockhashProvider>
-      </SolanaProvider>
+      <BlockhashProvider>
+        <TransactionsProvider>
+          <BrowserRouter>
+            <GameStateProvider>
+              <App />
+            </GameStateProvider>
+          </BrowserRouter>
+        </TransactionsProvider>
+      </BlockhashProvider>
     </SocketProvider>
   </ApiProvider>,
   document.getElementById("root")
