@@ -84,6 +84,17 @@ export function TransactionDetails({
     return null;
   }
 
+  function displayFinalized() {
+    if (transaction.status === "success") {
+      return (
+        <p>
+          Finalization Status: {transaction.pending ? "Pending" : "Finalized"}
+        </p>
+      );
+    }
+    return null;
+  }
+
   function displayConfTime() {
     switch (transaction.status) {
       case "success":
@@ -99,6 +110,7 @@ export function TransactionDetails({
     <div className={"square-info-container"}>
       {displayConfTime()}
       {displaySignature()}
+      {displayFinalized()}
     </div>
   );
 }
