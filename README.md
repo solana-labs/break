@@ -14,6 +14,8 @@ npm install
 
 ### Run Server
 
+_Note: If the cluster you connect to doesn't have airdrops enabled, you will need to supply the server with a payer key. (See 'Connect to testnet cluster' below)._
+
 ```
 cd server
 
