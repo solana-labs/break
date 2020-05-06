@@ -12,20 +12,29 @@ For NVM installation please refer to [manual](https://github.com/creationix/nvm#
 npm install
 ```
 
-### Run
+### Run Server
 
 ```
+cd server
+
 # Connect to local node
-npm run start
+npm run start:dev
+
+# Connect to specific node
+RPC_URL=http://x.x.x.x npm run start:dev
 
 # Connect to devnet cluster
-LIVE=1 npm run start
+LIVE=1 npm run start:dev
+
+# Connect to testnet cluster
+ENCODED_PAYER_KEY=(base 58 encoded key) CLUSTER=testnet LIVE=1 npm run start:dev
 ```
 
-If you need to compile application for deployment
+### Run Client
 
 ```
-npm run build
+cd client
+npm run start
 ```
 
 ## Built With
