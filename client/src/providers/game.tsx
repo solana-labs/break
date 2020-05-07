@@ -1,5 +1,5 @@
 import React from "react";
-import { useHistory, useRouteMatch } from "react-router-dom";
+import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
 import { useConfig, useRefreshAccounts } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
@@ -18,6 +18,7 @@ export function GameStateProvider({ children }: Props) {
   const [gameState, setGameState] = React.useState<GameState>("loading");
   const resultsTimerRef = React.useRef<NodeJS.Timer | undefined>(undefined);
   const history = useHistory();
+  const location = useLocation();
   const blockhash = useBlockhash();
   const config = useConfig();
   const socket = useSocket();
@@ -37,14 +38,14 @@ export function GameStateProvider({ children }: Props) {
       if (!resultsTimerRef.current) {
         resultsTimerRef.current = setTimeout(() => {
           setGameState("reset");
-          history.push("/results");
+          history.push({ ...location, pathname: "/results" });
         }, COUNTDOWN_SECS * 1000);
       }
     } else if (resultsTimerRef.current) {
       clearTimeout(resultsTimerRef.current);
       resultsTimerRef.current = undefined;
     }
-  }, [gameState, history]);
+  }, [gameState, history, location]);
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
@@ -64,11 +65,12 @@ export function useGameState() {
 export function useResetGame() {
   const refreshAccounts = useRefreshAccounts();
   const history = useHistory();
+  const location = useLocation();
   const dispatch = useDispatch();
 
   return () => {
     refreshAccounts();
     dispatch({ type: ActionType.ResetState });
-    history.push("/game");
+    history.push({ ...location, pathname: "/game" });
   };
 }

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Doughnut } from "react-chartjs-2";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
@@ -15,13 +15,14 @@ import { COUNTDOWN_SECS } from "providers/game";
 
 export default function Results() {
   const history = useHistory();
+  const location = useLocation();
   const createdCount = useCreatedCount();
 
   React.useEffect(() => {
     if (createdCount === 0) {
-      history.push("/game");
+      history.push({ ...location, pathname: "/game" });
     }
-  }, [createdCount, history]);
+  }, [createdCount, history, location]);
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
