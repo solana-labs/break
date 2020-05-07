@@ -41,6 +41,5 @@ npm run start
 
 ## Built With
 
-- [React.js](https://github.com/facebook/react/) - Component Library
+- [React](https://github.com/facebook/react/) - Framework
 - [TypeScript](https://www.typescriptlang.org/) - Primary language
-- [Redux](https://github.com/reduxjs/react-redux) - State management library
