@@ -27,6 +27,13 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   }, [enabled, createTx, gameState, setGameState]);
 
   useEffect(() => {
+    const testMode = new URLSearchParams(window.location.search).has("test");
+    if (!testMode) return;
+    const testInterval = window.setInterval(() => makeTransaction(), 30);
+    return () => clearInterval(testInterval);
+  }, [makeTransaction]);
+
+  useEffect(() => {
     document.addEventListener("keyup", makeTransaction);
     return () => {
       document.removeEventListener("keyup", makeTransaction);
