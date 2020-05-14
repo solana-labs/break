@@ -32,8 +32,10 @@ export default class Program {
         (BpfLoader.getMinNumSignatures(elfData.length) + NUM_RETRIES) +
       (await this.connection.getMinimumBalanceForRentExemption(elfData.length));
 
+    const programAccount = new Account();
     const loaderAccount = new Account();
     await faucet.fundAccount(loaderAccount.publicKey, fees);
-    return BpfLoader.load(this.connection, loaderAccount, elfData);
+    await BpfLoader.load(this.connection, loaderAccount, programAccount, elfData);
+    return programAccount.publicKey;
   }
 }
