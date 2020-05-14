@@ -35,7 +35,12 @@ export default class Program {
     const programAccount = new Account();
     const loaderAccount = new Account();
     await faucet.fundAccount(loaderAccount.publicKey, fees);
-    await BpfLoader.load(this.connection, loaderAccount, programAccount, elfData);
+    await BpfLoader.load(
+      this.connection,
+      loaderAccount,
+      programAccount,
+      elfData
+    );
     return programAccount.publicKey;
   }
 }
