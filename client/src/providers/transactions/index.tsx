@@ -120,6 +120,10 @@ function reducer(state: State, action: Action): State {
       return state.map((tx, id) => {
         if (tx.status === "pending" && ids.has(id)) {
           const confirmationTime = timeElapsed(tx.pending.sentAt);
+          const retryUntil = new URLSearchParams(window.location.search).get(
+            "retry_until"
+          );
+          if (retryUntil === "confirmed") clearInterval(tx.pending.retryId);
           return {
             status: "success",
             signature: tx.signature,

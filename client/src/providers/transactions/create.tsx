@@ -60,8 +60,15 @@ export function createTransaction(
   setTimeout(() => {
     const serialized = transaction.serialize();
     socket.send(serialized);
-    pendingTransaction.retryId = window.setInterval(() => {
-      socket.send(serialized);
-    }, RETRY_INTERVAL_MS);
+
+    const retryUntil = new URLSearchParams(window.location.search).get(
+      "retry_until"
+    );
+    if (retryUntil === null || retryUntil !== "disabled") {
+      pendingTransaction.retryId = window.setInterval(() => {
+        console.log("RETRY");
+        socket.send(serialized);
+      }, RETRY_INTERVAL_MS);
+    }
   }, 1);
 }
