@@ -8,8 +8,6 @@ import { createTransaction } from "./create";
 import { SelectedTxProvider } from "./selected";
 import { useSocket } from "../socket";
 
-const CONFIRMATION_TIME_LOOK_BACK = 75;
-
 export type PendingTransaction = {
   sentAt: number;
   retryId?: number;
@@ -272,11 +270,9 @@ export function useAvgConfirmationTime() {
     return confirmed;
   }, []);
 
-  const start = Math.max(confirmed.length - CONFIRMATION_TIME_LOOK_BACK, 0);
-  const transactions = confirmed.slice(start);
-  const count = transactions.length;
+  const count = confirmed.length;
   if (count === 0) return 0;
-  const sum = transactions.reduce((sum, time) => sum + time, 0);
+  const sum = confirmed.reduce((sum, time) => sum + time, 0);
   return sum / count;
 }
 
