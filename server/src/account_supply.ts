@@ -77,66 +77,75 @@ class AccountSupply {
     this.replenishing = false;
   }
 
-  pop(): Account | undefined {
-    let popped = this.funded.shift();
-
+  size(): number {
     const now = new Date();
-    while (popped && popped[1] < now) {
-      popped = this.funded.shift();
-    }
+    this.funded = this.funded.filter(next => next[1] > now);
+    return this.funded.length;
+  }
 
+  pop(count: number): Account[] {
+    if (this.size() < count) throw new Error("supply depleted");
+    const popped = this.funded.splice(0, count);
     this.replenish();
-    return popped && popped[0];
+    return popped.map(([account]) => account);
   }
 }
 
 // Provides pre-funded accounts for break game clients
-export class PayerAccountSupply {
+export class FeeAccountSupply {
   constructor(private supply: AccountSupply) {}
 
-  pop(): Account | undefined {
-    return this.supply.pop();
+  pop(count: number): Account[] {
+    return this.supply.pop(count);
+  }
+
+  size(): number {
+    return this.supply.size();
   }
 
   static async create(
     connection: Connection,
     faucet: Faucet,
     feeCalculator: FeeCalculator
-  ): Promise<PayerAccountSupply> {
+  ): Promise<FeeAccountSupply> {
     const rent = await AccountSupply.calculateRent(connection, 0);
     const signatureFee = feeCalculator.lamportsPerSignature;
     const fundAmount = TX_PER_ACCOUNT * (signatureFee + rent) + rent;
     const supply = new AccountSupply(
-      "Payer Account Supply",
+      "Fee Account Supply",
       (account: Account) => {
         return faucet.fundAccount(account.publicKey, fundAmount);
       }
     );
-    return new PayerAccountSupply(supply);
+    return new FeeAccountSupply(supply);
   }
 }
 
-// Provides program accounts for break game clients
-export class ProgramAccountSupply {
+// Provides program data accounts for break game clients
+export class ProgramDataAccountSupply {
   constructor(private supply: AccountSupply, public accountSpace: number) {}
 
-  pop(): Account | undefined {
-    return this.supply.pop();
+  pop(count: number): Account[] {
+    return this.supply.pop(count);
+  }
+
+  size(): number {
+    return this.supply.size();
   }
 
   static async create(
     connection: Connection,
     faucet: Faucet,
     programId: PublicKey
-  ): Promise<ProgramAccountSupply> {
+  ): Promise<ProgramDataAccountSupply> {
     const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
     const rent = await AccountSupply.calculateRent(connection, space);
     const supply = new AccountSupply(
-      "Program Account Supply",
+      "Program Data Account Supply",
       (account: Account) => {
-        return faucet.createProgramAccount(account, rent, programId, space);
+        return faucet.createProgramDataAccount(account, rent, programId, space);
       }
     );
-    return new ProgramAccountSupply(supply, space);
+    return new ProgramDataAccountSupply(supply, space);
   }
 }

@@ -8,8 +8,8 @@ import Program from "./program";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { cluster, url, urlTls } from "./urls";
 import {
-  PayerAccountSupply,
-  ProgramAccountSupply,
+  FeeAccountSupply,
+  ProgramDataAccountSupply,
   TX_PER_ACCOUNT
 } from "./account_supply";
 import TpuProxy from "./tpu_proxy";
@@ -21,12 +21,12 @@ function sleep(ms: number): Promise<void> {
 
 class Server {
   programId?: PublicKey;
-  payerAccountSupply?: PayerAccountSupply;
-  programAccountSupply?: ProgramAccountSupply;
+  feeAccountSupply?: FeeAccountSupply;
+  programDataAccountSupply?: ProgramDataAccountSupply;
 
   init = async (connection: Connection, tpuProxy: TpuProxy): Promise<void> => {
     const program = new Program(connection);
-    let programId, payerAccountSupply, programAccountSupply;
+    let programId, feeAccountSupply, programDataAccountSupply;
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
@@ -38,18 +38,18 @@ class Server {
         await tpuProxy.connect();
         programId = await program.load(faucet, feeCalculator);
         console.log("Program Loaded");
-        payerAccountSupply = await PayerAccountSupply.create(
+        feeAccountSupply = await FeeAccountSupply.create(
           connection,
           faucet,
           feeCalculator
         );
-        console.log("Payer Account Supply Created");
-        programAccountSupply = await ProgramAccountSupply.create(
+        console.log("Fee Account Supply Created");
+        programDataAccountSupply = await ProgramDataAccountSupply.create(
           connection,
           faucet,
           programId
         );
-        console.log("Program Account Supply Created");
+        console.log("Program Data Account Supply Created");
         break;
       } catch (err) {
         console.error("Failed to initialize server", err);
@@ -59,8 +59,8 @@ class Server {
     }
 
     this.programId = programId;
-    this.payerAccountSupply = payerAccountSupply;
-    this.programAccountSupply = programAccountSupply;
+    this.feeAccountSupply = feeAccountSupply;
+    this.programDataAccountSupply = programDataAccountSupply;
   };
 }
 
@@ -81,32 +81,37 @@ class Server {
   server.init(connection, tpuProxy);
 
   app.get("/refresh", async (req, res) => {
-    const payerAccountSupply = server.payerAccountSupply;
-    const programAccountSupply = server.programAccountSupply;
+    const splitParam = parseInt(req.query["split"]);
+    const split = isNaN(splitParam) ? 4 : Math.max(1, Math.min(32, splitParam));
+    const feeAccountSupply = server.feeAccountSupply;
+    const programDataAccountSupply = server.programDataAccountSupply;
 
-    if (!payerAccountSupply || !programAccountSupply) {
+    if (!feeAccountSupply || !programDataAccountSupply) {
       res.status(500).send("Server has not initialized, try again");
       return;
     }
 
-    const payerAccount = payerAccountSupply.pop();
-    if (!payerAccount) {
-      res.status(500).send("Payer account supply empty, try again");
+    if (
+      feeAccountSupply.size() < split ||
+      programDataAccountSupply.size() < split
+    ) {
+      res.status(500).send("Account supply depleted, try again");
       return;
     }
 
-    const programAccount = programAccountSupply.pop();
-    if (!programAccount) {
-      res.status(500).send("Program account supply empty, try again");
-      return;
-    }
+    const programDataAccounts = programDataAccountSupply
+      .pop(split)
+      .map(account => account.publicKey.toBase58());
+    const accountKeys = feeAccountSupply.pop(split).map(account => {
+      return Buffer.from(account.secretKey).toString("hex");
+    });
 
     res
       .send(
         JSON.stringify({
-          programAccount: programAccount.publicKey.toString(),
-          programAccountSpace: programAccountSupply.accountSpace,
-          accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
+          programDataAccounts,
+          programDataAccountSpace: programDataAccountSupply.accountSpace,
+          accountKeys,
           accountCapacity: TX_PER_ACCOUNT
         })
       )
@@ -114,39 +119,44 @@ class Server {
   });
 
   app.get("/init", async (req, res) => {
+    const splitParam = parseInt(req.query["split"]);
+    const split = isNaN(splitParam) ? 4 : Math.max(1, Math.min(50, splitParam));
     const programId = server.programId;
-    const payerAccountSupply = server.payerAccountSupply;
-    const programAccountSupply = server.programAccountSupply;
+    const feeAccountSupply = server.feeAccountSupply;
+    const programDataAccountSupply = server.programDataAccountSupply;
 
     if (!tpuProxy.connected()) {
       res.status(500).send("Tpu proxy reconnecting, try again");
       return;
     }
 
-    if (!programId || !payerAccountSupply || !programAccountSupply) {
+    if (!programId || !feeAccountSupply || !programDataAccountSupply) {
       res.status(500).send("Server has not initialized, try again");
       return;
     }
 
-    const payerAccount = payerAccountSupply.pop();
-    if (!payerAccount) {
-      res.status(500).send("Payer account supply empty, try again");
+    if (
+      feeAccountSupply.size() < split ||
+      programDataAccountSupply.size() < split
+    ) {
+      res.status(500).send("Account supply depleted, try again");
       return;
     }
 
-    const programAccount = programAccountSupply.pop();
-    if (!programAccount) {
-      res.status(500).send("Program account supply empty, try again");
-      return;
-    }
+    const programDataAccounts = programDataAccountSupply
+      .pop(split)
+      .map(account => account.publicKey.toBase58());
+    const accountKeys = feeAccountSupply.pop(split).map(account => {
+      return Buffer.from(account.secretKey).toString("hex");
+    });
 
     res
       .send(
         JSON.stringify({
           programId: programId.toString(),
-          programAccount: programAccount.publicKey.toString(),
-          programAccountSpace: programAccountSupply.accountSpace,
-          accountKey: Buffer.from(payerAccount.secretKey).toString("hex"),
+          programDataAccounts,
+          programDataAccountSpace: programDataAccountSupply.accountSpace,
+          accountKeys,
           accountCapacity: TX_PER_ACCOUNT,
           clusterUrl: urlTls,
           cluster

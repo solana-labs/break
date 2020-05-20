@@ -35,9 +35,9 @@ interface Refreshing {
 interface Refreshed {
   status: ConfigStatus.Refreshed;
   accountCapacity: number;
-  payerAccount: Account;
-  programAccount: PublicKey;
-  programAccountSpace: number;
+  feeAccounts: Account[];
+  programDataAccounts: PublicKey[];
+  programDataAccountSpace: number;
 }
 
 interface Failure {
@@ -61,9 +61,9 @@ function configReducer(state: State, action: Action): State {
           status: action.status,
           config: Object.assign({}, state.config, {
             accountCapacity: action.accountCapacity,
-            payerAccount: action.payerAccount,
-            programAccount: action.programAccount,
-            programAccountSpace: action.programAccountSpace
+            feeAccounts: action.feeAccounts,
+            programDataAccounts: action.programDataAccounts,
+            programDataAccountSpace: action.programDataAccountSpace
           })
         });
       }
@@ -125,19 +125,23 @@ async function refreshAccounts(dispatch: Dispatch) {
   while (!refreshed) {
     try {
       const response = await fetcher.get(Path.Refresh);
-      if (!("accountKey" in response) || !("accountCapacity" in response)) {
-        throw new Error("Failed to refresh payer");
+      if (!("accountKeys" in response) || !("accountCapacity" in response)) {
+        throw new Error("Received invalid response");
       }
       refreshed = true;
       dispatch({
         status: ConfigStatus.Refreshed,
-        programAccount: new PublicKey(response.programAccount),
-        programAccountSpace: response.programAccountSpace,
+        programDataAccounts: response.programDataAccount.map(
+          (account: string) => new PublicKey(account)
+        ),
+        programDataAccountSpace: response.programDataAccountSpace,
         accountCapacity: response.accountCapacity,
-        payerAccount: new Account(Buffer.from(response.accountKey, "hex"))
+        feeAccounts: response.accountKeys.map(
+          (key: string) => new Account(Buffer.from(key, "hex"))
+        )
       });
     } catch (err) {
-      console.error("Failed to refresh payer", err);
+      console.error("Failed to refresh fee accounts", err);
       dispatch({ status: ConfigStatus.Failure });
       await sleep(2000);
     }
