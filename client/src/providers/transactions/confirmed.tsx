@@ -18,17 +18,25 @@ export function ConfirmedHelper({ children }: Props) {
       dispatch({ type: ActionType.RecordRoot, root })
     );
 
-    const accountSubscription = connection.onAccountChange(
-      config.programAccount,
-      (accountInfo: AccountInfo, { slot }) => {
-        const activeIds = new Set(Bytes.toIds(accountInfo.data));
-        dispatch({ type: ActionType.UpdateIds, activeIds, slot });
+    const partitionCount = config.programDataAccounts.length;
+    const accountSubscriptions = config.programDataAccounts.map(
+      (account, partition) => {
+        return connection.onAccountChange(
+          account,
+          (accountInfo: AccountInfo, { slot }) => {
+            const ids = new Set(Bytes.toIds(accountInfo.data));
+            const activeIdPartition = { ids, partition, partitionCount };
+            dispatch({ type: ActionType.UpdateIds, activeIdPartition, slot });
+          }
+        );
       }
     );
 
     return () => {
       connection.removeRootChangeListener(rootSubscription);
-      connection.removeAccountChangeListener(accountSubscription);
+      accountSubscriptions.forEach(listener => {
+        connection.removeAccountChangeListener(listener);
+      });
     };
   }, [dispatch, config]);
 

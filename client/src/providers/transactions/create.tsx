@@ -1,8 +1,7 @@
 import {
   Blockhash,
   Transaction,
-  TransactionInstruction,
-  Account
+  TransactionInstruction
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as Bytes from "utils/bytes";
@@ -20,20 +19,20 @@ export function createTransaction(
   socket: WebSocket
 ) {
   const {
-    payerAccount,
-    programAccount,
+    feeAccounts,
+    programDataAccounts,
     programId,
-    programAccountSpace
+    programDataAccountSpace
   } = config;
 
-  const nonce = new Account().publicKey;
+  const bitId = Math.floor(trackingId / feeAccounts.length);
+  const accountIndex = trackingId % feeAccounts.length;
+  const programDataAccount = programDataAccounts[accountIndex];
+  const feeAccount = feeAccounts[accountIndex];
   const instruction = new TransactionInstruction({
-    keys: [
-      { pubkey: programAccount, isWritable: true, isSigner: false },
-      { pubkey: nonce, isWritable: false, isSigner: false }
-    ],
+    keys: [{ pubkey: programDataAccount, isWritable: true, isSigner: false }],
     programId,
-    data: Buffer.from(Bytes.fromId(trackingId, programAccountSpace))
+    data: Buffer.from(Bytes.fromId(bitId, programDataAccountSpace))
   });
 
   const transaction = new Transaction();
@@ -41,7 +40,7 @@ export function createTransaction(
 
   const sentAt = performance.now();
   transaction.recentBlockhash = blockhash;
-  transaction.sign(payerAccount);
+  transaction.sign(feeAccount);
   const signatureBuffer = transaction.signature;
   if (!signatureBuffer) throw new Error("Failed to sign transaction");
   const signature = bs58.encode(signatureBuffer);
@@ -66,7 +65,6 @@ export function createTransaction(
     );
     if (retryUntil === null || retryUntil !== "disabled") {
       pendingTransaction.retryId = window.setInterval(() => {
-        console.log("RETRY");
         socket.send(serialized);
       }, RETRY_INTERVAL_MS);
     }

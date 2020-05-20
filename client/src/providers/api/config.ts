@@ -4,9 +4,9 @@ export interface Config {
   cluster?: Cluster;
   clusterUrl: string;
   programId: PublicKey;
-  programAccount: PublicKey;
-  programAccountSpace: number;
-  payerAccount: Account;
+  programDataAccounts: PublicKey[];
+  programDataAccountSpace: number;
+  feeAccounts: Account[];
   accountCapacity: number;
 }
 
@@ -29,9 +29,13 @@ export function configFromResponse(response: any): Config {
       ? clusterApiUrl(response.cluster)
       : response.clusterUrl,
     programId: new PublicKey(response.programId),
-    programAccount: new PublicKey(response.programAccount),
-    programAccountSpace: response.programAccountSpace,
+    programDataAccounts: response.programDataAccounts.map(
+      (account: string) => new PublicKey(account)
+    ),
+    programDataAccountSpace: response.programDataAccountSpace,
     accountCapacity: response.accountCapacity,
-    payerAccount: new Account(Buffer.from(response.accountKey, "hex"))
+    feeAccounts: response.accountKeys.map(
+      (key: string) => new Account(Buffer.from(key, "hex"))
+    )
   };
 }

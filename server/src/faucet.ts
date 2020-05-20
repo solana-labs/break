@@ -16,21 +16,21 @@ export default class Faucet {
 
   constructor(
     private connection: Connection,
-    private payerAccount: Account,
+    private feeAccount: Account,
     public airdropEnabled: boolean
   ) {}
 
   static async init(connection: Connection): Promise<Faucet> {
-    let payerAccount = new Account(),
+    let feeAccount = new Account(),
       airdropEnabled = true;
     if (ENCODED_PAYER_KEY) {
-      payerAccount = new Account(bs58.decode(ENCODED_PAYER_KEY));
+      feeAccount = new Account(bs58.decode(ENCODED_PAYER_KEY));
       airdropEnabled = false;
     } else {
-      await connection.requestAirdrop(payerAccount.publicKey, AIRDROP_AMOUNT);
+      await connection.requestAirdrop(feeAccount.publicKey, AIRDROP_AMOUNT);
     }
 
-    const faucet = new Faucet(connection, payerAccount, airdropEnabled);
+    const faucet = new Faucet(connection, feeAccount, airdropEnabled);
     await faucet.checkBalance();
     return faucet;
   }
@@ -43,12 +43,12 @@ export default class Faucet {
 
     try {
       const balance = await this.connection.getBalance(
-        this.payerAccount.publicKey
+        this.feeAccount.publicKey
       );
       console.log(`Faucet balance: ${balance}`);
       if (this.airdropEnabled && balance <= LAMPORTS_PER_SOL) {
         await this.connection.requestAirdrop(
-          this.payerAccount.publicKey,
+          this.feeAccount.publicKey,
           AIRDROP_AMOUNT
         );
       }
@@ -64,17 +64,17 @@ export default class Faucet {
     await sendAndConfirmTransaction(
       this.connection,
       SystemProgram.transfer({
-        fromPubkey: this.payerAccount.publicKey,
+        fromPubkey: this.feeAccount.publicKey,
         toPubkey: accountPubkey,
         lamports: fundAmount
       }),
-      this.payerAccount
+      this.feeAccount
     );
     this.checkBalance();
   }
 
-  async createProgramAccount(
-    programAccount: Account,
+  async createProgramDataAccount(
+    programDataAccount: Account,
     fundAmount: number,
     programId: PublicKey,
     space: number
@@ -82,14 +82,14 @@ export default class Faucet {
     await sendAndConfirmTransaction(
       this.connection,
       SystemProgram.createAccount({
-        fromPubkey: this.payerAccount.publicKey,
-        newAccountPubkey: programAccount.publicKey,
+        fromPubkey: this.feeAccount.publicKey,
+        newAccountPubkey: programDataAccount.publicKey,
         lamports: fundAmount,
         space,
         programId
       }),
-      this.payerAccount,
-      programAccount
+      this.feeAccount,
+      programDataAccount
     );
     this.checkBalance();
   }

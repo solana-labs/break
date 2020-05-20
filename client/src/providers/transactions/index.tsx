@@ -49,7 +49,11 @@ export enum ActionType {
 
 type UpdateIds = {
   type: ActionType.UpdateIds;
-  activeIds: Set<number>;
+  activeIdPartition: {
+    ids: Set<number>;
+    partition: number;
+    partitionCount: number;
+  };
   slot: number;
 };
 
@@ -116,8 +120,10 @@ function reducer(state: State, action: Action): State {
     }
 
     case ActionType.UpdateIds: {
-      const ids = action.activeIds;
-      return state.map((tx, id) => {
+      const { ids, partition, partitionCount } = action.activeIdPartition;
+      return state.map((tx, trackingId) => {
+        if (trackingId % partitionCount !== partition) return tx;
+        const id = Math.floor(trackingId / partitionCount);
         if (tx.status === "pending" && ids.has(id)) {
           const confirmationTime = timeElapsed(tx.pending.sentAt);
           const retryUntil = new URLSearchParams(window.location.search).get(
@@ -294,12 +300,12 @@ export function useTps() {
 export function useCreateTx() {
   const config = useConfig();
   const idCounter = React.useRef<number>(0);
-  const programAccount = config?.programAccount;
+  const programDataAccount = config?.programDataAccounts[0];
 
-  // Reset counter when program account is set
+  // Reset counter when program data accounts are refreshed
   React.useEffect(() => {
     idCounter.current = 0;
-  }, [programAccount]);
+  }, [programDataAccount]);
 
   const blockhash = useBlockhash();
   const dispatch = useDispatch();
