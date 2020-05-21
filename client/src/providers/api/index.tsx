@@ -131,7 +131,7 @@ async function refreshAccounts(dispatch: Dispatch) {
       refreshed = true;
       dispatch({
         status: ConfigStatus.Refreshed,
-        programDataAccounts: response.programDataAccount.map(
+        programDataAccounts: response.programDataAccounts.map(
           (account: string) => new PublicKey(account)
         ),
         programDataAccountSpace: response.programDataAccountSpace,
