@@ -68,7 +68,8 @@ export default class Faucet {
         toPubkey: accountPubkey,
         lamports: fundAmount
       }),
-      this.feeAccount
+      [this.feeAccount],
+      1
     );
     this.checkBalance();
   }
@@ -88,8 +89,8 @@ export default class Faucet {
         space,
         programId
       }),
-      this.feeAccount,
-      programDataAccount
+      [this.feeAccount, programDataAccount],
+      1
     );
     this.checkBalance();
   }
