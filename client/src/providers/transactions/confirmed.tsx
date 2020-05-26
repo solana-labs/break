@@ -12,12 +12,13 @@ const commitmentParam = (): Commitment => {
   switch (commitment) {
     case "recent":
     case "single":
+    case "singleGossip":
     case "max":
     case "root": {
       return commitment;
     }
     default: {
-      return "single";
+      return "singleGossip";
     }
   }
 };
