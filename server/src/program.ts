@@ -10,10 +10,23 @@ import _fs from "fs";
 import Faucet from "./faucet";
 const fs = _fs.promises;
 
-export default class Program {
-  constructor(private connection: Connection) {}
+const ENCODED_PROGRAM_KEY = process.env.ENCODED_PROGRAM_KEY;
+
+export default class ProgramLoader {
+  private account: Account;
+  constructor(private connection: Connection) {
+    if (ENCODED_PROGRAM_KEY) {
+      this.account = new Account(Buffer.from(ENCODED_PROGRAM_KEY, "base64"));
+    } else {
+      this.account = new Account();
+    }
+  }
 
   async load(faucet: Faucet, feeCalculator: FeeCalculator): Promise<PublicKey> {
+    // If the program account already exists, don't try to load it again
+    const info = await this.connection.getAccountInfo(this.account.publicKey);
+    if (info?.executable) return this.account.publicKey;
+
     const NUM_RETRIES = 100; /* allow some number of retries */
     const elfFile = path.join(
       __dirname,
@@ -32,15 +45,9 @@ export default class Program {
         (BpfLoader.getMinNumSignatures(elfData.length) + NUM_RETRIES) +
       (await this.connection.getMinimumBalanceForRentExemption(elfData.length));
 
-    const programDataAccount = new Account();
     const loaderAccount = new Account();
     await faucet.fundAccount(loaderAccount.publicKey, fees);
-    await BpfLoader.load(
-      this.connection,
-      loaderAccount,
-      programDataAccount,
-      elfData
-    );
-    return programDataAccount.publicKey;
+    await BpfLoader.load(this.connection, loaderAccount, this.account, elfData);
+    return this.account.publicKey;
   }
 }
