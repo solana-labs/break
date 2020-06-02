@@ -24,7 +24,7 @@ export default class TpuProxy {
   constructor(private connection: Connection) {}
 
   connected = (): boolean => {
-    return this.activeProxies() > 0;
+    return this.activeProxies() > 0 || TPU_DISABLED;
   };
 
   activeProxies = (): number => {
@@ -36,6 +36,10 @@ export default class TpuProxy {
   };
 
   connect = async (): Promise<void> => {
+    if (TPU_DISABLED) {
+      console.log("TPUs disabled");
+      return;
+    }
     if (this.connecting) return;
     this.connecting = true;
     while (!this.connected()) {
