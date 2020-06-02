@@ -1,6 +1,12 @@
+.stats {
+  overflow-x: scroll;
+  flex-wrap: nowrap;
+  max-width: 800px;
+}
+
 .stat-circle {
-  min-height: 200px;
-  min-width: 300px;
+  height: 200px;
+  width: 200px;
 }
 
 .results-summary h3 {
