@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Doughnut } from "react-chartjs-2";
+import { Doughnut, ChartData } from "react-chartjs-2";
 import { useHistory, useLocation } from "react-router-dom";
 
 import { TransactionContainer } from "components/TxContainer";
@@ -117,48 +117,55 @@ function Stats() {
     ],
   };
 
-  const legend = {
-    display: false,
-  };
-  const options = {
-    showLines: false,
-    cutoutPercentage: 90,
-    maintainAspectRatio: false,
-  };
-
   return (
-    <div className="row justify-content-center">
-      <div className="position-relative mb-5 stat-circle">
-        <Doughnut data={capacityData} legend={legend} options={options} />
-        <div className="donut-content">
-          <h2 className="mb-3">{capacityUsed.toFixed(3)}%</h2>
-          <h6 className="text-muted text-center text-uppercase">
-            Capacity Used
-          </h6>
-        </div>
+    <div className="d-flex justify-content-center">
+      <div className="stats d-flex pb-5 justify-content-between w-100">
+        <StatCircle
+          data={confData}
+          title="Avg. Confirmation Time"
+          value={avgConfTime ? avgConfTime.toFixed(2) + "s" : "---"}
+        />
+        <StatCircle
+          data={txData}
+          title="Transactions Processed"
+          value={`${confirmedCount} of ${createdCount}`}
+        />
+        <StatCircle
+          data={capacityData}
+          title="Capacity Used"
+          value={capacityUsed.toFixed(3) + "%"}
+        />
       </div>
+    </div>
+  );
+}
 
-      <div className="position-relative mb-5 stat-circle d-none d-md-inline">
-        <Doughnut data={txData} legend={legend} options={options} />
-        <div className={`donut-content${hasTxData ? " allow-events" : ""}`}>
-          <h2 className="mb-3">
-            {confirmedCount} of {createdCount}
-          </h2>
-          <h6 className="text-muted text-center text-uppercase">
-            Transactions Processed
-          </h6>
-        </div>
-      </div>
+const STAT_LEGEND = {
+  display: false,
+};
 
-      <div className="position-relative mb-5 stat-circle d-none d-lg-inline-block">
-        <Doughnut data={confData} legend={legend} options={options} />
+const STAT_OPTIONS = {
+  showLines: false,
+  cutoutPercentage: 90,
+  maintainAspectRatio: false,
+};
+
+function StatCircle({
+  data,
+  value,
+  title,
+}: {
+  data: ChartData<Chart.ChartData>;
+  value: string;
+  title: string;
+}) {
+  return (
+    <div className="px-4">
+      <div className="position-relative stat-circle">
+        <Doughnut data={data} legend={STAT_LEGEND} options={STAT_OPTIONS} />
         <div className="donut-content">
-          <h2 className="mb-3">
-            {avgConfTime ? avgConfTime.toFixed(2) + "s" : "---"}
-          </h2>
-          <h6 className="text-muted text-center text-uppercase">
-            Avg. Confirmation Time
-          </h6>
+          <h2 className="mb-3">{value}</h2>
+          <h6 className="text-muted text-center text-uppercase">{title}</h6>
         </div>
       </div>
     </div>

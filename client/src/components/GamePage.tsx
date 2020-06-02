@@ -66,7 +66,7 @@ function StatCard({ label, value, icon }: StatProps) {
               <h6 className="text-uppercase text-truncate mb-2">{label}</h6>
               <span className="h2 mb-0 text-primary">{value}</span>
             </div>
-            <div className="col-md-3 d-none d-md-block">
+            <div className="col-md-3 d-none d-md-block text-right">
               <span className={`h2 fe fe-${icon} text-primary mb-0`}></span>
             </div>
           </div>

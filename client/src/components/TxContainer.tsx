@@ -52,7 +52,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   return (
     <div className="card h-100 mb-0">
       <div className="card-header">
-        <div className="text-truncate">Live Transaction Status</div>
+        <div className="text-truncate">Live Transaction Statuses</div>
         <div className="text-primary d-none d-md-block">
           {enabled ? "Press any key to send a transaction" : "Game finished"}
         </div>

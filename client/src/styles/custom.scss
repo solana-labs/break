@@ -6,6 +6,28 @@
 @import "custom/tx-container";
 @import "custom/tx-square";
 
+.card-body,
+.card-header,
+.card-footer {
+  padding: 1rem;
+}
+
+.card-header {
+  height: 50px;
+}
+
+.card {
+  margin-bottom: 0.75rem;
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+.header-body {
+  padding: 1rem 0;
+}
+
 .btn {
   letter-spacing: 0.1em;
 }

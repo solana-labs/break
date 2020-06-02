@@ -67,7 +67,6 @@ export default class AccountSupply {
     count: number
   ): Promise<Array<Account>> {
     const batch = [];
-    console.log("CREATE BATCH", count);
     const accounts = await Promise.all(
       Array(count)
         .fill(0)
