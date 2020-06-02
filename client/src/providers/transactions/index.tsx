@@ -161,7 +161,7 @@ function reducer(state: State, action: Action): State {
 
     case ActionType.RecordRoot: {
       const foundRooted = state.find(tx => {
-        return tx.status === "success" && tx.slot === action.root;
+        return tx.status === "success" && tx.pending && tx.slot === action.root;
       });
       if (!foundRooted) return state;
 
