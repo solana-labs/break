@@ -4,6 +4,9 @@ export interface Config {
   cluster?: Cluster;
   clusterUrl: string;
   programId: PublicKey;
+}
+
+export interface AccountsConfig {
   programDataAccounts: PublicKey[];
   programDataAccountSpace: number;
   feeAccounts: Account[];
@@ -22,20 +25,25 @@ function stringToCluster(str: string | undefined): Cluster | undefined {
   }
 }
 
-export function configFromResponse(response: any): Config {
+export function configFromInit(response: any): Config {
   return {
     cluster: stringToCluster(response.cluster),
     clusterUrl: response.cluster
       ? clusterApiUrl(response.cluster)
       : response.clusterUrl,
     programId: new PublicKey(response.programId),
+  };
+}
+
+export function configFromAccounts(response: any): AccountsConfig {
+  return {
     programDataAccounts: response.programDataAccounts.map(
       (account: string) => new PublicKey(account)
     ),
     programDataAccountSpace: response.programDataAccountSpace,
     accountCapacity: response.accountCapacity,
     feeAccounts: response.accountKeys.map(
-      (key: string) => new Account(Buffer.from(key, "hex"))
+      (key: string) => new Account(Buffer.from(key, "base64"))
     ),
   };
 }

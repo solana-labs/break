@@ -18,7 +18,7 @@ class AccountSupply {
 
   constructor(
     private name: string,
-    private creator: (account: Account) => Promise<void>
+    private createAccount: () => Promise<Account>
   ) {
     this.replenish();
   }
@@ -40,7 +40,7 @@ class AccountSupply {
       (paddingMultiplier * rentExemptBalance) / (2.0 * epochsPerYear)
     );
     const rentEpochsToCover = Math.max(epochsPerWeek, 2);
-    return rentPerEpoch * rentEpochsToCover;
+    return Math.ceil(rentPerEpoch * rentEpochsToCover);
   }
 
   private async replenish(): Promise<void> {
@@ -53,15 +53,13 @@ class AccountSupply {
         Array(batchSize)
           .fill(0)
           .map(async () => {
-            const account = new Account();
             try {
-              await this.creator(account);
+              return await this.createAccount();
             } catch (err) {
               console.error("Failed to replenish account supply", err);
               await sleep(1000);
               return undefined;
             }
-            return account;
           })
       );
 
@@ -93,7 +91,7 @@ class AccountSupply {
 
 // Provides pre-funded accounts for break game clients
 export class FeeAccountSupply {
-  constructor(private supply: AccountSupply) {}
+  constructor(private supply: AccountSupply, public accountCost: number) {}
 
   pop(count: number): Account[] {
     return this.supply.pop(count);
@@ -111,19 +109,23 @@ export class FeeAccountSupply {
     const rent = await AccountSupply.calculateRent(connection, 0);
     const signatureFee = feeCalculator.lamportsPerSignature;
     const fundAmount = TX_PER_ACCOUNT * (signatureFee + rent) + rent;
-    const supply = new AccountSupply(
-      "Fee Account Supply",
-      (account: Account) => {
-        return faucet.fundAccount(account.publicKey, fundAmount);
-      }
-    );
-    return new FeeAccountSupply(supply);
+    const supply = new AccountSupply("Fee Account Supply", async () => {
+      const account = new Account();
+      await faucet.fundAccount(account.publicKey, fundAmount);
+      return account;
+    });
+    const cost = fundAmount + signatureFee;
+    return new FeeAccountSupply(supply, cost);
   }
 }
 
 // Provides program data accounts for break game clients
 export class ProgramDataAccountSupply {
-  constructor(private supply: AccountSupply, public accountSpace: number) {}
+  constructor(
+    private supply: AccountSupply,
+    public accountSpace: number,
+    public accountCost: number
+  ) {}
 
   pop(count: number): Account[] {
     return this.supply.pop(count);
@@ -136,16 +138,16 @@ export class ProgramDataAccountSupply {
   static async create(
     connection: Connection,
     faucet: Faucet,
+    feeCalculator: FeeCalculator,
     programId: PublicKey
   ): Promise<ProgramDataAccountSupply> {
     const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
     const rent = await AccountSupply.calculateRent(connection, space);
-    const supply = new AccountSupply(
-      "Program Data Account Supply",
-      (account: Account) => {
-        return faucet.createProgramDataAccount(account, rent, programId, space);
-      }
+    const supply = new AccountSupply("Program Data Account Supply", () =>
+      faucet.createProgramDataAccount(rent, programId, space)
     );
-    return new ProgramDataAccountSupply(supply, space);
+    const signatureFee = feeCalculator.lamportsPerSignature;
+    const cost = rent + 2 * signatureFee;
+    return new ProgramDataAccountSupply(supply, space, cost);
   }
 }

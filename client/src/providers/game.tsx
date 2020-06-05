@@ -1,6 +1,6 @@
 import React from "react";
 import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
-import { useConfig, useRefreshAccounts } from "providers/api";
+import { useConfig, useRefreshAccounts, useAccounts } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
 import { useDispatch, ActionType } from "providers/transactions";
@@ -21,17 +21,18 @@ export function GameStateProvider({ children }: Props) {
   const location = useLocation();
   const blockhash = useBlockhash();
   const config = useConfig();
+  const accounts = useAccounts();
   const socket = useSocket();
   const isResultsRoute = !!useRouteMatch("/results");
 
   React.useEffect(() => {
-    const isLoading = !blockhash || !config || !socket;
+    const isLoading = !blockhash || !config || !socket || !accounts;
     if (isLoading) {
       setGameState("loading");
     } else if (gameState === "loading") {
       setGameState(isResultsRoute ? "reset" : "ready");
     }
-  }, [isResultsRoute, gameState, blockhash, config, socket]);
+  }, [isResultsRoute, gameState, blockhash, config, accounts, socket]);
 
   React.useEffect(() => {
     if (typeof gameState === "number") {
@@ -68,9 +69,9 @@ export function useResetGame() {
   const location = useLocation();
   const dispatch = useDispatch();
 
-  return () => {
+  return React.useCallback(() => {
     refreshAccounts();
     dispatch({ type: ActionType.ResetState });
     history.push({ ...location, pathname: "/game" });
-  };
+  }, [refreshAccounts, history, location, dispatch]);
 }

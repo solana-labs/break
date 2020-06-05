@@ -2,18 +2,20 @@ import {
   Blockhash,
   Transaction,
   TransactionInstruction,
+  PublicKey,
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as Bytes from "utils/bytes";
 import { Dispatch, PendingTransaction, ActionType } from "./index";
-import { Config } from "../api/config";
+import { AccountsConfig } from "../api/config";
 
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
 
 export function createTransaction(
   blockhash: Blockhash,
-  config: Config,
+  programId: PublicKey,
+  accounts: AccountsConfig,
   trackingId: number,
   dispatch: Dispatch,
   socket: WebSocket
@@ -21,9 +23,8 @@ export function createTransaction(
   const {
     feeAccounts,
     programDataAccounts,
-    programId,
     programDataAccountSpace,
-  } = config;
+  } = accounts;
 
   const bitId = Math.floor(trackingId / feeAccounts.length);
   const accountIndex = trackingId % feeAccounts.length;

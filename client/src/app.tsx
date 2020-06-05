@@ -5,16 +5,15 @@ import Home from "components/HomePage";
 import Game from "components/GamePage";
 import Results from "components/ResultsPage";
 import { LoadingModal } from "components/LoadingModal";
-import { useBlockhash } from "providers/blockhash";
-import { useSocket } from "providers/socket";
-import { useConfig } from "providers/api";
+import { PaymentModal } from "components/PaymentModal";
+import { usePaymentRequired } from "providers/api";
+import { useGameState } from "providers/game";
 
 export default function App() {
   const notHome = !useRouteMatch("/")?.isExact;
-  const blockhash = useBlockhash();
-  const config = useConfig();
-  const socket = useSocket();
-  const isLoading = !blockhash || !config || !socket;
+  const paymentRequired = usePaymentRequired();
+  const [gameState] = useGameState();
+  const isLoading = gameState === "loading";
 
   return (
     <div className="main-content">
@@ -24,8 +23,9 @@ export default function App() {
         <Route path="/results" exact component={Results} />
         <Redirect from="*" to="/" exact />
       </Switch>
-      <LoadingModal show={notHome && isLoading} />
-      <Overlay show={notHome && isLoading} />
+      <PaymentModal show={notHome && paymentRequired} />
+      <LoadingModal show={notHome && isLoading && !paymentRequired} />
+      <Overlay show={notHome && (isLoading || paymentRequired)} />
     </div>
   );
 }

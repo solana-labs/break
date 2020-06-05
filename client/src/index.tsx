@@ -7,6 +7,7 @@ import "styles/index.scss";
 import App from "./app";
 import { ApiProvider } from "providers/api";
 import { BlockhashProvider } from "providers/blockhash";
+import { PaymentProvider } from "providers/payment";
 import { TransactionsProvider } from "providers/transactions";
 import { SocketProvider } from "providers/socket";
 import { GameStateProvider } from "providers/game";
@@ -15,13 +16,15 @@ ReactDOM.render(
   <ApiProvider>
     <SocketProvider>
       <BlockhashProvider>
-        <TransactionsProvider>
-          <BrowserRouter>
-            <GameStateProvider>
-              <App />
-            </GameStateProvider>
-          </BrowserRouter>
-        </TransactionsProvider>
+        <PaymentProvider>
+          <TransactionsProvider>
+            <BrowserRouter>
+              <GameStateProvider>
+                <App />
+              </GameStateProvider>
+            </BrowserRouter>
+          </TransactionsProvider>
+        </PaymentProvider>
       </BlockhashProvider>
     </SocketProvider>
   </ApiProvider>,

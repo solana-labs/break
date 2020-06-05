@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { AccountInfo, Connection, Commitment } from "@solana/web3.js";
-import { useConfig } from "../api";
+import { useConfig, useAccounts } from "../api";
 import { useDispatch, ActionType } from "./index";
 import * as Bytes from "utils/bytes";
 
@@ -27,9 +27,10 @@ type Props = { children: React.ReactNode };
 export function ConfirmedHelper({ children }: Props) {
   const dispatch = useDispatch();
   const config = useConfig();
+  const accounts = useAccounts();
 
   React.useEffect(() => {
-    if (!config) return;
+    if (!config || !accounts) return;
 
     const connection = new Connection(config.clusterUrl, "recent");
     const rootSubscription = connection.onRootChange((root: number) =>
@@ -37,8 +38,8 @@ export function ConfirmedHelper({ children }: Props) {
     );
 
     const commitment = commitmentParam();
-    const partitionCount = config.programDataAccounts.length;
-    const accountSubscriptions = config.programDataAccounts.map(
+    const partitionCount = accounts.programDataAccounts.length;
+    const accountSubscriptions = accounts.programDataAccounts.map(
       (account, partition) => {
         return connection.onAccountChange(
           account,
@@ -58,7 +59,7 @@ export function ConfirmedHelper({ children }: Props) {
         connection.removeAccountChangeListener(listener);
       });
     };
-  }, [dispatch, config]);
+  }, [dispatch, config, accounts]);
 
   return <>{children}</>;
 }
