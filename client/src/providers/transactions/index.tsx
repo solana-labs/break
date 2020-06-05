@@ -1,6 +1,6 @@
 import * as React from "react";
 import { TransactionSignature } from "@solana/web3.js";
-import { useConfig } from "../api";
+import { useConfig, useAccounts } from "../api";
 import { useBlockhash } from "../blockhash";
 import { ConfirmedHelper } from "./confirmed";
 import { TpsProvider, TpsContext } from "./tps";
@@ -295,8 +295,9 @@ export function useTps() {
 
 export function useCreateTx() {
   const config = useConfig();
+  const accounts = useAccounts();
   const idCounter = React.useRef<number>(0);
-  const programDataAccount = config?.programDataAccounts[0];
+  const programDataAccount = accounts?.programDataAccounts[0];
 
   // Reset counter when program data accounts are refreshed
   React.useEffect(() => {
@@ -307,13 +308,20 @@ export function useCreateTx() {
   const dispatch = useDispatch();
   const socket = useSocket();
 
-  if (!blockhash || !socket || !config) return undefined;
+  if (!blockhash || !socket || !config || !accounts) return undefined;
 
   return () => {
     const id = idCounter.current;
-    if (id < config.accountCapacity) {
+    if (id < accounts.accountCapacity) {
       idCounter.current++;
-      createTransaction(blockhash, config, id, dispatch, socket);
+      createTransaction(
+        blockhash,
+        config.programId,
+        accounts,
+        id,
+        dispatch,
+        socket
+      );
     } else {
       console.error("Exceeded account capacity");
     }

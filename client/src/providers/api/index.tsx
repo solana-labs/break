@@ -1,22 +1,27 @@
 import React from "react";
-import fetcher from "api/fetcher";
 import Path from "api/paths";
-import { Buffer } from "buffer";
-import { Account, PublicKey } from "@solana/web3.js";
-import { Config, configFromResponse } from "./config";
+import {
+  Config,
+  configFromInit,
+  configFromAccounts,
+  AccountsConfig,
+} from "./config";
 import { sleep } from "utils";
+import { Account } from "@solana/web3.js";
 
 export enum ConfigStatus {
   Initialized,
   Fetching,
-  Refreshing,
-  Refreshed,
+  PaymentRequired,
+  ReadyToPlay,
   Failure,
 }
 
 interface State {
   status: ConfigStatus;
+  gameCost: number;
   config?: Config;
+  accounts?: AccountsConfig;
 }
 
 interface Initialized {
@@ -24,52 +29,43 @@ interface Initialized {
   config: Config;
 }
 
+interface PaymentRequired {
+  status: ConfigStatus.PaymentRequired;
+  gameCost: number;
+}
+
 interface Fetching {
   status: ConfigStatus.Fetching;
 }
 
-interface Refreshing {
-  status: ConfigStatus.Refreshing;
-}
-
-interface Refreshed {
-  status: ConfigStatus.Refreshed;
-  accountCapacity: number;
-  feeAccounts: Account[];
-  programDataAccounts: PublicKey[];
-  programDataAccountSpace: number;
+interface Ready {
+  status: ConfigStatus.ReadyToPlay;
+  accounts: AccountsConfig;
 }
 
 interface Failure {
   status: ConfigStatus.Failure;
 }
 
-type Action = Initialized | Fetching | Refreshing | Refreshed | Failure;
+type Action = Initialized | Fetching | PaymentRequired | Ready | Failure;
 type Dispatch = (action: Action) => void;
 
 function configReducer(state: State, action: Action): State {
   switch (action.status) {
-    case ConfigStatus.Fetching:
     case ConfigStatus.Failure:
-    case ConfigStatus.Refreshing:
+    case ConfigStatus.PaymentRequired:
+    case ConfigStatus.ReadyToPlay:
     case ConfigStatus.Initialized: {
-      return Object.assign({}, state, action);
+      return { ...state, ...action };
     }
-    case ConfigStatus.Refreshed: {
-      if (state.config) {
-        return Object.assign({}, state, {
-          status: action.status,
-          config: Object.assign({}, state.config, {
-            accountCapacity: action.accountCapacity,
-            feeAccounts: action.feeAccounts,
-            programDataAccounts: action.programDataAccounts,
-            programDataAccountSpace: action.programDataAccountSpace,
-          }),
-        });
-      }
+    case ConfigStatus.Fetching: {
+      return {
+        ...state,
+        ...action,
+        accounts: undefined,
+      };
     }
   }
-  return state;
 }
 
 const StateContext = React.createContext<State | undefined>(undefined);
@@ -78,6 +74,7 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 type ApiProviderProps = { children: React.ReactNode };
 export function ApiProvider({ children }: ApiProviderProps) {
   const [state, dispatch] = React.useReducer(configReducer, {
+    gameCost: 0,
     status: ConfigStatus.Fetching,
   });
 
@@ -102,10 +99,20 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
   let initialized = false;
   while (!initialized) {
     try {
-      const response = await fetcher.get(Path.Init);
+      const body = JSON.stringify({ split: splitParam });
+      const response = await fetch(
+        new Request(Path.Init, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body,
+        })
+      );
+      const data = await response.json();
       dispatch({
         status: ConfigStatus.Initialized,
-        config: configFromResponse(response),
+        config: configFromInit(data),
       });
       initialized = true;
     } catch (err) {
@@ -114,32 +121,69 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
       await sleep(2000);
     }
   }
+
+  refreshAccounts(dispatch);
 }
 
-async function refreshAccounts(dispatch: Dispatch) {
+const splitParam = ((): number | undefined => {
+  const split = parseInt(
+    new URLSearchParams(window.location.search).get("split") || ""
+  );
+  if (!isNaN(split)) {
+    return split;
+  }
+})();
+
+type RefreshData = {
+  split?: number;
+  paymentKey?: string;
+};
+
+async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
   dispatch({
-    status: ConfigStatus.Refreshing,
+    status: ConfigStatus.Fetching,
   });
 
   let refreshed = false;
   while (!refreshed) {
     try {
-      const response = await fetcher.get(Path.Refresh);
-      if (!("accountKeys" in response) || !("accountCapacity" in response)) {
-        throw new Error("Received invalid response");
+      const postData: RefreshData = {};
+      if (splitParam) {
+        postData.split = splitParam;
+      }
+      if (paymentAccount) {
+        postData.paymentKey = Buffer.from(paymentAccount.secretKey).toString(
+          "base64"
+        );
+      }
+
+      const body = JSON.stringify(postData);
+      const response = await fetch(
+        new Request(Path.Accounts, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body,
+        })
+      );
+      const data = await response.json();
+      if (data.message === "Payment required") {
+        dispatch({
+          status: ConfigStatus.PaymentRequired,
+          gameCost: data.amount + 1, // Leave 1 lamport so that the account doesn't get deleted
+        });
+      } else {
+        if (!("accountKeys" in data) || !("accountCapacity" in data)) {
+          throw new Error("Received invalid response");
+        }
+
+        dispatch({
+          status: ConfigStatus.ReadyToPlay,
+          accounts: configFromAccounts(data),
+        });
       }
       refreshed = true;
-      dispatch({
-        status: ConfigStatus.Refreshed,
-        programDataAccounts: response.programDataAccounts.map(
-          (account: string) => new PublicKey(account)
-        ),
-        programDataAccountSpace: response.programDataAccountSpace,
-        accountCapacity: response.accountCapacity,
-        feeAccounts: response.accountKeys.map(
-          (key: string) => new Account(Buffer.from(key, "hex"))
-        ),
-      });
     } catch (err) {
       console.error("Failed to refresh fee accounts", err);
       dispatch({ status: ConfigStatus.Failure });
@@ -148,19 +192,36 @@ async function refreshAccounts(dispatch: Dispatch) {
   }
 }
 
+export function useGameCost() {
+  const context = React.useContext(StateContext);
+  if (!context) {
+    throw new Error(`useGameCost must be used within a ApiProvider`);
+  }
+  return context.gameCost;
+}
+
+export function usePaymentRequired() {
+  const context = React.useContext(StateContext);
+  if (!context) {
+    throw new Error(`usePaymentRequired must be used within a ApiProvider`);
+  }
+  return context.status === ConfigStatus.PaymentRequired;
+}
+
+export function useAccounts() {
+  const context = React.useContext(StateContext);
+  if (!context) {
+    throw new Error(`useAccounts must be used within a ApiProvider`);
+  }
+  return context.accounts;
+}
+
 export function useConfig() {
   const context = React.useContext(StateContext);
   if (!context) {
     throw new Error(`useConfig must be used within a ApiProvider`);
   }
-  if (
-    context.config &&
-    (context.status === ConfigStatus.Refreshed ||
-      context.status === ConfigStatus.Initialized)
-  ) {
-    return context.config;
-  }
-  return undefined;
+  return context.config;
 }
 
 export function useClusterParam(): string {
@@ -183,7 +244,10 @@ export function useRefreshAccounts() {
   if (!dispatch) {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
-  return () => {
-    refreshAccounts(dispatch);
-  };
+  return React.useCallback(
+    (paymentAccount?: Account) => {
+      refreshAccounts(dispatch, paymentAccount);
+    },
+    [dispatch]
+  );
 }

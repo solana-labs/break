@@ -5,7 +5,14 @@ import path from "path";
 import WebSocket from "ws";
 
 import ProgramLoader from "./program";
-import { Connection, PublicKey, Account } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  Account,
+  sendAndConfirmTransaction,
+  SystemProgram,
+  FeeCalculator,
+} from "@solana/web3.js";
 import { cluster, url, urlTls } from "./urls";
 import {
   FeeAccountSupply,
@@ -20,13 +27,57 @@ function sleep(ms: number): Promise<void> {
 }
 
 class Server {
-  programId?: PublicKey;
-  feeAccountSupply?: FeeAccountSupply;
-  programDataAccountSupply?: ProgramDataAccountSupply;
+  private freeToPlay = process.env.FREE_TO_PLAY === "true";
 
-  init = async (connection: Connection, tpuProxy: TpuProxy): Promise<void> => {
+  constructor(
+    private faucet: Faucet,
+    private connection: Connection,
+    private feeCalculator: FeeCalculator,
+    public programId: PublicKey,
+    public feeAccountSupply: FeeAccountSupply,
+    public programDataAccountSupply: ProgramDataAccountSupply
+  ) {}
+
+  calculateCost(split: number, includeFee: boolean): number {
+    if (this.freeToPlay) return 0;
+    const fee = includeFee ? this.feeCalculator.lamportsPerSignature : 0;
+    return (
+      fee +
+      split *
+        (this.programDataAccountSupply.accountCost +
+          this.feeAccountSupply.accountCost)
+    );
+  }
+
+  paymentGate(paymentKey: any): boolean {
+    if (this.freeToPlay) return true;
+    return typeof paymentKey === "string";
+  }
+
+  async collectPayment(paymentKey: any, split: number) {
+    if (this.freeToPlay) return;
+
+    const fromAccount = new Account(Buffer.from(paymentKey, "base64"));
+    const fromPubkey = fromAccount.publicKey;
+    const toPubkey = this.faucet.address();
+    const lamports = this.calculateCost(split, false);
+    const transfer = SystemProgram.transfer({
+      fromPubkey,
+      toPubkey,
+      lamports,
+    });
+
+    await sendAndConfirmTransaction(this.connection, transfer, [fromAccount], {
+      confirmations: 1,
+      skipPreflight: true,
+    });
+  }
+
+  static init = async (
+    connection: Connection,
+    tpuProxy: TpuProxy
+  ): Promise<Server> => {
     const programLoader = new ProgramLoader(connection);
-    let programId, feeAccountSupply, programDataAccountSupply;
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
@@ -36,31 +87,35 @@ class Server {
           `Airdrops ${faucet.airdropEnabled ? "enabled" : "disabled"}`
         );
         await tpuProxy.connect();
-        programId = await programLoader.load(faucet, feeCalculator);
+        const programId = await programLoader.load(faucet, feeCalculator);
         console.log("Program Loaded");
-        feeAccountSupply = await FeeAccountSupply.create(
+        const feeAccountSupply = await FeeAccountSupply.create(
           connection,
           faucet,
           feeCalculator
         );
         console.log("Fee Account Supply Created");
-        programDataAccountSupply = await ProgramDataAccountSupply.create(
+        const programDataAccountSupply = await ProgramDataAccountSupply.create(
           connection,
           faucet,
+          feeCalculator,
           programId
         );
         console.log("Program Data Account Supply Created");
-        break;
+        return new Server(
+          faucet,
+          connection,
+          feeCalculator,
+          programId,
+          feeAccountSupply,
+          programDataAccountSupply
+        );
       } catch (err) {
         console.error("Failed to initialize server", err);
         await sleep(1000);
         console.log("Retrying initialization");
       }
     }
-
-    this.programId = programId;
-    this.feeAccountSupply = feeAccountSupply;
-    this.programDataAccountSupply = programDataAccountSupply;
   };
 }
 
@@ -76,15 +131,25 @@ class Server {
 
   const connection = new Connection(url, "recent");
   const tpuProxy = new TpuProxy(connection);
-  const server = new Server();
   console.log(`Connecting to cluster: ${url}`);
-  server.init(connection, tpuProxy);
+  const server = await Server.init(connection, tpuProxy);
 
-  app.get("/refresh", async (req, res) => {
-    const splitParam = parseInt(req.query["split"]);
+  app.post("/accounts", async (req, res) => {
+    const splitParam = parseInt(req.body["split"]);
+    const paymentKey = req.body["paymentKey"];
     const split = isNaN(splitParam) ? 4 : Math.max(1, Math.min(32, splitParam));
     const feeAccountSupply = server.feeAccountSupply;
     const programDataAccountSupply = server.programDataAccountSupply;
+
+    if (!server.paymentGate(paymentKey)) {
+      res.status(400).send(
+        JSON.stringify({
+          message: "Payment required",
+          amount: server.calculateCost(split, true),
+        })
+      );
+      return;
+    }
 
     if (!feeAccountSupply || !programDataAccountSupply) {
       res.status(500).send("Server has not initialized, try again");
@@ -99,11 +164,18 @@ class Server {
       return;
     }
 
+    try {
+      await server.collectPayment(paymentKey, split);
+    } catch (err) {
+      res.status(400).send("Payment failed: " + err);
+      return;
+    }
+
     const programDataAccounts = programDataAccountSupply
       .pop(split)
       .map((account) => account.publicKey.toBase58());
     const accountKeys = feeAccountSupply.pop(split).map((account) => {
-      return Buffer.from(account.secretKey).toString("hex");
+      return Buffer.from(account.secretKey).toString("base64");
     });
 
     res
@@ -118,46 +190,23 @@ class Server {
       .end();
   });
 
-  app.get("/init", async (req, res) => {
-    const splitParam = parseInt(req.query["split"]);
-    const split = isNaN(splitParam) ? 4 : Math.max(1, Math.min(50, splitParam));
+  app.post("/init", async (req, res) => {
     const programId = server.programId;
-    const feeAccountSupply = server.feeAccountSupply;
-    const programDataAccountSupply = server.programDataAccountSupply;
 
     if (!tpuProxy.connected()) {
       res.status(500).send("Tpu proxy reconnecting, try again");
       return;
     }
 
-    if (!programId || !feeAccountSupply || !programDataAccountSupply) {
+    if (!programId) {
       res.status(500).send("Server has not initialized, try again");
       return;
     }
-
-    if (
-      feeAccountSupply.size() < split ||
-      programDataAccountSupply.size() < split
-    ) {
-      res.status(500).send("Account supply depleted, try again");
-      return;
-    }
-
-    const programDataAccounts = programDataAccountSupply
-      .pop(split)
-      .map((account) => account.publicKey.toBase58());
-    const accountKeys = feeAccountSupply.pop(split).map((account) => {
-      return Buffer.from(account.secretKey).toString("hex");
-    });
 
     res
       .send(
         JSON.stringify({
           programId: programId.toString(),
-          programDataAccounts,
-          programDataAccountSpace: programDataAccountSupply.accountSpace,
-          accountKeys,
-          accountCapacity: TX_PER_ACCOUNT,
           clusterUrl: urlTls,
           cluster,
         })

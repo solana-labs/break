@@ -19,6 +19,10 @@ export default class Faucet {
     public airdropEnabled: boolean
   ) {}
 
+  address(): PublicKey {
+    return this.feeAccount.publicKey;
+  }
+
   static async init(connection: Connection): Promise<Faucet> {
     let feeAccount = new Account(),
       airdropEnabled = true;
@@ -56,15 +60,12 @@ export default class Faucet {
     }
   }
 
-  async fundAccount(
-    accountPubkey: PublicKey,
-    fundAmount: number
-  ): Promise<void> {
+  async fundAccount(publicKey: PublicKey, fundAmount: number): Promise<void> {
     await sendAndConfirmTransaction(
       this.connection,
       SystemProgram.transfer({
         fromPubkey: this.feeAccount.publicKey,
-        toPubkey: accountPubkey,
+        toPubkey: publicKey,
         lamports: fundAmount,
       }),
       [this.feeAccount],
@@ -74,11 +75,11 @@ export default class Faucet {
   }
 
   async createProgramDataAccount(
-    programDataAccount: Account,
     fundAmount: number,
     programId: PublicKey,
     space: number
-  ): Promise<void> {
+  ): Promise<Account> {
+    const programDataAccount = new Account();
     await sendAndConfirmTransaction(
       this.connection,
       SystemProgram.createAccount({
@@ -92,5 +93,6 @@ export default class Faucet {
       { confirmations: 1, skipPreflight: true }
     );
     this.checkBalance();
+    return programDataAccount;
   }
 }
