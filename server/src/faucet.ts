@@ -68,7 +68,7 @@ export default class Faucet {
         lamports: fundAmount
       }),
       [this.feeAccount],
-      1
+      { confirmations: 1, skipPreflight: true }
     );
     this.checkBalance();
   }
@@ -89,7 +89,7 @@ export default class Faucet {
         programId
       }),
       [this.feeAccount, programDataAccount],
-      1
+      { confirmations: 1, skipPreflight: true }
     );
     this.checkBalance();
   }
