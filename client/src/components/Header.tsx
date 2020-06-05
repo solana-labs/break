@@ -12,7 +12,7 @@ export function Header() {
   React.useEffect(() => {
     if (typeof gameState === "number") {
       const timerId = setInterval(() => {
-        setRefresh(r => !r);
+        setRefresh((r) => !r);
       }, 1000);
       return () => clearTimeout(timerId);
     }

@@ -54,7 +54,7 @@ export function ConfirmedHelper({ children }: Props) {
 
     return () => {
       connection.removeRootChangeListener(rootSubscription);
-      accountSubscriptions.forEach(listener => {
+      accountSubscriptions.forEach((listener) => {
         connection.removeAccountChangeListener(listener);
       });
     };

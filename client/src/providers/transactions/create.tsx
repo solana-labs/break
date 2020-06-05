@@ -1,7 +1,7 @@
 import {
   Blockhash,
   Transaction,
-  TransactionInstruction
+  TransactionInstruction,
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as Bytes from "utils/bytes";
@@ -22,7 +22,7 @@ export function createTransaction(
     feeAccounts,
     programDataAccounts,
     programId,
-    programDataAccountSpace
+    programDataAccountSpace,
   } = config;
 
   const bitId = Math.floor(trackingId / feeAccounts.length);
@@ -32,7 +32,7 @@ export function createTransaction(
   const instruction = new TransactionInstruction({
     keys: [{ pubkey: programDataAccount, isWritable: true, isSigner: false }],
     programId,
-    data: Buffer.from(Bytes.fromId(bitId, programDataAccountSpace))
+    data: Buffer.from(Bytes.fromId(bitId, programDataAccountSpace)),
   });
 
   const transaction = new Transaction();
@@ -53,7 +53,7 @@ export function createTransaction(
     type: ActionType.NewTransaction,
     signature,
     trackingId,
-    pendingTransaction
+    pendingTransaction,
   });
 
   setTimeout(() => {

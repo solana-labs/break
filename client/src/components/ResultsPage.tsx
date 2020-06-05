@@ -8,7 +8,7 @@ import {
   useConfirmedCount,
   useCreatedCount,
   useDroppedCount,
-  useAvgConfirmationTime
+  useAvgConfirmationTime,
 } from "providers/transactions";
 import { Header } from "./Header";
 import { COUNTDOWN_SECS } from "providers/game";
@@ -83,9 +83,9 @@ function Stats() {
       {
         data: [confirmedCount, droppedCount, processingCount],
         borderColor: ["#000", "#000", "#000"],
-        backgroundColor: ["#00ffad", "#ea134d", "#2A2A2A"]
-      }
-    ]
+        backgroundColor: ["#00ffad", "#ea134d", "#2A2A2A"],
+      },
+    ],
   };
 
   const hasCapacityData = confirmedCount > 0;
@@ -98,9 +98,9 @@ function Stats() {
       {
         data: [roundCapacityUsed, 100 - roundCapacityUsed],
         borderColor: ["#000", "#000"],
-        backgroundColor: ["#00ffad", "#2A2A2A"]
-      }
-    ]
+        backgroundColor: ["#00ffad", "#2A2A2A"],
+      },
+    ],
   };
 
   const hasConfData = !!avgConfTime;
@@ -112,18 +112,18 @@ function Stats() {
         borderColor: new Array(numSegments).fill("#000"),
         backgroundColor: new Array(numSegments).fill(
           hasConfData ? "#00ffad" : "#2A2A2A"
-        )
-      }
-    ]
+        ),
+      },
+    ],
   };
 
   const legend = {
-    display: false
+    display: false,
   };
   const options = {
     showLines: false,
     cutoutPercentage: 90,
-    maintainAspectRatio: false
+    maintainAspectRatio: false,
   };
 
   return (

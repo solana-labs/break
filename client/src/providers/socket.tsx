@@ -35,7 +35,7 @@ function newSocket(setSocket: SetSocket, setActiveUsers: SetActiveUsers) {
   }, 5000);
 
   socket.onopen = () => setSocket(socket);
-  socket.onmessage = e => {
+  socket.onmessage = (e) => {
     const data = JSON.parse(e.data);
     if ("activeUsers" in data) {
       setActiveUsers(data.activeUsers);
@@ -47,7 +47,7 @@ function newSocket(setSocket: SetSocket, setActiveUsers: SetActiveUsers) {
     setSocket(undefined);
     newSocket(setSocket, setActiveUsers);
   };
-  socket.onerror = async err => {
+  socket.onerror = async (err) => {
     console.error(err);
     socket.close();
   };

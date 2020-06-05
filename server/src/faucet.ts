@@ -4,7 +4,7 @@ import {
   PublicKey,
   SystemProgram,
   sendAndConfirmTransaction,
-  LAMPORTS_PER_SOL
+  LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 
 const ENCODED_PAYER_KEY = process.env.ENCODED_PAYER_KEY;
@@ -65,7 +65,7 @@ export default class Faucet {
       SystemProgram.transfer({
         fromPubkey: this.feeAccount.publicKey,
         toPubkey: accountPubkey,
-        lamports: fundAmount
+        lamports: fundAmount,
       }),
       [this.feeAccount],
       { confirmations: 1, skipPreflight: true }
@@ -86,7 +86,7 @@ export default class Faucet {
         newAccountPubkey: programDataAccount.publicKey,
         lamports: fundAmount,
         space,
-        programId
+        programId,
       }),
       [this.feeAccount, programDataAccount],
       { confirmations: 1, skipPreflight: true }

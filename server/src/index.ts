@@ -10,13 +10,13 @@ import { cluster, url, urlTls } from "./urls";
 import {
   FeeAccountSupply,
   ProgramDataAccountSupply,
-  TX_PER_ACCOUNT
+  TX_PER_ACCOUNT,
 } from "./account_supply";
 import TpuProxy from "./tpu_proxy";
 import Faucet from "./faucet";
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 class Server {
@@ -64,7 +64,7 @@ class Server {
   };
 }
 
-(async function(): Promise<void> {
+(async function (): Promise<void> {
   const app = express();
   app.use(cors());
   app.use(express.json()); // for parsing application/json
@@ -101,8 +101,8 @@ class Server {
 
     const programDataAccounts = programDataAccountSupply
       .pop(split)
-      .map(account => account.publicKey.toBase58());
-    const accountKeys = feeAccountSupply.pop(split).map(account => {
+      .map((account) => account.publicKey.toBase58());
+    const accountKeys = feeAccountSupply.pop(split).map((account) => {
       return Buffer.from(account.secretKey).toString("hex");
     });
 
@@ -112,7 +112,7 @@ class Server {
           programDataAccounts,
           programDataAccountSpace: programDataAccountSupply.accountSpace,
           accountKeys,
-          accountCapacity: TX_PER_ACCOUNT
+          accountCapacity: TX_PER_ACCOUNT,
         })
       )
       .end();
@@ -145,8 +145,8 @@ class Server {
 
     const programDataAccounts = programDataAccountSupply
       .pop(split)
-      .map(account => account.publicKey.toBase58());
-    const accountKeys = feeAccountSupply.pop(split).map(account => {
+      .map((account) => account.publicKey.toBase58());
+    const accountKeys = feeAccountSupply.pop(split).map((account) => {
       return Buffer.from(account.secretKey).toString("hex");
     });
 
@@ -159,7 +159,7 @@ class Server {
           accountKeys,
           accountCapacity: TX_PER_ACCOUNT,
           clusterUrl: urlTls,
-          cluster
+          cluster,
         })
       )
       .end();
@@ -186,7 +186,7 @@ class Server {
   setInterval(() => {
     if (activeClients !== lastNotifiedCount) {
       lastNotifiedCount = activeClients;
-      wss.clients.forEach(client => {
+      wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({ activeUsers: activeClients }));
         }

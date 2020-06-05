@@ -36,6 +36,6 @@ export function configFromResponse(response: any): Config {
     accountCapacity: response.accountCapacity,
     feeAccounts: response.accountKeys.map(
       (key: string) => new Account(Buffer.from(key, "hex"))
-    )
+    ),
   };
 }
