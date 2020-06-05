@@ -42,7 +42,7 @@ export enum ActionType {
   UpdateIds,
   TimeoutTransaction,
   ResetState,
-  RecordRoot
+  RecordRoot,
 }
 
 type UpdateIds = {
@@ -93,8 +93,8 @@ function reducer(state: State, action: Action): State {
         {
           signature,
           status: "pending",
-          pending: pendingTransaction
-        }
+          pending: pendingTransaction,
+        },
       ];
     }
 
@@ -105,11 +105,11 @@ function reducer(state: State, action: Action): State {
       if (timeout.status !== "pending") return state;
       clearInterval(timeout.pending.retryId);
 
-      return state.map(tx => {
+      return state.map((tx) => {
         if (tx.signature === timeout.signature) {
           return {
             status: "timeout",
-            signature: tx.signature
+            signature: tx.signature,
           };
         } else {
           return tx;
@@ -133,13 +133,13 @@ function reducer(state: State, action: Action): State {
             signature: tx.signature,
             slot: action.slot,
             confirmationTime,
-            pending: { ...tx.pending }
+            pending: { ...tx.pending },
           };
         } else if (tx.status === "success" && tx.pending && !ids.has(id)) {
           return {
             status: "pending",
             signature: tx.signature,
-            pending: { ...tx.pending }
+            pending: { ...tx.pending },
           };
         }
         return tx;
@@ -147,7 +147,7 @@ function reducer(state: State, action: Action): State {
     }
 
     case ActionType.ResetState: {
-      state.forEach(tx => {
+      state.forEach((tx) => {
         if (tx.status === "pending") {
           clearTimeout(tx.pending.timeoutId);
           clearInterval(tx.pending.retryId);
@@ -160,18 +160,18 @@ function reducer(state: State, action: Action): State {
     }
 
     case ActionType.RecordRoot: {
-      const foundRooted = state.find(tx => {
+      const foundRooted = state.find((tx) => {
         return tx.status === "success" && tx.pending && tx.slot === action.root;
       });
       if (!foundRooted) return state;
 
-      return state.map(tx => {
+      return state.map((tx) => {
         if (tx.status === "success" && tx.pending && tx.slot === action.root) {
           clearInterval(tx.pending.retryId);
           clearTimeout(tx.pending.timeoutId);
           return {
             ...tx,
-            pending: undefined
+            pending: undefined,
           };
         } else {
           return tx;
@@ -193,7 +193,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
   React.useEffect(() => {
     if (!config) return;
     dispatch({
-      type: ActionType.ResetState
+      type: ActionType.ResetState,
     });
   }, [config]);
 

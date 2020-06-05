@@ -23,7 +23,7 @@ const validationSet = {
   required,
   email,
   minLength,
-  valueIsEmpty
+  valueIsEmpty,
 };
 
 export default validationSet;

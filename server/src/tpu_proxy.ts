@@ -2,7 +2,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import dgram from "dgram";
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function notUndefined<T>(x: T | undefined): x is T {
@@ -84,7 +84,7 @@ export default class TpuProxy {
     const nodes = await this.connection.getClusterNodes();
 
     // Place rpc node at the beginning of node list
-    const rpcIndex = nodes.findIndex(info => info.pubkey.startsWith("rpc"));
+    const rpcIndex = nodes.findIndex((info) => info.pubkey.startsWith("rpc"));
     if (rpcIndex > 0) {
       const tmp = nodes[0];
       nodes[0] = nodes[rpcIndex];
@@ -103,8 +103,8 @@ export default class TpuProxy {
       const [host, portStr] = tpu.split(":");
       const port = Number.parseInt(portStr);
       const socket = dgram.createSocket("udp4");
-      await new Promise(resolve => {
-        socket.on("error", err => this.onTpuResult(nodeKey, err));
+      await new Promise((resolve) => {
+        socket.on("error", (err) => this.onTpuResult(nodeKey, err));
         socket.connect(port, host, resolve);
       });
 

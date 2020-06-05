@@ -9,7 +9,7 @@ const BATCH_SIZE = 10;
 const TX_PER_BYTE = 8;
 
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 class AccountSupply {
@@ -79,7 +79,7 @@ class AccountSupply {
 
   size(): number {
     const now = new Date();
-    this.funded = this.funded.filter(next => next[1] > now);
+    this.funded = this.funded.filter((next) => next[1] > now);
     return this.funded.length;
   }
 

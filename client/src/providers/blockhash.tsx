@@ -8,7 +8,7 @@ const POLL_INTERVAL_MS = 60000;
 export enum ActionType {
   Start,
   Stop,
-  Update
+  Update,
 }
 
 interface Stop {
@@ -34,7 +34,7 @@ function reducer(state: State, action: Action): State {
     }
     case ActionType.Update: {
       return Object.assign({}, state, {
-        blockhash: action.blockhash
+        blockhash: action.blockhash,
       });
     }
   }

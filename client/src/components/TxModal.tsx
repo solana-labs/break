@@ -2,7 +2,7 @@ import * as React from "react";
 import { TransactionState } from "providers/transactions";
 import {
   useSelectTransaction,
-  useSelectedTransaction
+  useSelectedTransaction,
 } from "providers/transactions/selected";
 import { useClusterParam } from "providers/api";
 
@@ -21,7 +21,7 @@ export function TransactionModal() {
 
     return (
       <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <div className="modal-card card">
             <div className="card-header">
               <h4 className="card-header-title">Transaction Details</h4>
@@ -66,7 +66,7 @@ function Overlay({ show }: { show: boolean }) {
 }
 
 export function TransactionDetails({
-  transaction
+  transaction,
 }: {
   transaction: TransactionState;
 }) {

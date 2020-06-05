@@ -5,7 +5,7 @@ import { TransactionModal } from "components/TxModal";
 import {
   useTps,
   useCreatedCount,
-  useAvgConfirmationTime
+  useAvgConfirmationTime,
 } from "providers/transactions";
 import { Header } from "./Header";
 import { useActiveUsers } from "providers/socket";

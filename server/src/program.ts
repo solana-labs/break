@@ -3,7 +3,7 @@ import {
   Connection,
   PublicKey,
   BpfLoader,
-  FeeCalculator
+  FeeCalculator,
 } from "@solana/web3.js";
 import path from "path";
 import _fs from "fs";

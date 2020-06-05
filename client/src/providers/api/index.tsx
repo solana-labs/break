@@ -11,7 +11,7 @@ export enum ConfigStatus {
   Fetching,
   Refreshing,
   Refreshed,
-  Failure
+  Failure,
 }
 
 interface State {
@@ -63,8 +63,8 @@ function configReducer(state: State, action: Action): State {
             accountCapacity: action.accountCapacity,
             feeAccounts: action.feeAccounts,
             programDataAccounts: action.programDataAccounts,
-            programDataAccountSpace: action.programDataAccountSpace
-          })
+            programDataAccountSpace: action.programDataAccountSpace,
+          }),
         });
       }
     }
@@ -78,7 +78,7 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 type ApiProviderProps = { children: React.ReactNode };
 export function ApiProvider({ children }: ApiProviderProps) {
   const [state, dispatch] = React.useReducer(configReducer, {
-    status: ConfigStatus.Fetching
+    status: ConfigStatus.Fetching,
   });
 
   React.useEffect(() => {
@@ -96,7 +96,7 @@ export function ApiProvider({ children }: ApiProviderProps) {
 
 async function initConfig(dispatch: Dispatch): Promise<void> {
   dispatch({
-    status: ConfigStatus.Fetching
+    status: ConfigStatus.Fetching,
   });
 
   let initialized = false;
@@ -105,7 +105,7 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
       const response = await fetcher.get(Path.Init);
       dispatch({
         status: ConfigStatus.Initialized,
-        config: configFromResponse(response)
+        config: configFromResponse(response),
       });
       initialized = true;
     } catch (err) {
@@ -118,7 +118,7 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
 
 async function refreshAccounts(dispatch: Dispatch) {
   dispatch({
-    status: ConfigStatus.Refreshing
+    status: ConfigStatus.Refreshing,
   });
 
   let refreshed = false;
@@ -138,7 +138,7 @@ async function refreshAccounts(dispatch: Dispatch) {
         accountCapacity: response.accountCapacity,
         feeAccounts: response.accountKeys.map(
           (key: string) => new Account(Buffer.from(key, "hex"))
-        )
+        ),
       });
     } catch (err) {
       console.error("Failed to refresh fee accounts", err);

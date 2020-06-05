@@ -9,25 +9,25 @@ module.exports = (env, argv) => {
     target: "node",
     entry: ["./src/index.ts"],
     node: {
-      __dirname: false
+      __dirname: false,
     },
     output: {
       path: path.resolve(__dirname, "dist"),
-      filename: "server.js"
+      filename: "server.js",
     },
     module: {
       rules: [
         {
           test: /\.ts$/,
           use: "ts-loader",
-          exclude: /node_modules/
-        }
-      ]
+          exclude: /node_modules/,
+        },
+      ],
     },
     resolve: {
-      extensions: [".ts", ".js", ".json"]
+      extensions: [".ts", ".js", ".json"],
     },
-    externals: [nodeExternals()]
+    externals: [nodeExternals()],
   };
 
   if (mode === "development") {
