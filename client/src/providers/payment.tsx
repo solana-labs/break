@@ -9,9 +9,23 @@ interface State {
 
 const StateContext = React.createContext<State | undefined>(undefined);
 
+const paymentAccount = (() => {
+  const paymentKey = window.localStorage.getItem("paymentKey");
+  if (paymentKey) {
+    return new Account(Buffer.from(paymentKey, "base64"));
+  } else {
+    const paymentAccount = new Account();
+    window.localStorage.setItem(
+      "paymentKey",
+      Buffer.from(paymentAccount.secretKey).toString("base64")
+    );
+    return paymentAccount;
+  }
+})();
+
 type Props = { children: React.ReactNode };
 export function PaymentProvider({ children }: Props) {
-  const account = React.useRef(new Account());
+  const account = React.useRef(paymentAccount);
   const [balance, setBalance] = React.useState(0);
   const lastBalance = React.useRef(0);
 
