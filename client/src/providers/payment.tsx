@@ -31,20 +31,24 @@ export function PaymentProvider({ children }: Props) {
 
   const clusterUrl = useConfig()?.clusterUrl;
 
+  const refreshBalance = React.useCallback(() => {
+    if (!clusterUrl) return;
+    const connection = new Connection(clusterUrl, "singleGossip");
+    connection.getBalance(account.current.publicKey).then((balance: number) => {
+      setBalance(balance);
+    });
+  }, [clusterUrl]);
+
   React.useEffect(() => {
+    refreshBalance();
     const onChange = () => {
-      if (!clusterUrl || document.visibilityState !== "visible") return;
-      const connection = new Connection(clusterUrl);
-      connection
-        .getBalance(account.current.publicKey)
-        .then((balance: number) => {
-          setBalance(balance);
-        });
+      if (document.visibilityState !== "visible") return;
+      refreshBalance();
     };
 
     document.addEventListener("visibilitychange", onChange);
     return () => document.removeEventListener("visibilitychange", onChange);
-  }, [clusterUrl]);
+  }, [refreshBalance]);
 
   const refreshAccounts = useRefreshAccounts();
   React.useEffect(() => {
