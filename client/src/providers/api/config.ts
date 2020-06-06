@@ -4,6 +4,7 @@ export interface Config {
   cluster?: Cluster;
   clusterUrl: string;
   programId: PublicKey;
+  gameCost: number;
 }
 
 export interface AccountsConfig {
@@ -32,6 +33,9 @@ export function configFromInit(response: any): Config {
       ? clusterApiUrl(response.cluster)
       : response.clusterUrl,
     programId: new PublicKey(response.programId),
+    // Add 1 lamport because if the account is left with 0 lamports,
+    // we won't get a notification for it
+    gameCost: response.gameCost + 1,
   };
 }
 

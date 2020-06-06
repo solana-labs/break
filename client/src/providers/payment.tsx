@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Connection, Account, AccountInfo } from "@solana/web3.js";
-import { useConfig, useRefreshAccounts, useGameCost } from "./api";
+import { useConfig, useRefreshAccounts } from "./api";
 
 interface State {
   account: Account;
@@ -26,10 +26,11 @@ const paymentAccount = (() => {
 type Props = { children: React.ReactNode };
 export function PaymentProvider({ children }: Props) {
   const account = React.useRef(paymentAccount);
-  const [balance, setBalance] = React.useState(0);
+  const [balance, setBalance] = React.useState(-1);
   const lastBalance = React.useRef(0);
-
-  const clusterUrl = useConfig()?.clusterUrl;
+  const config = useConfig();
+  const clusterUrl = config?.clusterUrl;
+  const gameCost = config?.gameCost;
 
   const refreshBalance = React.useCallback(() => {
     if (!clusterUrl) return;
@@ -52,11 +53,16 @@ export function PaymentProvider({ children }: Props) {
 
   const refreshAccounts = useRefreshAccounts();
   React.useEffect(() => {
+    if (gameCost === undefined) return;
     if (balance > lastBalance.current) {
-      refreshAccounts(account.current);
+      if (balance < gameCost) {
+        refreshAccounts();
+      } else {
+        refreshAccounts(account.current);
+      }
     }
     lastBalance.current = balance;
-  }, [balance, refreshAccounts]);
+  }, [balance, refreshAccounts, gameCost]);
 
   React.useEffect(() => {
     if (!clusterUrl) return;
@@ -82,12 +88,12 @@ export function PaymentProvider({ children }: Props) {
 
 export function usePaymentAccount() {
   const state = React.useContext(StateContext);
-  const gameCost = useGameCost();
+  const gameCost = useConfig()?.gameCost;
   if (!state) {
     throw new Error(`usePaymentAccount must be used within a PaymentProvider`);
   }
 
-  if (gameCost > 0) {
+  if (gameCost) {
     return state.account;
   }
 }

@@ -142,12 +142,7 @@ class Server {
     const programDataAccountSupply = server.programDataAccountSupply;
 
     if (!server.paymentGate(paymentKey)) {
-      res.status(400).send(
-        JSON.stringify({
-          message: "Payment required",
-          amount: server.calculateCost(split, true),
-        })
-      );
+      res.status(400).send("Payment required");
       return;
     }
 
@@ -191,6 +186,8 @@ class Server {
   });
 
   app.post("/init", async (req, res) => {
+    const splitParam = parseInt(req.body["split"]);
+    const split = isNaN(splitParam) ? 4 : Math.max(1, Math.min(32, splitParam));
     const programId = server.programId;
 
     if (!tpuProxy.connected()) {
@@ -209,6 +206,7 @@ class Server {
           programId: programId.toString(),
           clusterUrl: urlTls,
           cluster,
+          gameCost: server.calculateCost(split, true),
         })
       )
       .end();
