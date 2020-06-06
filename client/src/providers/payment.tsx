@@ -30,8 +30,23 @@ export function PaymentProvider({ children }: Props) {
   const lastBalance = React.useRef(0);
 
   const clusterUrl = useConfig()?.clusterUrl;
-  const refreshAccounts = useRefreshAccounts();
 
+  React.useEffect(() => {
+    const onChange = () => {
+      if (!clusterUrl || document.visibilityState !== "visible") return;
+      const connection = new Connection(clusterUrl);
+      connection
+        .getBalance(account.current.publicKey)
+        .then((balance: number) => {
+          setBalance(balance);
+        });
+    };
+
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, [clusterUrl]);
+
+  const refreshAccounts = useRefreshAccounts();
   React.useEffect(() => {
     if (balance > lastBalance.current) {
       refreshAccounts(account.current);
