@@ -4,6 +4,7 @@ import { useConfig, useRefreshAccounts, useAccounts } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
 import { useDispatch, ActionType } from "providers/transactions";
+import { usePaymentAccount } from "./payment";
 
 export const COUNTDOWN_SECS = 15;
 
@@ -64,14 +65,15 @@ export function useGameState() {
 }
 
 export function useResetGame() {
+  const paymentAccount = usePaymentAccount();
   const refreshAccounts = useRefreshAccounts();
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
 
   return React.useCallback(() => {
-    refreshAccounts();
+    refreshAccounts(paymentAccount);
     dispatch({ type: ActionType.ResetState });
     history.push({ ...location, pathname: "/game" });
-  }, [refreshAccounts, history, location, dispatch]);
+  }, [refreshAccounts, history, location, dispatch, paymentAccount]);
 }

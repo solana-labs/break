@@ -19,7 +19,6 @@ export enum ConfigStatus {
 
 interface State {
   status: ConfigStatus;
-  gameCost: number;
   config?: Config;
   accounts?: AccountsConfig;
 }
@@ -31,7 +30,6 @@ interface Initialized {
 
 interface PaymentRequired {
   status: ConfigStatus.PaymentRequired;
-  gameCost: number;
 }
 
 interface Fetching {
@@ -52,11 +50,17 @@ type Dispatch = (action: Action) => void;
 
 function configReducer(state: State, action: Action): State {
   switch (action.status) {
-    case ConfigStatus.Failure:
-    case ConfigStatus.PaymentRequired:
     case ConfigStatus.ReadyToPlay:
     case ConfigStatus.Initialized: {
       return { ...state, ...action };
+    }
+    case ConfigStatus.PaymentRequired:
+    case ConfigStatus.Failure: {
+      if (state.status === ConfigStatus.Fetching) {
+        return { ...state, ...action };
+      } else {
+        return state;
+      }
     }
     case ConfigStatus.Fetching: {
       return {
@@ -74,7 +78,6 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 type ApiProviderProps = { children: React.ReactNode };
 export function ApiProvider({ children }: ApiProviderProps) {
   const [state, dispatch] = React.useReducer(configReducer, {
-    gameCost: 0,
     status: ConfigStatus.Fetching,
   });
 
@@ -121,8 +124,6 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
       await sleep(2000);
     }
   }
-
-  refreshAccounts(dispatch);
 }
 
 const splitParam = ((): number | undefined => {
@@ -167,13 +168,13 @@ async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
           body,
         })
       );
-      const data = await response.json();
-      if (data.message === "Payment required") {
+      const text = await response.text();
+      if (text === "Payment required") {
         dispatch({
           status: ConfigStatus.PaymentRequired,
-          gameCost: data.amount + 1, // Leave 1 lamport so that the account doesn't get deleted
         });
       } else {
+        const data = JSON.parse(text);
         if (!("accountKeys" in data) || !("accountCapacity" in data)) {
           throw new Error("Received invalid response");
         }
@@ -190,14 +191,6 @@ async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
       await sleep(2000);
     }
   }
-}
-
-export function useGameCost() {
-  const context = React.useContext(StateContext);
-  if (!context) {
-    throw new Error(`useGameCost must be used within a ApiProvider`);
-  }
-  return context.gameCost;
 }
 
 export function usePaymentRequired() {

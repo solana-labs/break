@@ -1,7 +1,7 @@
 import React from "react";
 import QRCode from "qrcode.react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { useGameCost } from "providers/api";
+import { useConfig } from "providers/api";
 import { usePaymentAccount } from "providers/payment";
 
 export function lamportsToSolString(
@@ -15,7 +15,7 @@ export function lamportsToSolString(
 }
 
 export function PaymentModal({ show }: { show: boolean }) {
-  const gameCostLamports = useGameCost();
+  const gameCostLamports = useConfig()?.gameCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
   const paymentAccount = usePaymentAccount();
   const renderContent = () => {
