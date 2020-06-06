@@ -61,7 +61,7 @@ export function PaymentProvider({ children }: Props) {
     const subscription = connection.onAccountChange(
       account.current.publicKey,
       (accountInfo: AccountInfo) => setBalance(accountInfo.lamports),
-      "single"
+      "singleGossip"
     );
 
     return () => {
