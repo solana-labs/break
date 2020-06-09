@@ -177,7 +177,6 @@ class Server {
       .send(
         JSON.stringify({
           programDataAccounts,
-          programDataAccountSpace: programDataAccountSupply.accountSpace,
           accountKeys,
           accountCapacity: TX_PER_ACCOUNT,
         })
