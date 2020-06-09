@@ -1,41 +1,36 @@
 import * as Bytes from "../utils/bytes";
 import { expect } from "chai";
 
-const TEST_BYTES_LEN = 16;
+describe("programDataToIds", () => {
+  it("ids = []", () => {
+    const ids = Bytes.programDataToIds(new Uint8Array([0]));
+    expect(ids).to.eql([]);
+  });
 
-it("ids = []", () => {
-  const ids = Bytes.toIds(new Uint8Array([0]));
-  expect(ids).to.eql([]);
+  it("ids = [0]", () => {
+    const ids = Bytes.programDataToIds(new Uint8Array([1]));
+    expect(ids).to.eql([0]);
+  });
+
+  it("ids = [8]", () => {
+    const ids = Bytes.programDataToIds(new Uint8Array([0, 1]));
+    expect(ids).to.eql([8]);
+  });
 });
 
-it("ids = [0]", () => {
-  const ids = Bytes.toIds(Bytes.fromId(0, TEST_BYTES_LEN));
-  expect(ids).to.eql([0]);
-});
+describe("instructionDataFromId", () => {
+  it("id = 0", () => {
+    const data = Bytes.instructionDataFromId(0);
+    expect(data).to.eql(new Uint8Array([0, 0]));
+  });
 
-it("ids = [8]", () => {
-  const ids = Bytes.toIds(Bytes.fromId(8, TEST_BYTES_LEN));
-  expect(ids).to.eql([8]);
-});
+  it("id = 8", () => {
+    const data = Bytes.instructionDataFromId(8);
+    expect(data).to.eql(new Uint8Array([0, 8]));
+  });
 
-it("ids = [1, 2]", () => {
-  const bytes = Bytes.xor(
-    Bytes.fromId(1, TEST_BYTES_LEN),
-    Bytes.fromId(2, TEST_BYTES_LEN)
-  );
-  const ids = Bytes.toIds(bytes);
-  expect(ids).to.eql([1, 2]);
-});
-
-it("ids = [0, ...]", () => {
-  const bytes = new Uint8Array(TEST_BYTES_LEN);
-  for (let i = 0; i < TEST_BYTES_LEN; i++) {
-    bytes[i] = 255;
-  }
-  const expected = new Array<number>();
-  for (let i = 0; i < 8 * TEST_BYTES_LEN; i++) {
-    expected.push(i);
-  }
-  const ids = Bytes.toIds(bytes);
-  expect(ids).to.eql(expected);
+  it("id = 257", () => {
+    const data = Bytes.instructionDataFromId(257);
+    expect(data).to.eql(new Uint8Array([1, 1]));
+  });
 });

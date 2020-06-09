@@ -44,7 +44,7 @@ export function ConfirmedHelper({ children }: Props) {
         return connection.onAccountChange(
           account,
           (accountInfo: AccountInfo, { slot }) => {
-            const ids = new Set(Bytes.toIds(accountInfo.data));
+            const ids = new Set(Bytes.programDataToIds(accountInfo.data));
             const activeIdPartition = { ids, partition, partitionCount };
             dispatch({ type: ActionType.UpdateIds, activeIdPartition, slot });
           },

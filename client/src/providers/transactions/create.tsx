@@ -20,11 +20,7 @@ export function createTransaction(
   dispatch: Dispatch,
   socket: WebSocket
 ) {
-  const {
-    feeAccounts,
-    programDataAccounts,
-    programDataAccountSpace,
-  } = accounts;
+  const { feeAccounts, programDataAccounts } = accounts;
 
   const bitId = Math.floor(trackingId / feeAccounts.length);
   const accountIndex = trackingId % feeAccounts.length;
@@ -33,7 +29,7 @@ export function createTransaction(
   const instruction = new TransactionInstruction({
     keys: [{ pubkey: programDataAccount, isWritable: true, isSigner: false }],
     programId,
-    data: Buffer.from(Bytes.fromId(bitId, programDataAccountSpace)),
+    data: Buffer.from(Bytes.instructionDataFromId(bitId)),
   });
 
   const transaction = new Transaction();

@@ -9,7 +9,6 @@ export interface Config {
 
 export interface AccountsConfig {
   programDataAccounts: PublicKey[];
-  programDataAccountSpace: number;
   feeAccounts: Account[];
   accountCapacity: number;
 }
@@ -44,7 +43,6 @@ export function configFromAccounts(response: any): AccountsConfig {
     programDataAccounts: response.programDataAccounts.map(
       (account: string) => new PublicKey(account)
     ),
-    programDataAccountSpace: response.programDataAccountSpace,
     accountCapacity: response.accountCapacity,
     feeAccounts: response.accountKeys.map(
       (key: string) => new Account(Buffer.from(key, "base64"))
