@@ -5,7 +5,7 @@ export function programDataToIds(bytes: Uint8Array): Array<number> {
   bytes.forEach((byte, i) => {
     for (let j = 7; j >= 0; j--) {
       if ((byte & (1 << j)) === 1 << j) {
-        ids.push(8 * i + j);
+        ids.push(8 * i + (7 - j));
       }
     }
   });
