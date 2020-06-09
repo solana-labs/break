@@ -8,13 +8,18 @@ describe("programDataToIds", () => {
   });
 
   it("ids = [0]", () => {
-    const ids = Bytes.programDataToIds(new Uint8Array([1]));
+    const ids = Bytes.programDataToIds(new Uint8Array([128]));
     expect(ids).to.eql([0]);
   });
 
   it("ids = [8]", () => {
-    const ids = Bytes.programDataToIds(new Uint8Array([0, 1]));
+    const ids = Bytes.programDataToIds(new Uint8Array([0, 128]));
     expect(ids).to.eql([8]);
+  });
+
+  it("ids = [7, 8]", () => {
+    const ids = Bytes.programDataToIds(new Uint8Array([1, 128]));
+    expect(ids).to.eql([7, 8]);
   });
 });
 
