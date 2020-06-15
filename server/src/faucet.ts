@@ -34,6 +34,7 @@ export default class Faucet {
     }
 
     const faucet = new Faucet(connection, feeAccount, airdropEnabled);
+    console.log(`Checking faucet balance: ${feeAccount.publicKey.toBase58()}`);
     await faucet.checkBalance();
     return faucet;
   }
