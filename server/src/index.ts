@@ -81,7 +81,9 @@ class Server {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
+        console.log(`Connecting to cluster: ${url}`);
         const { feeCalculator } = await connection.getRecentBlockhash();
+        console.log(`Connected to cluster: ${url}`);
         const faucet = await Faucet.init(connection);
         console.log(
           `Airdrops ${faucet.airdropEnabled ? "enabled" : "disabled"}`
@@ -119,19 +121,21 @@ class Server {
   };
 }
 
+const app = express();
+app.use(cors());
+app.use(express.json()); // for parsing application/json
+
+const rootPath = path.join(__dirname, "..", "..");
+const staticPath = path.join(rootPath, "client", "build");
+console.log(`Serving static files from: ${staticPath}`);
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(staticPath, "/index.html"));
+});
+
+const connection = new Connection(url, "recent");
+const tpuProxy = new TpuProxy(connection);
+
 (async function (): Promise<void> {
-  const app = express();
-  app.use(cors());
-  app.use(express.json()); // for parsing application/json
-
-  const rootPath = path.join(__dirname, "..", "..");
-  const staticPath = path.join(rootPath, "client", "build");
-  app.use("/", express.static(staticPath));
-  console.log(`Serving static files from: ${staticPath}`);
-
-  const connection = new Connection(url, "recent");
-  const tpuProxy = new TpuProxy(connection);
-  console.log(`Connecting to cluster: ${url}`);
   const server = await Server.init(connection, tpuProxy);
 
   app.post("/accounts", async (req, res) => {
@@ -210,37 +214,32 @@ class Server {
       )
       .end();
   });
-
-  /* final catch-all route to index.html defined last */
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(staticPath, "/index.html"));
-  });
-
-  const httpServer = http.createServer(app);
-
-  // Start websocket server
-  let activeClients = 0;
-  let lastNotifiedCount = 0;
-  const wss = new WebSocket.Server({ server: httpServer });
-  wss.on("connection", function connection(ws) {
-    activeClients++;
-    ws.on("close", () => activeClients--);
-    ws.on("message", tpuProxy.onTransaction);
-  });
-
-  // Start active user broadcast loop
-  setInterval(() => {
-    if (activeClients !== lastNotifiedCount) {
-      lastNotifiedCount = activeClients;
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({ activeUsers: activeClients }));
-        }
-      });
-    }
-  }, 1000);
-
-  const port = process.env.PORT || 8080;
-  httpServer.listen(port);
-  console.log(`Server listening on port: ${port}`);
 })();
+
+const httpServer = http.createServer(app);
+
+// Start websocket server
+let activeClients = 0;
+let lastNotifiedCount = 0;
+const wss = new WebSocket.Server({ server: httpServer });
+wss.on("connection", function connection(ws) {
+  activeClients++;
+  ws.on("close", () => activeClients--);
+  ws.on("message", tpuProxy.onTransaction);
+});
+
+// Start active user broadcast loop
+setInterval(() => {
+  if (activeClients !== lastNotifiedCount) {
+    lastNotifiedCount = activeClients;
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ activeUsers: activeClients }));
+      }
+    });
+  }
+}, 1000);
+
+const port = process.env.PORT || 8080;
+httpServer.listen(port);
+console.log(`Server listening on port: ${port}`);
