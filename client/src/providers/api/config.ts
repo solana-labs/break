@@ -5,6 +5,7 @@ export interface Config {
   clusterUrl: string;
   programId: PublicKey;
   gameCost: number;
+  paymentRequired: boolean;
 }
 
 export interface AccountsConfig {
@@ -35,6 +36,7 @@ export function configFromInit(response: any): Config {
     // Add 1 lamport because if the account is left with 0 lamports,
     // we won't get a notification for it
     gameCost: response.gameCost + 1,
+    paymentRequired: response.paymentRequired,
   };
 }
 

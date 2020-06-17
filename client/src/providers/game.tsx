@@ -1,14 +1,18 @@
 import React from "react";
 import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
-import { useConfig, useRefreshAccounts, useAccounts } from "providers/api";
+import {
+  useConfig,
+  useRefreshAccounts,
+  useAccounts,
+  useIsFetching,
+} from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
 import { useDispatch, ActionType } from "providers/transactions";
-import { usePaymentAccount } from "./payment";
 
 export const COUNTDOWN_SECS = 15;
 
-type GameState = "loading" | "ready" | number | "reset";
+type GameState = "loading" | "payment" | "ready" | number | "reset";
 type SetGameState = React.Dispatch<React.SetStateAction<GameState>>;
 const GameStateContext = React.createContext<
   [GameState, SetGameState] | undefined
@@ -25,15 +29,26 @@ export function GameStateProvider({ children }: Props) {
   const accounts = useAccounts();
   const socket = useSocket();
   const isResultsRoute = !!useRouteMatch("/results");
+  const isFetching = useIsFetching();
 
   React.useEffect(() => {
-    const isLoading = !blockhash || !config || !socket || !accounts;
-    if (isLoading) {
-      setGameState("loading");
-    } else if (gameState === "loading") {
-      setGameState(isResultsRoute ? "reset" : "ready");
+    const isReady = blockhash && config && socket && accounts;
+    if (!isReady) {
+      const paymentRequired = config?.paymentRequired === true;
+      if (paymentRequired && !isFetching && !accounts) {
+        setGameState("payment");
+      } else {
+        setGameState("loading");
+      }
+    } else {
+      setGameState((gameState) => {
+        if (gameState === "loading") {
+          return isResultsRoute ? "reset" : "ready";
+        }
+        return gameState;
+      });
     }
-  }, [isResultsRoute, gameState, blockhash, config, accounts, socket]);
+  }, [isResultsRoute, isFetching, blockhash, config, accounts, socket]);
 
   React.useEffect(() => {
     if (typeof gameState === "number") {
@@ -65,15 +80,14 @@ export function useGameState() {
 }
 
 export function useResetGame() {
-  const paymentAccount = usePaymentAccount();
   const refreshAccounts = useRefreshAccounts();
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
 
   return React.useCallback(() => {
-    refreshAccounts(paymentAccount);
+    refreshAccounts();
     dispatch({ type: ActionType.ResetState });
     history.push({ ...location, pathname: "/game" });
-  }, [refreshAccounts, history, location, dispatch, paymentAccount]);
+  }, [refreshAccounts, history, location, dispatch]);
 }

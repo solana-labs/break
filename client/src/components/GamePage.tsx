@@ -19,7 +19,7 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          <TransactionContainer enabled />
+          <TransactionContainer />
         </div>
       </div>
       <TransactionModal />

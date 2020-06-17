@@ -1,8 +1,9 @@
 import React from "react";
 import QRCode from "qrcode.react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { useConfig } from "providers/api";
-import { usePaymentAccount } from "providers/payment";
+import { useConfig, useRefreshAccounts } from "providers/api";
+import { PAYMENT_ACCOUNT } from "utils";
+import { useBalance } from "providers/payment";
 
 export function lamportsToSolString(
   lamports: number,
@@ -17,44 +18,91 @@ export function lamportsToSolString(
 export function PaymentModal({ show }: { show: boolean }) {
   const gameCostLamports = useConfig()?.gameCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
-  const paymentAccount = usePaymentAccount();
-  const renderContent = () => {
-    if (!show || !paymentAccount) return null;
-    const address = paymentAccount.publicKey.toBase58();
-    return (
-      <div className="modal-dialog modal-dialog-centered lift justify-content-center">
-        <div className="modal-content w-auto">
-          <div className="modal-card card">
-            <div className="card-header">
-              <h3 className="card-header-title">Transfer SOL to play</h3>
-              <span className="badge badge-soft-primary">
-                <h4 className="mb-0">
-                  {lamportsToSolString(gameCostLamports)}
-                </h4>
-              </span>
-            </div>
-            <div className="card-body d-flex justify-content-center">
-              <QRCode
-                value={`solana:${address}?amount=${gameCostSol}`}
-                includeMargin
-                bgColor="#000"
-                fgColor="#FFF"
-                renderAs="svg"
-                className="w-100 h-100"
-              />
-            </div>
-            <div className="card-footer">
-              <span className="badge badge-soft-white">
-                <span>{address}</span>
-              </span>
+  const address = PAYMENT_ACCOUNT.publicKey.toBase58();
+  const copyAddress = () => navigator.clipboard.writeText(address);
+
+  return (
+    <div className={`modal fade${show ? " show" : ""}`}>
+      {show && (
+        <div className="modal-dialog modal-dialog-centered lift justify-content-center">
+          <div className="modal-content w-auto">
+            <div className="modal-card card">
+              <div className="card-header">
+                <h3 className="card-header-title">Transfer SOL to Play</h3>
+                <span
+                  className="btn btn-sm btn-primary ml-4"
+                  onClick={copyAddress}
+                >
+                  <span className="fe fe-clipboard mr-2"></span>
+                  Address
+                </span>
+              </div>
+              <div className="card-body d-flex justify-content-center">
+                <QRCode
+                  value={`solana:${address}?amount=${gameCostSol}`}
+                  includeMargin
+                  bgColor="#000"
+                  fgColor="#FFF"
+                  renderAs="svg"
+                  className="w-100 h-100"
+                />
+              </div>
+              <div className="card-footer">
+                <Footer />
+              </div>
             </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function Footer() {
+  const balance = useBalance();
+  const gameCostLamports = useConfig()?.gameCost || 0;
+  const refreshAccounts = useRefreshAccounts();
+
+  if (balance === "loading") {
+    return (
+      <div className="d-flex flex-column align-items-center">
+        <div className="d-flex align-items-center">
+          <span className="spinner-grow spinner-grow-sm mr-2"></span>
+          <h3 className="mb-0">Loading balance...</h3>
+        </div>
       </div>
     );
-  };
+  }
 
+  const sufficient = balance > gameCostLamports;
   return (
-    <div className={`modal fade${show ? " show" : ""}`}>{renderContent()}</div>
+    <>
+      <div className="row mb-3 d-flex align-items-center">
+        <div className="col font-weight-bold">One Play:</div>
+        <div className="col-auto">
+          <span className="badge badge-dark">
+            <h4 className="mb-0">{lamportsToSolString(gameCostLamports)}</h4>
+          </span>
+        </div>
+      </div>
+
+      <div className="row d-flex align-items-center">
+        <div className="col font-weight-bold">Wallet Balance:</div>
+        <div className="col-auto">
+          <span className="badge badge-dark">
+            <h4 className="mb-0">{lamportsToSolString(balance)}</h4>
+          </span>
+        </div>
+      </div>
+
+      {sufficient && (
+        <span
+          className="btn btn-pink mt-4 w-100 text-uppercase"
+          onClick={refreshAccounts}
+        >
+          Play
+        </span>
+      )}
+    </>
   );
 }
