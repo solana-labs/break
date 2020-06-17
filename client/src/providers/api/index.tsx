@@ -6,14 +6,12 @@ import {
   configFromAccounts,
   AccountsConfig,
 } from "./config";
-import { sleep } from "utils";
-import { Account } from "@solana/web3.js";
+import { sleep, PAYMENT_ACCOUNT } from "utils";
 
 export enum ConfigStatus {
   Initialized,
   Fetching,
-  PaymentRequired,
-  ReadyToPlay,
+  Ready,
   Failure,
 }
 
@@ -28,16 +26,12 @@ interface Initialized {
   config: Config;
 }
 
-interface PaymentRequired {
-  status: ConfigStatus.PaymentRequired;
-}
-
 interface Fetching {
   status: ConfigStatus.Fetching;
 }
 
 interface Ready {
-  status: ConfigStatus.ReadyToPlay;
+  status: ConfigStatus.Ready;
   accounts: AccountsConfig;
 }
 
@@ -45,16 +39,15 @@ interface Failure {
   status: ConfigStatus.Failure;
 }
 
-type Action = Initialized | Fetching | PaymentRequired | Ready | Failure;
+type Action = Initialized | Fetching | Ready | Failure;
 type Dispatch = (action: Action) => void;
 
 function configReducer(state: State, action: Action): State {
   switch (action.status) {
-    case ConfigStatus.ReadyToPlay:
+    case ConfigStatus.Ready:
     case ConfigStatus.Initialized: {
       return { ...state, ...action };
     }
-    case ConfigStatus.PaymentRequired:
     case ConfigStatus.Failure: {
       if (state.status === ConfigStatus.Fetching) {
         return { ...state, ...action };
@@ -83,7 +76,15 @@ export function ApiProvider({ children }: ApiProviderProps) {
 
   React.useEffect(() => {
     initConfig(dispatch);
-  }, [dispatch]);
+  }, []);
+
+  const config = state.config;
+  const paymentRequired = config?.paymentRequired;
+  const cluster = config?.cluster;
+  React.useEffect(() => {
+    if (paymentRequired !== false) return;
+    refreshAccounts(dispatch, paymentRequired);
+  }, [cluster, paymentRequired]);
 
   return (
     <StateContext.Provider value={state}>
@@ -113,6 +114,10 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
         })
       );
       const data = await response.json();
+      if (!("cluster" in data) || !("programId" in data)) {
+        throw new Error("Received invalid response");
+      }
+
       dispatch({
         status: ConfigStatus.Initialized,
         config: configFromInit(data),
@@ -140,7 +145,7 @@ type RefreshData = {
   paymentKey?: string;
 };
 
-async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
+async function refreshAccounts(dispatch: Dispatch, paymentRequired: boolean) {
   dispatch({
     status: ConfigStatus.Fetching,
   });
@@ -152,8 +157,8 @@ async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
       if (splitParam) {
         postData.split = splitParam;
       }
-      if (paymentAccount) {
-        postData.paymentKey = Buffer.from(paymentAccount.secretKey).toString(
+      if (paymentRequired) {
+        postData.paymentKey = Buffer.from(PAYMENT_ACCOUNT.secretKey).toString(
           "base64"
         );
       }
@@ -168,22 +173,23 @@ async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
           body,
         })
       );
-      const text = await response.text();
-      if (text === "Payment required") {
-        dispatch({
-          status: ConfigStatus.PaymentRequired,
-        });
+
+      if (response.status === 400) {
+        const error = await response.text();
+        console.error("Failed to refresh fee accounts", error);
+        dispatch({ status: ConfigStatus.Failure });
       } else {
-        const data = JSON.parse(text);
+        const data = await response.json();
         if (!("accountKeys" in data) || !("accountCapacity" in data)) {
           throw new Error("Received invalid response");
         }
 
         dispatch({
-          status: ConfigStatus.ReadyToPlay,
+          status: ConfigStatus.Ready,
           accounts: configFromAccounts(data),
         });
       }
+
       refreshed = true;
     } catch (err) {
       console.error("Failed to refresh fee accounts", err);
@@ -191,14 +197,6 @@ async function refreshAccounts(dispatch: Dispatch, paymentAccount?: Account) {
       await sleep(2000);
     }
   }
-}
-
-export function usePaymentRequired() {
-  const context = React.useContext(StateContext);
-  if (!context) {
-    throw new Error(`usePaymentRequired must be used within a ApiProvider`);
-  }
-  return context.status === ConfigStatus.PaymentRequired;
 }
 
 export function useAccounts() {
@@ -215,6 +213,14 @@ export function useConfig() {
     throw new Error(`useConfig must be used within a ApiProvider`);
   }
   return context.config;
+}
+
+export function useIsFetching() {
+  const context = React.useContext(StateContext);
+  if (!context) {
+    throw new Error(`useIsFetching must be used within a ApiProvider`);
+  }
+  return context.status === ConfigStatus.Fetching;
 }
 
 export function useClusterParam(): string {
@@ -237,10 +243,9 @@ export function useRefreshAccounts() {
   if (!dispatch) {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
-  return React.useCallback(
-    (paymentAccount?: Account) => {
-      refreshAccounts(dispatch, paymentAccount);
-    },
-    [dispatch]
-  );
+  const paymentRequired = useConfig()?.paymentRequired;
+  return React.useCallback(() => {
+    if (paymentRequired === undefined) return;
+    refreshAccounts(dispatch, paymentRequired);
+  }, [dispatch, paymentRequired]);
 }

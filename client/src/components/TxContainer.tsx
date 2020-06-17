@@ -4,17 +4,31 @@ import useThrottle from "@react-hook/throttle";
 import { TransactionSquare } from "./TxSquare";
 import { useCreateTx, useTransactions } from "providers/transactions";
 import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
-import { useRouteMatch } from "react-router-dom";
 
-export function TransactionContainer({ enabled }: { enabled?: boolean }) {
+type Mode = "enabled" | "reset" | "disabled";
+
+export function TransactionContainer() {
   const scrollEl = useRef<HTMLDivElement>(null);
   const rawTransactions = useTransactions();
   const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
-  const isGameRoute = !!useRouteMatch("/game");
   const createTx = useCreateTx();
   const [gameState, setGameState] = useGameState();
   const resetGame = useResetGame();
 
+  let mode: Mode;
+  switch (gameState) {
+    case "loading":
+    case "payment":
+      mode = "disabled";
+      break;
+    case "reset":
+      mode = "reset";
+      break;
+    default:
+      mode = "enabled";
+  }
+
+  const enabled = mode === "enabled";
   const makeTransaction = useCallback(() => {
     if (enabled && createTx) {
       if (typeof gameState === "number") {
@@ -51,17 +65,24 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
     }
   }, [transactions.length]);
 
+  const disabled = mode === "disabled";
   return (
     <div className="card h-100 mb-0">
       <div className="card-header">
-        <div className="text-truncate">Live Transaction Status</div>
-        <div className="text-primary d-none d-md-block">
-          {enabled ? "Press any key to send a transaction" : "Game finished"}
-        </div>
+        {!disabled && (
+          <>
+            <div className="text-truncate">Live Transaction Status</div>
+            <div className="text-primary d-none d-md-block">
+              {enabled
+                ? "Press any key to send a transaction"
+                : "Game finished"}
+            </div>
+          </>
+        )}
       </div>
       <div className="card-body">
         <div className="tx-wrapper border-1 border-primary h-100 position-relative">
-          {!transactions.length && isGameRoute ? (
+          {!transactions.length && enabled ? (
             <div className="d-flex h-100 justify-content-center align-items-center p-3">
               <h2 className="text-center">
                 Try to break Solana's network by sending as many transactions as
@@ -77,13 +98,15 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
         </div>
       </div>
       <div className="card-footer">
-        <span
-          className="btn btn-pink w-100 text-uppercase text-truncate"
-          onClick={enabled ? makeTransaction : resetGame}
-        >
-          <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
-          {enabled ? "Send new transaction" : "Play again"}
-        </span>
+        {!disabled && (
+          <span
+            className="btn btn-pink w-100 text-uppercase text-truncate"
+            onClick={enabled ? makeTransaction : resetGame}
+          >
+            <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
+            {enabled ? "Send new transaction" : "Play again"}
+          </span>
+        )}
       </div>
     </div>
   );

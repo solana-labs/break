@@ -30,6 +30,10 @@ export function Header() {
           text = "Loading";
           break;
         }
+        case "payment": {
+          text = "Waiting";
+          break;
+        }
         default: {
           const timer =
             COUNTDOWN_SECS - Math.floor((performance.now() - gameState) / 1000);

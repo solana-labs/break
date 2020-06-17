@@ -27,7 +27,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 class Server {
-  private freeToPlay = process.env.FREE_TO_PLAY === "true";
+  public freeToPlay = process.env.FREE_TO_PLAY === "true";
 
   constructor(
     private faucet: Faucet,
@@ -49,14 +49,7 @@ class Server {
     );
   }
 
-  paymentGate(paymentKey: any): boolean {
-    if (this.freeToPlay) return true;
-    return typeof paymentKey === "string";
-  }
-
   async collectPayment(paymentKey: any, split: number) {
-    if (this.freeToPlay) return;
-
     const fromAccount = new Account(Buffer.from(paymentKey, "base64"));
     const fromPubkey = fromAccount.publicKey;
     const toPubkey = this.faucet.address();
@@ -67,8 +60,9 @@ class Server {
       lamports,
     });
 
+    // Intentionally lax to speed up loading time
     await sendAndConfirmTransaction(this.connection, transfer, [fromAccount], {
-      confirmations: 1,
+      confirmations: 0,
       skipPreflight: true,
     });
   }
@@ -141,7 +135,7 @@ class Server {
     const feeAccountSupply = server.feeAccountSupply;
     const programDataAccountSupply = server.programDataAccountSupply;
 
-    if (!server.paymentGate(paymentKey)) {
+    if (!server.freeToPlay && !paymentKey) {
       res.status(400).send("Payment required");
       return;
     }
@@ -159,11 +153,13 @@ class Server {
       return;
     }
 
-    try {
-      await server.collectPayment(paymentKey, split);
-    } catch (err) {
-      res.status(400).send("Payment failed: " + err);
-      return;
+    if (!server.freeToPlay) {
+      try {
+        await server.collectPayment(paymentKey, split);
+      } catch (err) {
+        res.status(400).send("Payment failed: " + err);
+        return;
+      }
     }
 
     const programDataAccounts = programDataAccountSupply
@@ -206,6 +202,7 @@ class Server {
           clusterUrl: urlTls,
           cluster,
           gameCost: server.calculateCost(split, true),
+          paymentRequired: !server.freeToPlay,
         })
       )
       .end();
