@@ -8,46 +8,67 @@ import {
 import path from "path";
 import _fs from "fs";
 import Faucet from "./faucet";
+import { sleep } from "./utils";
 const fs = _fs.promises;
 
 const ENCODED_PROGRAM_KEY = process.env.ENCODED_PROGRAM_KEY;
 
 export default class ProgramLoader {
-  private account: Account;
-  constructor(private connection: Connection) {
+  private static programAccount(): Account {
     if (ENCODED_PROGRAM_KEY) {
-      this.account = new Account(Buffer.from(ENCODED_PROGRAM_KEY, "base64"));
+      return new Account(Buffer.from(ENCODED_PROGRAM_KEY, "base64"));
     } else {
-      this.account = new Account();
+      return new Account();
     }
   }
 
-  async load(faucet: Faucet, feeCalculator: FeeCalculator): Promise<PublicKey> {
-    // If the program account already exists, don't try to load it again
-    const info = await this.connection.getAccountInfo(this.account.publicKey);
-    if (info?.executable) return this.account.publicKey;
+  static async load(
+    connection: Connection,
+    faucet: Faucet,
+    feeCalculator: FeeCalculator
+  ): Promise<PublicKey> {
+    const programAccount = ProgramLoader.programAccount();
 
-    const NUM_RETRIES = 100; /* allow some number of retries */
-    const elfFile = path.join(
-      __dirname,
-      "..",
-      "..",
-      "program",
-      "dist",
-      "break_solana_program.so"
-    );
-    console.log(`Reading ${elfFile}...`);
-    const elfData = await fs.readFile(elfFile);
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        // If the program account already exists, don't try to load it again
+        const info = await connection.getAccountInfo(programAccount.publicKey);
+        if (info?.executable) return programAccount.publicKey;
 
-    console.log("Loading break solana program...");
-    const fees =
-      feeCalculator.lamportsPerSignature *
-        (BpfLoader.getMinNumSignatures(elfData.length) + NUM_RETRIES) +
-      (await this.connection.getMinimumBalanceForRentExemption(elfData.length));
+        const NUM_RETRIES = 100; /* allow some number of retries */
+        const elfFile = path.join(
+          __dirname,
+          "..",
+          "..",
+          "program",
+          "dist",
+          "break_solana_program.so"
+        );
+        console.log(`Reading ${elfFile}...`);
+        const elfData = await fs.readFile(elfFile);
 
-    const loaderAccount = new Account();
-    await faucet.fundAccount(loaderAccount.publicKey, fees);
-    await BpfLoader.load(this.connection, loaderAccount, this.account, elfData);
-    return this.account.publicKey;
+        console.log("Loading break solana program...");
+        const fees =
+          feeCalculator.lamportsPerSignature *
+            (BpfLoader.getMinNumSignatures(elfData.length) + NUM_RETRIES) +
+          (await connection.getMinimumBalanceForRentExemption(elfData.length));
+
+        const loaderAccount = new Account();
+        await faucet.fundAccount(loaderAccount.publicKey, fees);
+        await BpfLoader.load(
+          connection,
+          loaderAccount,
+          programAccount,
+          elfData
+        );
+        console.log("Program Loaded");
+        break;
+      } catch (err) {
+        console.error("Failed to load program", err);
+        await sleep(1000);
+      }
+    }
+    return programAccount.publicKey;
   }
 }

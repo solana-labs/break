@@ -6,11 +6,13 @@ import {
   sendAndConfirmTransaction,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
+import { sleep } from "./utils";
 
 const ENCODED_PAYER_KEY = process.env.ENCODED_PAYER_KEY;
 const AIRDROP_AMOUNT = 100 * LAMPORTS_PER_SOL;
 
 export default class Faucet {
+  public free = process.env.FREE_TO_PLAY === "true";
   private checkBalanceCounter = 0;
 
   constructor(
@@ -30,13 +32,39 @@ export default class Faucet {
       feeAccount = new Account(Buffer.from(ENCODED_PAYER_KEY, "base64"));
       airdropEnabled = false;
     } else {
-      await connection.requestAirdrop(feeAccount.publicKey, AIRDROP_AMOUNT);
+      console.log("Airdrops enabled");
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        try {
+          await connection.requestAirdrop(feeAccount.publicKey, AIRDROP_AMOUNT);
+          break;
+        } catch (err) {
+          console.error("Failed to airdrop to faucet", err);
+          await sleep(1000);
+        }
+      }
     }
 
     const faucet = new Faucet(connection, feeAccount, airdropEnabled);
-    console.log(`Checking faucet balance: ${feeAccount.publicKey.toBase58()}`);
-    await faucet.checkBalance();
+    faucet.checkBalance();
     return faucet;
+  }
+
+  async collectPayment(paymentKey: string, lamports: number): Promise<void> {
+    const fromAccount = new Account(Buffer.from(paymentKey, "base64"));
+    const fromPubkey = fromAccount.publicKey;
+    const toPubkey = this.address();
+    const transfer = SystemProgram.transfer({
+      fromPubkey,
+      toPubkey,
+      lamports,
+    });
+
+    // Intentionally lax to speed up loading time
+    await sendAndConfirmTransaction(this.connection, transfer, [fromAccount], {
+      confirmations: 0,
+      skipPreflight: true,
+    });
   }
 
   async checkBalance(): Promise<void> {

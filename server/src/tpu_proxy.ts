@@ -1,13 +1,6 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import dgram from "dgram";
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function notUndefined<T>(x: T | undefined): x is T {
-  return x !== undefined;
-}
+import { sleep, notUndefined } from "./utils";
 
 const TPU_DISABLED = !!process.env.TPU_DISABLED;
 const MAX_PROXIES = 10;
