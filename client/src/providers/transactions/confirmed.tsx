@@ -38,8 +38,8 @@ export function ConfirmedHelper({ children }: Props) {
     );
 
     const commitment = commitmentParam();
-    const partitionCount = accounts.programDataAccounts.length;
-    const accountSubscriptions = accounts.programDataAccounts.map(
+    const partitionCount = accounts.programAccounts.length;
+    const accountSubscriptions = accounts.programAccounts.map(
       (account, partition) => {
         return connection.onAccountChange(
           account,

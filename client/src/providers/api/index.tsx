@@ -180,7 +180,11 @@ async function refreshAccounts(dispatch: Dispatch, paymentRequired: boolean) {
         dispatch({ status: ConfigStatus.Failure });
       } else {
         const data = await response.json();
-        if (!("accountKeys" in data) || !("accountCapacity" in data)) {
+        if (
+          !("programAccounts" in data) ||
+          !("feeAccounts" in data) ||
+          !("accountCapacity" in data)
+        ) {
           throw new Error("Received invalid response");
         }
 

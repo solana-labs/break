@@ -20,11 +20,11 @@ export function createTransaction(
   dispatch: Dispatch,
   socket: WebSocket
 ) {
-  const { feeAccounts, programDataAccounts } = accounts;
+  const { feeAccounts, programAccounts } = accounts;
 
   const bitId = Math.floor(trackingId / feeAccounts.length);
   const accountIndex = trackingId % feeAccounts.length;
-  const programDataAccount = programDataAccounts[accountIndex];
+  const programDataAccount = programAccounts[accountIndex];
   const feeAccount = feeAccounts[accountIndex];
   const instruction = new TransactionInstruction({
     keys: [{ pubkey: programDataAccount, isWritable: true, isSigner: false }],

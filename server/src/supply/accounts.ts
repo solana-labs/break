@@ -1,18 +1,13 @@
-import { Account, Connection, FeeCalculator, PublicKey } from "@solana/web3.js";
+import { Account, Connection } from "@solana/web3.js";
+import { sleep } from "../utils";
 
-import Faucet from "./faucet";
+const SUPPLY_SIZE = 50;
+const BATCH_SIZE = 10;
 
 export const TX_PER_ACCOUNT =
   parseInt(process.env.TX_PER_ACCOUNT || "") || 1000;
-const SUPPLY_SIZE = 50;
-const BATCH_SIZE = 10;
-const TX_PER_BYTE = 8;
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-class AccountSupply {
+export default class AccountSupply {
   private funded: Array<[Account, Date]> = [];
   private replenishing = false;
 
@@ -86,68 +81,5 @@ class AccountSupply {
     const popped = this.funded.splice(0, count);
     this.replenish();
     return popped.map(([account]) => account);
-  }
-}
-
-// Provides pre-funded accounts for break game clients
-export class FeeAccountSupply {
-  constructor(private supply: AccountSupply, public accountCost: number) {}
-
-  pop(count: number): Account[] {
-    return this.supply.pop(count);
-  }
-
-  size(): number {
-    return this.supply.size();
-  }
-
-  static async create(
-    connection: Connection,
-    faucet: Faucet,
-    feeCalculator: FeeCalculator
-  ): Promise<FeeAccountSupply> {
-    const rent = await AccountSupply.calculateRent(connection, 0);
-    const signatureFee = feeCalculator.lamportsPerSignature;
-    const fundAmount = TX_PER_ACCOUNT * (signatureFee + rent) + rent;
-    const supply = new AccountSupply("Fee Account Supply", async () => {
-      const account = new Account();
-      await faucet.fundAccount(account.publicKey, fundAmount);
-      return account;
-    });
-    const cost = fundAmount + signatureFee;
-    return new FeeAccountSupply(supply, cost);
-  }
-}
-
-// Provides program data accounts for break game clients
-export class ProgramDataAccountSupply {
-  constructor(
-    private supply: AccountSupply,
-    public accountSpace: number,
-    public accountCost: number
-  ) {}
-
-  pop(count: number): Account[] {
-    return this.supply.pop(count);
-  }
-
-  size(): number {
-    return this.supply.size();
-  }
-
-  static async create(
-    connection: Connection,
-    faucet: Faucet,
-    feeCalculator: FeeCalculator,
-    programId: PublicKey
-  ): Promise<ProgramDataAccountSupply> {
-    const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
-    const rent = await AccountSupply.calculateRent(connection, space);
-    const supply = new AccountSupply("Program Data Account Supply", () =>
-      faucet.createProgramDataAccount(rent, programId, space)
-    );
-    const signatureFee = feeCalculator.lamportsPerSignature;
-    const cost = rent + 2 * signatureFee;
-    return new ProgramDataAccountSupply(supply, space, cost);
   }
 }
