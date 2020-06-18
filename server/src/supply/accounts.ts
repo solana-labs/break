@@ -9,6 +9,7 @@ export const TX_PER_ACCOUNT =
 
 export default class AccountSupply {
   private funded: Array<[Account, Date]> = [];
+  private reserved: Array<[Account, Date]> = [];
   private replenishing = false;
 
   constructor(
@@ -70,6 +71,17 @@ export default class AccountSupply {
     this.replenishing = false;
   }
 
+  reserve(count: number): boolean {
+    if (this.size() < count) return false;
+    this.reserved = this.reserved.concat(this.funded.splice(0, count));
+    return true;
+  }
+
+  unreserve(count: number): void {
+    if (this.reserved.length < count) throw new Error("unable to unreserve");
+    this.funded = this.funded.splice(0, count).concat(this.funded);
+  }
+
   size(): number {
     const now = new Date();
     this.funded = this.funded.filter((next) => next[1] > now);
@@ -77,8 +89,8 @@ export default class AccountSupply {
   }
 
   pop(count: number): Account[] {
-    if (this.size() < count) throw new Error("supply depleted");
-    const popped = this.funded.splice(0, count);
+    if (this.reserved.length < count) throw new Error("reserve depleted");
+    const popped = this.reserved.splice(0, count);
     this.replenish();
     return popped.map(([account]) => account);
   }

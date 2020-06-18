@@ -50,7 +50,7 @@ export default class Faucet {
     return faucet;
   }
 
-  async collectPayment(paymentKey: any, lamports: number) {
+  async collectPayment(paymentKey: string, lamports: number): Promise<void> {
     const fromAccount = new Account(Buffer.from(paymentKey, "base64"));
     const fromPubkey = fromAccount.publicKey;
     const toPubkey = this.address();

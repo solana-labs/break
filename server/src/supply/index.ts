@@ -1,8 +1,8 @@
-import { Connection, FeeCalculator, PublicKey } from "@solana/web3.js";
+import { Connection, FeeCalculator, Account, PublicKey } from "@solana/web3.js";
 import { sleep } from "../utils";
 import Faucet from "../faucet";
 import FeeAccountSupply from "./fee_accounts";
-import ProgramAccountSupply from "./state_accounts";
+import ProgramAccountSupply from "./program_accounts";
 import { TX_PER_ACCOUNT } from "./accounts";
 
 export default class Supply {
@@ -16,21 +16,28 @@ export default class Supply {
     return TX_PER_ACCOUNT;
   };
 
-  isDepleted = (requestedCount: number): boolean => {
+  reserveAccounts = (count: number): boolean => {
     return (
-      this.feeAccountSupply.size() < requestedCount ||
-      this.programAccountSupply.size() < requestedCount
+      this.feeAccountSupply.reserve(count) &&
+      this.programAccountSupply.reserve(count)
     );
   };
 
-  consumeAccounts = (count: number) => {
-    const programAccountAddresses = this.programAccountSupply
-      .pop(count)
-      .map((account) => account.publicKey.toBase58());
-    const feeAccountKeys = this.feeAccountSupply.pop(count).map((account) => {
-      return Buffer.from(account.secretKey).toString("base64");
-    });
-    return { programAccountAddresses, feeAccountKeys };
+  unreserveAccounts = (count: number): void => {
+    this.feeAccountSupply.unreserve(count);
+    this.programAccountSupply.unreserve(count);
+  };
+
+  popAccounts = (
+    count: number
+  ): {
+    programAccounts: Array<Account>;
+    feeAccounts: Array<Account>;
+  } => {
+    return {
+      programAccounts: this.programAccountSupply.pop(count),
+      feeAccounts: this.feeAccountSupply.pop(count),
+    };
   };
 
   calculateCost(accounts: number, includeFee: boolean): number {

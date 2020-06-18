@@ -14,7 +14,7 @@ const fs = _fs.promises;
 const ENCODED_PROGRAM_KEY = process.env.ENCODED_PROGRAM_KEY;
 
 export default class ProgramLoader {
-  private static programAccount() {
+  private static programAccount(): Account {
     if (ENCODED_PROGRAM_KEY) {
       return new Account(Buffer.from(ENCODED_PROGRAM_KEY, "base64"));
     } else {

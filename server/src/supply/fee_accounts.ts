@@ -6,6 +6,14 @@ import Faucet from "../faucet";
 export default class FeeAccountSupply {
   constructor(private supply: AccountSupply, public accountCost: number) {}
 
+  reserve(count: number): boolean {
+    return this.supply.reserve(count);
+  }
+
+  unreserve(count: number): void {
+    return this.supply.unreserve(count);
+  }
+
   pop(count: number): Account[] {
     return this.supply.pop(count);
   }
