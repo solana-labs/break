@@ -197,7 +197,6 @@ async function refreshAccounts(dispatch: Dispatch, paymentRequired: boolean) {
       refreshed = true;
     } catch (err) {
       console.error("Failed to refresh fee accounts", err);
-      dispatch({ status: ConfigStatus.Failure });
       await sleep(2000);
     }
   }
