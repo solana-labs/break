@@ -15,45 +15,39 @@ export function lamportsToSolString(
   );
 }
 
-export function PaymentModal({ show }: { show: boolean }) {
+export function PaymentCard() {
+  const balance = useBalance();
   const gameCostLamports = useConfig()?.gameCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
   const address = PAYMENT_ACCOUNT.publicKey.toBase58();
   const copyAddress = () => navigator.clipboard.writeText(address);
+  const balanceSufficient =
+    balance !== "loading" && balance >= gameCostLamports;
 
   return (
-    <div className={`modal fade${show ? " show" : ""}`}>
-      {show && (
-        <div className="modal-dialog modal-dialog-centered lift justify-content-center">
-          <div className="modal-content w-auto">
-            <div className="modal-card card">
-              <div className="card-header">
-                <h3 className="card-header-title">Transfer SOL to Play</h3>
-                <span
-                  className="btn btn-sm btn-primary ml-4"
-                  onClick={copyAddress}
-                >
-                  <span className="fe fe-clipboard mr-2"></span>
-                  Address
-                </span>
-              </div>
-              <div className="card-body d-flex justify-content-center">
-                <QRCode
-                  value={`solana:${address}?amount=${gameCostSol}`}
-                  includeMargin
-                  bgColor="#000"
-                  fgColor="#FFF"
-                  renderAs="svg"
-                  className="w-100 h-100"
-                />
-              </div>
-              <div className="card-footer">
-                <Footer />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="card h-100 mb-0">
+      <div className="card-header">
+        <h3 className="card-header-title">
+          {balanceSufficient ? "Press Play to Start" : "Transfer SOL to Play"}
+        </h3>
+        <span className="btn btn-sm btn-primary ml-4" onClick={copyAddress}>
+          <span className="fe fe-clipboard mr-2"></span>
+          Address
+        </span>
+      </div>
+      <div className="card-body d-flex justify-content-center align-items-center">
+        <QRCode
+          value={`solana:${address}?amount=${gameCostSol}`}
+          includeMargin
+          bgColor="#000"
+          fgColor="#FFF"
+          renderAs="svg"
+          className="qr-code w-100 h-100"
+        />
+      </div>
+      <div className="card-footer">
+        <Footer />
+      </div>
     </div>
   );
 }

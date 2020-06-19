@@ -5,15 +5,12 @@ import Home from "components/HomePage";
 import Game from "components/GamePage";
 import Results from "components/ResultsPage";
 import { LoadingModal } from "components/LoadingModal";
-import { PaymentModal } from "components/PaymentModal";
 import { useGameState } from "providers/game";
 
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
-  const isGamePage = !!useRouteMatch("/game")?.isExact;
   const [gameState] = useGameState();
 
-  const showPaymentModal = isGamePage && gameState === "payment";
   const showLoadingModal = !isHomePage && gameState === "loading";
 
   return (
@@ -24,9 +21,8 @@ export default function App() {
         <Route path="/results" exact component={Results} />
         <Redirect from="*" to="/" exact />
       </Switch>
-      <PaymentModal show={showPaymentModal} />
       <LoadingModal show={showLoadingModal} />
-      <Overlay show={showPaymentModal || showLoadingModal} />
+      <Overlay show={showLoadingModal} />
     </div>
   );
 }
