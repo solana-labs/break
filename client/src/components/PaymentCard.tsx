@@ -68,7 +68,7 @@ function Footer() {
     );
   }
 
-  const sufficient = balance > gameCostLamports;
+  const sufficient = balance >= gameCostLamports;
   return (
     <>
       <div className="row mb-3 d-flex align-items-center">
