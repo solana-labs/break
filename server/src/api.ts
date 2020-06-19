@@ -67,7 +67,8 @@ export default class ApiServer {
 
       if (!faucet.free) {
         try {
-          await faucet.collectPayment(paymentKey, split);
+          const lamports = supply.calculateCost(split, false);
+          await faucet.collectPayment(paymentKey, lamports);
         } catch (err) {
           res.status(400).send("Payment failed: " + err);
           supply.unreserveAccounts(split);
