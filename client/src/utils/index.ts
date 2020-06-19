@@ -4,6 +4,18 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function isLocalHost() {
+  const hostname = window.location.hostname;
+  switch (hostname) {
+    case "localhost":
+    case "127.0.0.1":
+    case "0.0.0.0":
+      return true;
+    default:
+      return false;
+  }
+}
+
 export const PAYMENT_ACCOUNT = (() => {
   const paymentKey = window.localStorage.getItem("paymentKey");
   if (paymentKey) {
