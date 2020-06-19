@@ -9,8 +9,12 @@ import {
 } from "providers/transactions";
 import { Header } from "./Header";
 import { useActiveUsers } from "providers/socket";
+import { useGameState } from "providers/game";
+import { PaymentCard } from "./PaymentCard";
 
 export default function Game() {
+  const [gameState] = useGameState();
+  const showPayment = gameState === "payment";
   return (
     <div className="container min-vh-100 d-flex flex-column">
       <div>
@@ -19,7 +23,7 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          <TransactionContainer />
+          {showPayment ? <PaymentCard /> : <TransactionContainer enabled />}
         </div>
       </div>
       <TransactionModal />

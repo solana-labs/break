@@ -5,9 +5,7 @@ import { TransactionSquare } from "./TxSquare";
 import { useCreateTx, useTransactions } from "providers/transactions";
 import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
 
-type Mode = "enabled" | "reset" | "disabled";
-
-export function TransactionContainer() {
+export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const scrollEl = useRef<HTMLDivElement>(null);
   const rawTransactions = useTransactions();
   const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
@@ -15,20 +13,6 @@ export function TransactionContainer() {
   const [gameState, setGameState] = useGameState();
   const resetGame = useResetGame();
 
-  let mode: Mode;
-  switch (gameState) {
-    case "loading":
-    case "payment":
-      mode = "disabled";
-      break;
-    case "reset":
-      mode = "reset";
-      break;
-    default:
-      mode = "enabled";
-  }
-
-  const enabled = mode === "enabled";
   const makeTransaction = useCallback(() => {
     if (enabled && createTx) {
       if (typeof gameState === "number") {
@@ -65,20 +49,13 @@ export function TransactionContainer() {
     }
   }, [transactions.length]);
 
-  const disabled = mode === "disabled";
   return (
     <div className="card h-100 mb-0">
       <div className="card-header">
-        {!disabled && (
-          <>
-            <div className="text-truncate">Live Transaction Status</div>
-            <div className="text-primary d-none d-md-block">
-              {enabled
-                ? "Press any key to send a transaction"
-                : "Game finished"}
-            </div>
-          </>
-        )}
+        <div className="text-truncate">Live Transaction Status</div>
+        <div className="text-primary d-none d-md-block">
+          {enabled ? "Press any key to send a transaction" : "Game finished"}
+        </div>
       </div>
       <div className="card-body">
         <div className="tx-wrapper border-1 border-primary h-100 position-relative">
@@ -98,15 +75,13 @@ export function TransactionContainer() {
         </div>
       </div>
       <div className="card-footer">
-        {!disabled && (
-          <span
-            className="btn btn-pink w-100 text-uppercase text-truncate"
-            onClick={enabled ? makeTransaction : resetGame}
-          >
-            <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
-            {enabled ? "Send new transaction" : "Play again"}
-          </span>
-        )}
+        <span
+          className="btn btn-pink w-100 text-uppercase text-truncate"
+          onClick={enabled ? makeTransaction : resetGame}
+        >
+          <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
+          {enabled ? "Send new transaction" : "Play again"}
+        </span>
       </div>
     </div>
   );
