@@ -66,7 +66,9 @@ function configReducer(state: State, action: Action): State {
 }
 
 const StateContext = React.createContext<State | undefined>(undefined);
-const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
+const DispatchContext = React.createContext<
+  [React.MutableRefObject<string>, Dispatch] | undefined
+>(undefined);
 
 type ApiProviderProps = { children: React.ReactNode };
 export function ApiProvider({ children }: ApiProviderProps) {
@@ -81,14 +83,16 @@ export function ApiProvider({ children }: ApiProviderProps) {
 
   const config = state.config;
   const paymentRequired = config?.paymentRequired;
+  const httpUrlRef = React.useRef(httpUrl);
   React.useEffect(() => {
+    httpUrlRef.current = httpUrl;
     if (paymentRequired !== false) return;
-    refreshAccounts(dispatch, httpUrl, paymentRequired);
+    refreshAccounts(dispatch, httpUrlRef, paymentRequired);
   }, [httpUrl, paymentRequired]);
 
   return (
     <StateContext.Provider value={state}>
-      <DispatchContext.Provider value={dispatch}>
+      <DispatchContext.Provider value={[httpUrlRef, dispatch]}>
         {children}
       </DispatchContext.Provider>
     </StateContext.Provider>
@@ -147,15 +151,16 @@ type RefreshData = {
 
 async function refreshAccounts(
   dispatch: Dispatch,
-  httpUrl: string,
+  httpUrlRef: React.MutableRefObject<string>,
   paymentRequired: boolean
 ) {
   dispatch({
     status: ConfigStatus.Fetching,
   });
 
+  const httpUrl = httpUrlRef.current;
   let refreshed = false;
-  while (!refreshed) {
+  while (!refreshed && httpUrl === httpUrlRef.current) {
     try {
       const postData: RefreshData = {};
       if (splitParam) {
@@ -182,6 +187,9 @@ async function refreshAccounts(
         const error = await response.text();
         console.error("Failed to refresh fee accounts", error);
         dispatch({ status: ConfigStatus.Failure });
+      } else if (response.status === 500) {
+        const error = await response.text();
+        throw new Error(error);
       } else {
         const data = await response.json();
         if (
@@ -246,14 +254,14 @@ export function useClusterParam(): string {
 }
 
 export function useRefreshAccounts() {
-  const dispatch = React.useContext(DispatchContext);
-  if (!dispatch) {
+  const context = React.useContext(DispatchContext);
+  if (!context) {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
+  const [httpUrlRef, dispatch] = context;
   const paymentRequired = useConfig()?.paymentRequired;
-  const { httpUrl } = useServer();
   return React.useCallback(() => {
     if (paymentRequired === undefined) return;
-    refreshAccounts(dispatch, httpUrl, paymentRequired);
-  }, [httpUrl, dispatch, paymentRequired]);
+    refreshAccounts(dispatch, httpUrlRef, paymentRequired);
+  }, [httpUrlRef, dispatch, paymentRequired]);
 }
