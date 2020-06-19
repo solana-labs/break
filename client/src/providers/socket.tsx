@@ -1,6 +1,6 @@
 import * as React from "react";
-import Path from "api/paths";
 import { sleep } from "utils";
+import { useServer } from "./server";
 
 type SetSocket = React.Dispatch<React.SetStateAction<WebSocket | undefined>>;
 const SocketContext = React.createContext<WebSocket | undefined>(undefined);
@@ -13,9 +13,10 @@ export function SocketProvider({ children }: SocketProviderProps) {
   let [socket, setSocket] = React.useState<WebSocket | undefined>(undefined);
   let [activeUsers, setActiveUsers] = React.useState<number>(1);
 
+  const { webSocketUrl } = useServer();
   React.useEffect(() => {
-    newSocket(setSocket, setActiveUsers);
-  }, []);
+    newSocket(webSocketUrl, setSocket, setActiveUsers);
+  }, [webSocketUrl]);
 
   return (
     <SocketContext.Provider value={socket}>
@@ -26,8 +27,12 @@ export function SocketProvider({ children }: SocketProviderProps) {
   );
 }
 
-function newSocket(setSocket: SetSocket, setActiveUsers: SetActiveUsers) {
-  const socket = new WebSocket(Path.WS);
+function newSocket(
+  webSocketUrl: string,
+  setSocket: SetSocket,
+  setActiveUsers: SetActiveUsers
+) {
+  const socket = new WebSocket(webSocketUrl);
   const timeoutId = setTimeout(() => {
     if (socket.readyState !== WebSocket.OPEN) {
       socket.close();
@@ -45,7 +50,7 @@ function newSocket(setSocket: SetSocket, setActiveUsers: SetActiveUsers) {
     await sleep(2000);
     clearTimeout(timeoutId);
     setSocket(undefined);
-    newSocket(setSocket, setActiveUsers);
+    newSocket(webSocketUrl, setSocket, setActiveUsers);
   };
   socket.onerror = async (err) => {
     console.error(err);

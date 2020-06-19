@@ -1,5 +1,4 @@
 import React from "react";
-import Path from "api/paths";
 import {
   Config,
   configFromInit,
@@ -7,6 +6,7 @@ import {
   AccountsConfig,
 } from "./config";
 import { sleep, PAYMENT_ACCOUNT } from "utils";
+import { useServer } from "providers/server";
 
 export enum ConfigStatus {
   Initialized,
@@ -74,17 +74,17 @@ export function ApiProvider({ children }: ApiProviderProps) {
     status: ConfigStatus.Fetching,
   });
 
+  const { httpUrl } = useServer();
   React.useEffect(() => {
-    initConfig(dispatch);
-  }, []);
+    initConfig(dispatch, httpUrl);
+  }, [httpUrl]);
 
   const config = state.config;
   const paymentRequired = config?.paymentRequired;
-  const cluster = config?.cluster;
   React.useEffect(() => {
     if (paymentRequired !== false) return;
-    refreshAccounts(dispatch, paymentRequired);
-  }, [cluster, paymentRequired]);
+    refreshAccounts(dispatch, httpUrl, paymentRequired);
+  }, [httpUrl, paymentRequired]);
 
   return (
     <StateContext.Provider value={state}>
@@ -95,7 +95,7 @@ export function ApiProvider({ children }: ApiProviderProps) {
   );
 }
 
-async function initConfig(dispatch: Dispatch): Promise<void> {
+async function initConfig(dispatch: Dispatch, httpUrl: string): Promise<void> {
   dispatch({
     status: ConfigStatus.Fetching,
   });
@@ -105,7 +105,7 @@ async function initConfig(dispatch: Dispatch): Promise<void> {
     try {
       const body = JSON.stringify({ split: splitParam });
       const response = await fetch(
-        new Request(Path.Init, {
+        new Request(httpUrl + "/init", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -145,7 +145,11 @@ type RefreshData = {
   paymentKey?: string;
 };
 
-async function refreshAccounts(dispatch: Dispatch, paymentRequired: boolean) {
+async function refreshAccounts(
+  dispatch: Dispatch,
+  httpUrl: string,
+  paymentRequired: boolean
+) {
   dispatch({
     status: ConfigStatus.Fetching,
   });
@@ -165,7 +169,7 @@ async function refreshAccounts(dispatch: Dispatch, paymentRequired: boolean) {
 
       const body = JSON.stringify(postData);
       const response = await fetch(
-        new Request(Path.Accounts, {
+        new Request(httpUrl + "/accounts", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -247,8 +251,9 @@ export function useRefreshAccounts() {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
   const paymentRequired = useConfig()?.paymentRequired;
+  const { httpUrl } = useServer();
   return React.useCallback(() => {
     if (paymentRequired === undefined) return;
-    refreshAccounts(dispatch, paymentRequired);
-  }, [dispatch, paymentRequired]);
+    refreshAccounts(dispatch, httpUrl, paymentRequired);
+  }, [httpUrl, dispatch, paymentRequired]);
 }

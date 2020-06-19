@@ -6,16 +6,26 @@
 @import "custom/tx-container";
 @import "custom/tx-square";
 
-.modal.show {
-  display: block;
-}
-
 .btn {
   letter-spacing: 0.1em;
 }
 
+.btn.input-group {
+  input {
+    cursor: pointer;
+
+    &:focus {
+      cursor: text;
+    }
+  }
+}
+
 .border-dark-purple {
   border-color: darken($purple, 20%);
+}
+
+.border-top-dark {
+  border-top: 1px solid $dark;
 }
 
 .btn-pink {
@@ -28,4 +38,20 @@
   @include hover-focus {
     background-color: darken($pink, 10%);
   }
+}
+
+.modal-backdrop {
+  pointer-events: none;
+}
+
+.modal.show {
+  display: block;
+}
+
+.b-white {
+  background: $white;
+}
+
+.c-pointer {
+  cursor: pointer;
 }

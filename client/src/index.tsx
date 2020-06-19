@@ -11,22 +11,25 @@ import { PaymentProvider } from "providers/payment";
 import { TransactionsProvider } from "providers/transactions";
 import { SocketProvider } from "providers/socket";
 import { GameStateProvider } from "providers/game";
+import { ServerProvider } from "providers/server";
 
 ReactDOM.render(
-  <ApiProvider>
-    <SocketProvider>
-      <BlockhashProvider>
-        <PaymentProvider>
-          <TransactionsProvider>
-            <BrowserRouter>
-              <GameStateProvider>
-                <App />
-              </GameStateProvider>
-            </BrowserRouter>
-          </TransactionsProvider>
-        </PaymentProvider>
-      </BlockhashProvider>
-    </SocketProvider>
-  </ApiProvider>,
+  <BrowserRouter>
+    <ServerProvider>
+      <ApiProvider>
+        <SocketProvider>
+          <BlockhashProvider>
+            <PaymentProvider>
+              <TransactionsProvider>
+                <GameStateProvider>
+                  <App />
+                </GameStateProvider>
+              </TransactionsProvider>
+            </PaymentProvider>
+          </BlockhashProvider>
+        </SocketProvider>
+      </ApiProvider>
+    </ServerProvider>
+  </BrowserRouter>,
   document.getElementById("root")
 );

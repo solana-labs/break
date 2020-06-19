@@ -6,11 +6,13 @@ import Game from "components/GamePage";
 import Results from "components/ResultsPage";
 import { LoadingModal } from "components/LoadingModal";
 import { useGameState } from "providers/game";
+import { useClusterModal } from "providers/server";
+import ClusterModal from "components/ClusterModal";
 
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
   const [gameState] = useGameState();
-
+  const [showClusterModal] = useClusterModal();
   const showLoadingModal = !isHomePage && gameState === "loading";
 
   return (
@@ -22,7 +24,8 @@ export default function App() {
         <Redirect from="*" to="/" exact />
       </Switch>
       <LoadingModal show={showLoadingModal} />
-      <Overlay show={showLoadingModal} />
+      <ClusterModal />
+      <Overlay show={showLoadingModal || showClusterModal} />
     </div>
   );
 }
