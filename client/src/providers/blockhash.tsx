@@ -47,14 +47,15 @@ type BlockhashProviderProps = { children: React.ReactNode };
 export function BlockhashProvider({ children }: BlockhashProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, {});
   const clusterUrl = useConfig()?.clusterUrl;
+  const clusterUrlRef = React.useRef(clusterUrl || "");
 
   React.useEffect(() => {
     if (!clusterUrl) return;
 
-    const connection = new Connection(clusterUrl);
-    refresh(dispatch, connection);
+    clusterUrlRef.current = clusterUrl;
+    refresh(dispatch, clusterUrlRef);
     const timerId = window.setInterval(
-      () => refresh(dispatch, connection),
+      () => refresh(dispatch, clusterUrlRef),
       POLL_INTERVAL_MS
     );
 
@@ -82,9 +83,14 @@ export function useBlockhash() {
   return state.blockhash;
 }
 
-async function refresh(dispatch: Dispatch, connection: Connection) {
+async function refresh(
+  dispatch: Dispatch,
+  clusterUrlRef: React.MutableRefObject<string>
+) {
   let blockhash = undefined;
-  while (blockhash === undefined) {
+  const clusterUrl = clusterUrlRef.current;
+  const connection = new Connection(clusterUrl);
+  while (blockhash === undefined && clusterUrl === clusterUrlRef.current) {
     try {
       blockhash = (await connection.getRecentBlockhash()).blockhash;
       dispatch({ type: ActionType.Update, blockhash });
