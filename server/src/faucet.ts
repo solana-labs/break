@@ -27,7 +27,10 @@ export default class Faucet {
     return this.feeAccount.publicKey;
   }
 
-  static async init(connection: Connection, feeCalculator: FeeCalculator): Promise<Faucet> {
+  static async init(
+    connection: Connection,
+    feeCalculator: FeeCalculator
+  ): Promise<Faucet> {
     let feeAccount = new Account(),
       airdropEnabled = true;
     if (ENCODED_PAYER_KEY) {
@@ -47,7 +50,12 @@ export default class Faucet {
       }
     }
 
-    const faucet = new Faucet(connection, feeCalculator, feeAccount, airdropEnabled);
+    const faucet = new Faucet(
+      connection,
+      feeCalculator,
+      feeAccount,
+      airdropEnabled
+    );
     faucet.checkBalance();
     return faucet;
   }
@@ -63,7 +71,8 @@ export default class Faucet {
     });
 
     const latestBalance = await this.connection.getBalance(
-      fromAccount.publicKey, 'single'
+      fromAccount.publicKey,
+      "single"
     );
 
     if (this.feeCalculator.lamportsPerSignature + lamports > latestBalance) {
