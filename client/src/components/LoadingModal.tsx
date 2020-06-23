@@ -5,17 +5,18 @@ export function LoadingModal({ show }: { show: boolean }) {
   const [cancel, setCancel] = React.useState(false);
   const [showModal, setShowModal] = useClusterModal();
 
-  if (cancel && showModal) setCancel(false);
+  if (cancel && showModal) {
+    setCancel(false);
+  }
 
   React.useEffect(() => {
-    if (showModal) return;
+    if (!show || showModal) return;
+
     const timeoutId = window.setTimeout(() => {
       setCancel(true);
-    }, 1000);
+    }, 10000);
 
-    return () => {
-      clearTimeout(timeoutId);
-    };
+    return () => clearTimeout(timeoutId);
   });
 
   const renderContent = () => {
@@ -26,7 +27,7 @@ export function LoadingModal({ show }: { show: boolean }) {
           <div className="py-4 pl-4 pr-5">
             <div className="d-flex align-items-center justify-content-center">
               <span className="spinner-grow mr-2"></span>
-              <h2 className="mb-0">Loading...</h2>
+              <h2 className="mb-0">{!cancel ? "Loading" : "Retrying"}...</h2>
             </div>
           </div>
           {cancel && (

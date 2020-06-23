@@ -5,6 +5,7 @@ import {
   SystemProgram,
   sendAndConfirmTransaction,
   LAMPORTS_PER_SOL,
+  FeeCalculator,
 } from "@solana/web3.js";
 import { sleep } from "./utils";
 
@@ -17,6 +18,7 @@ export default class Faucet {
 
   constructor(
     private connection: Connection,
+    private feeCalculator: FeeCalculator,
     private feeAccount: Account,
     public airdropEnabled: boolean
   ) {}
@@ -25,7 +27,10 @@ export default class Faucet {
     return this.feeAccount.publicKey;
   }
 
-  static async init(connection: Connection): Promise<Faucet> {
+  static async init(
+    connection: Connection,
+    feeCalculator: FeeCalculator
+  ): Promise<Faucet> {
     let feeAccount = new Account(),
       airdropEnabled = true;
     if (ENCODED_PAYER_KEY) {
@@ -45,7 +50,12 @@ export default class Faucet {
       }
     }
 
-    const faucet = new Faucet(connection, feeAccount, airdropEnabled);
+    const faucet = new Faucet(
+      connection,
+      feeCalculator,
+      feeAccount,
+      airdropEnabled
+    );
     faucet.checkBalance();
     return faucet;
   }
@@ -59,6 +69,15 @@ export default class Faucet {
       toPubkey,
       lamports,
     });
+
+    const latestBalance = await this.connection.getBalance(
+      fromAccount.publicKey,
+      "single"
+    );
+
+    if (this.feeCalculator.lamportsPerSignature + lamports > latestBalance) {
+      throw new Error("Insufficient funds");
+    }
 
     // Intentionally lax to speed up loading time
     await sendAndConfirmTransaction(this.connection, transfer, [fromAccount], {
