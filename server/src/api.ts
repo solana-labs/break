@@ -34,7 +34,7 @@ export default class ApiServer {
     WebSocketServer.start(httpServer, tpuProxy);
 
     const feeCalculator = await ApiServer.getFeeCalculator(connection);
-    const faucet = await Faucet.init(connection);
+    const faucet = await Faucet.init(connection, feeCalculator);
     const programId = await ProgramLoader.load(
       connection,
       faucet,
