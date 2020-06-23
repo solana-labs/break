@@ -32,7 +32,7 @@ export function Header() {
           break;
         }
         case "payment": {
-          text = "Waiting";
+          text = "Play";
           break;
         }
         default: {
