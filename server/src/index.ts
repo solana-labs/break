@@ -5,6 +5,18 @@ import path from "path";
 import ApiServer from "./api";
 
 const app = express();
+
+// Redirect to https on Heroku
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.header("x-forwarded-proto") !== "https") {
+      res.redirect(`https://${req.header("host")}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
 const rootPath = path.join(__dirname, "..", "..");
 const staticPath = path.join(rootPath, "client", "build");
 console.log(`Serving static files from: ${staticPath}`);
