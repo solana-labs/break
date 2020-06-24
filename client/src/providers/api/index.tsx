@@ -7,6 +7,7 @@ import {
 } from "./config";
 import { sleep, PAYMENT_ACCOUNT } from "utils";
 import { useServer } from "providers/server";
+import { useBalance } from "providers/payment";
 
 export enum ConfigStatus {
   Initialized,
@@ -260,8 +261,15 @@ export function useRefreshAccounts() {
   }
   const [httpUrlRef, dispatch] = context;
   const paymentRequired = useConfig()?.paymentRequired;
+  const balance = useBalance();
+  const cost = useConfig()?.gameCost;
   return React.useCallback(() => {
-    if (paymentRequired === undefined) return;
+    if (paymentRequired === undefined || cost === undefined) return;
+    if (paymentRequired && balance < cost) {
+      dispatch({ status: ConfigStatus.Fetching });
+      dispatch({ status: ConfigStatus.Failure });
+      return;
+    }
     refreshAccounts(dispatch, httpUrlRef, paymentRequired);
-  }, [httpUrlRef, dispatch, paymentRequired]);
+  }, [httpUrlRef, dispatch, paymentRequired, balance, cost]);
 }

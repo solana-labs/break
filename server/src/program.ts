@@ -4,6 +4,8 @@ import {
   PublicKey,
   BpfLoader,
   FeeCalculator,
+  SystemProgram,
+  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import path from "path";
 import _fs from "fs";
@@ -55,7 +57,17 @@ export default class ProgramLoader {
           (await connection.getMinimumBalanceForRentExemption(elfData.length));
 
         const loaderAccount = new Account();
-        await faucet.fundAccount(loaderAccount.publicKey, fees);
+        await sendAndConfirmTransaction(
+          connection,
+          SystemProgram.transfer({
+            fromPubkey: faucet.feeAccount.publicKey,
+            toPubkey: loaderAccount.publicKey,
+            lamports: fees,
+          }),
+          [faucet.feeAccount],
+          { confirmations: 1, skipPreflight: true }
+        );
+
         await BpfLoader.load(
           connection,
           loaderAccount,

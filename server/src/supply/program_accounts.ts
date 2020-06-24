@@ -1,32 +1,23 @@
-import { Account, Connection, FeeCalculator, PublicKey } from "@solana/web3.js";
-import Faucet from "../faucet";
+import {
+  Account,
+  Connection,
+  FeeCalculator,
+  PublicKey,
+  SystemProgram,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
 import AccountSupply, { TX_PER_ACCOUNT } from "./accounts";
+import Faucet from "../faucet";
 
 const TX_PER_BYTE = 8;
 
 // Provides program state accounts for break game clients
 export default class ProgramAccountSupply {
   constructor(
-    private supply: AccountSupply,
+    public supply: AccountSupply,
     public accountSpace: number,
     public accountCost: number
   ) {}
-
-  reserve(count: number): boolean {
-    return this.supply.reserve(count);
-  }
-
-  unreserve(count: number): void {
-    return this.supply.unreserve(count);
-  }
-
-  pop(count: number): Account[] {
-    return this.supply.pop(count);
-  }
-
-  size(): number {
-    return this.supply.size();
-  }
 
   static async create(
     connection: Connection,
@@ -36,8 +27,25 @@ export default class ProgramAccountSupply {
   ): Promise<ProgramAccountSupply> {
     const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
     const rent = await AccountSupply.calculateRent(connection, space);
-    const supply = new AccountSupply("Program Data Account Supply", () =>
-      faucet.createProgramDataAccount(rent, programId, space)
+    const supply = new AccountSupply(
+      "Program Data Account Supply",
+      faucet.feeAccount,
+      async (fromAccount: Account) => {
+        const programDataAccount = new Account();
+        await sendAndConfirmTransaction(
+          connection,
+          SystemProgram.createAccount({
+            fromPubkey: fromAccount.publicKey,
+            newAccountPubkey: programDataAccount.publicKey,
+            lamports: rent,
+            space,
+            programId,
+          }),
+          [fromAccount, programDataAccount],
+          { confirmations: 1, skipPreflight: true }
+        );
+        return programDataAccount;
+      }
     );
     const signatureFee = feeCalculator.lamportsPerSignature;
     const cost = rent + 2 * signatureFee;

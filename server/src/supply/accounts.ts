@@ -14,7 +14,8 @@ export default class AccountSupply {
 
   constructor(
     private name: string,
-    private createAccount: () => Promise<Account>
+    private faucetAccount: Account,
+    private createAccount: (fromAccount: Account) => Promise<Account>
   ) {
     this.replenish();
   }
@@ -45,30 +46,46 @@ export default class AccountSupply {
 
     while (this.funded.length < SUPPLY_SIZE) {
       const batchSize = Math.min(SUPPLY_SIZE - this.funded.length, BATCH_SIZE);
-      const batch = await Promise.all(
-        Array(batchSize)
-          .fill(0)
-          .map(async () => {
-            try {
-              return await this.createAccount();
-            } catch (err) {
-              console.error("Failed to replenish account supply", err);
-              await sleep(1000);
-              return undefined;
-            }
-          })
-      );
+      const batch = await this.createBatch(this.faucetAccount, batchSize);
 
+      const incomplete = batch.length < batchSize;
       for (const account of batch) {
         const expiration = new Date();
         expiration.setDate(expiration.getDate() + 7);
-        if (account) this.funded.push([account, expiration]);
+        this.funded.push([account, expiration]);
       }
 
       console.log(`${this.name}: ${this.funded.length}`);
+      if (incomplete) await sleep(1000);
     }
 
     this.replenishing = false;
+  }
+
+  async createBatch(
+    fromAccount: Account,
+    count: number
+  ): Promise<Array<Account>> {
+    const batch = [];
+    console.log("CREATE BATCH", count);
+    const accounts = await Promise.all(
+      Array(count)
+        .fill(0)
+        .map(async () => {
+          try {
+            return await this.createAccount(fromAccount);
+          } catch (err) {
+            console.error("Failed to replenish account supply", err);
+            return undefined;
+          }
+        })
+    );
+
+    for (const account of accounts) {
+      if (account !== undefined) batch.push(account);
+    }
+
+    return batch;
   }
 
   reserve(count: number): boolean {

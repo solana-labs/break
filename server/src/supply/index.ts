@@ -7,25 +7,64 @@ import { TX_PER_ACCOUNT } from "./accounts";
 
 export default class Supply {
   constructor(
+    private connection: Connection,
     private feeCalculator: FeeCalculator,
-    private feeAccountSupply: FeeAccountSupply,
-    private programAccountSupply: ProgramAccountSupply
+    private feeAccounts: FeeAccountSupply,
+    private programAccounts: ProgramAccountSupply
   ) {}
 
   accountCapacity = (): number => {
     return TX_PER_ACCOUNT;
   };
 
+  createAccounts = async (
+    paymentKey: string,
+    count: number
+  ): Promise<{
+    programAccounts: Array<Account>;
+    feeAccounts: Array<Account>;
+  }> => {
+    const fromAccount = new Account(Buffer.from(paymentKey, "base64"));
+    const latestBalance = await this.connection.getBalance(
+      fromAccount.publicKey,
+      "single"
+    );
+
+    const lamports = this.calculateCost(count, false);
+    if (this.feeCalculator.lamportsPerSignature + lamports > latestBalance) {
+      throw new Error("Insufficient funds");
+    }
+
+    const feeAccounts = await this.feeAccounts.supply.createBatch(
+      fromAccount,
+      count
+    );
+    const programAccounts = await this.programAccounts.supply.createBatch(
+      fromAccount,
+      count
+    );
+
+    console.log("BATCH CREATED", { feeAccounts, programAccounts });
+    const createdAccounts = Math.min(
+      feeAccounts.length,
+      programAccounts.length
+    );
+    return {
+      feeAccounts: feeAccounts.slice(0, createdAccounts),
+      programAccounts: programAccounts.slice(0, createdAccounts),
+    };
+  };
+
   reserveAccounts = (count: number): boolean => {
     return (
-      this.feeAccountSupply.reserve(count) &&
-      this.programAccountSupply.reserve(count)
+      this.feeAccounts.supply.reserve(count) &&
+      this.programAccounts.supply.reserve(count)
     );
   };
 
   unreserveAccounts = (count: number): void => {
-    this.feeAccountSupply.unreserve(count);
-    this.programAccountSupply.unreserve(count);
+    this.feeAccounts.supply.unreserve(count);
+    this.programAccounts.supply.unreserve(count);
   };
 
   popAccounts = (
@@ -35,8 +74,8 @@ export default class Supply {
     feeAccounts: Array<Account>;
   } => {
     return {
-      programAccounts: this.programAccountSupply.pop(count),
-      feeAccounts: this.feeAccountSupply.pop(count),
+      programAccounts: this.programAccounts.supply.pop(count),
+      feeAccounts: this.feeAccounts.supply.pop(count),
     };
   };
 
@@ -45,8 +84,7 @@ export default class Supply {
     return (
       fee +
       accounts *
-        (this.programAccountSupply.accountCost +
-          this.feeAccountSupply.accountCost)
+        (this.programAccounts.accountCost + this.feeAccounts.accountCost)
     );
   }
 
@@ -73,6 +111,7 @@ export default class Supply {
         );
         console.log("State Account Supply Created");
         return new Supply(
+          connection,
           feeCalculator,
           feeAccountSupply,
           programAccountSupply
