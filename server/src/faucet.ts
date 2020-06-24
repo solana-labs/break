@@ -19,7 +19,7 @@ export default class Faucet {
   constructor(
     private connection: Connection,
     private feeCalculator: FeeCalculator,
-    private feeAccount: Account,
+    public feeAccount: Account,
     public airdropEnabled: boolean
   ) {}
 
@@ -36,6 +36,7 @@ export default class Faucet {
     if (ENCODED_PAYER_KEY) {
       feeAccount = new Account(Buffer.from(ENCODED_PAYER_KEY, "base64"));
       airdropEnabled = false;
+      console.log(`Faucet address: ${feeAccount.publicKey.toBase58()}`);
     } else {
       console.log("Airdrops enabled");
       // eslint-disable-next-line no-constant-condition
@@ -106,41 +107,5 @@ export default class Faucet {
     } catch (err) {
       console.error("failed to check faucet balance", err);
     }
-  }
-
-  async fundAccount(publicKey: PublicKey, fundAmount: number): Promise<void> {
-    await sendAndConfirmTransaction(
-      this.connection,
-      SystemProgram.transfer({
-        fromPubkey: this.feeAccount.publicKey,
-        toPubkey: publicKey,
-        lamports: fundAmount,
-      }),
-      [this.feeAccount],
-      { confirmations: 1, skipPreflight: true }
-    );
-    this.checkBalance();
-  }
-
-  async createProgramDataAccount(
-    fundAmount: number,
-    programId: PublicKey,
-    space: number
-  ): Promise<Account> {
-    const programDataAccount = new Account();
-    await sendAndConfirmTransaction(
-      this.connection,
-      SystemProgram.createAccount({
-        fromPubkey: this.feeAccount.publicKey,
-        newAccountPubkey: programDataAccount.publicKey,
-        lamports: fundAmount,
-        space,
-        programId,
-      }),
-      [this.feeAccount, programDataAccount],
-      { confirmations: 1, skipPreflight: true }
-    );
-    this.checkBalance();
-    return programDataAccount;
   }
 }

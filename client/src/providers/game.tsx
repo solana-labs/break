@@ -86,8 +86,8 @@ export function useResetGame() {
   const dispatch = useDispatch();
 
   return React.useCallback(() => {
-    refreshAccounts();
     dispatch({ type: ActionType.ResetState });
     history.push({ ...location, pathname: "/game" });
+    refreshAccounts();
   }, [refreshAccounts, history, location, dispatch]);
 }

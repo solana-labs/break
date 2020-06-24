@@ -5,7 +5,7 @@ export function LoadingModal({ show }: { show: boolean }) {
   const [cancel, setCancel] = React.useState(false);
   const [showModal, setShowModal] = useClusterModal();
 
-  if (cancel && showModal) {
+  if (cancel && (!show || showModal)) {
     setCancel(false);
   }
 

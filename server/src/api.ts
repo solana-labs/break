@@ -60,23 +60,42 @@ export default class ApiServer {
         return;
       }
 
-      if (!supply.reserveAccounts(split)) {
-        res.status(500).send("Account supply depleted, try again");
-        return;
-      }
+      const reserved = supply.reserveAccounts(split);
+      let programAccounts, feeAccounts;
+      if (reserved) {
+        // Collect payment for reserved accounts
+        if (!faucet.free) {
+          try {
+            const lamports = supply.calculateCost(split, false);
+            await faucet.collectPayment(paymentKey, lamports);
+          } catch (err) {
+            res.status(400).send("Payment failed: " + err);
+            supply.unreserveAccounts(split);
+            return;
+          }
+        }
 
-      if (!faucet.free) {
+        ({ programAccounts, feeAccounts } = supply.popAccounts(split));
+      } else if (!faucet.free) {
         try {
-          const lamports = supply.calculateCost(split, false);
-          await faucet.collectPayment(paymentKey, lamports);
+          ({ programAccounts, feeAccounts } = await supply.createAccounts(
+            paymentKey,
+            split
+          ));
         } catch (err) {
           res.status(400).send("Payment failed: " + err);
           supply.unreserveAccounts(split);
           return;
         }
-      }
 
-      const { programAccounts, feeAccounts } = supply.popAccounts(split);
+        if (programAccounts.length === 0) {
+          res.status(500).send("Failed to create new accounts, try again");
+          return;
+        }
+      } else {
+        res.status(500).send("Account supply depleted, try again");
+        return;
+      }
 
       res
         .send(
