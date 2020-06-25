@@ -12,9 +12,10 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const createTx = useCreateTx();
   const [gameState, setGameState] = useGameState();
   const resetGame = useResetGame();
+  const [rapidFire, setRapidFire] = React.useState(false);
 
   const makeTransaction = useCallback(() => {
-    if (enabled && createTx) {
+    if (enabled) {
       if (typeof gameState === "number") {
         createTx();
       } else if (gameState === "ready") {
@@ -23,6 +24,25 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
       }
     }
   }, [enabled, createTx, gameState, setGameState]);
+
+  useEffect(() => {
+    if (!rapidFire || !enabled) {
+      setRapidFire(false);
+      return;
+    }
+
+    let intervalId: NodeJS.Timeout;
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => {
+        makeTransaction();
+      }, 30);
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [rapidFire, enabled, makeTransaction]);
 
   useEffect(() => {
     const testMode = new URLSearchParams(window.location.search).has("test");
@@ -76,11 +96,16 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
       </div>
       <div className="card-footer">
         <span
-          className="btn btn-pink w-100 text-uppercase text-truncate"
+          className="btn btn-pink w-100 text-uppercase text-truncate touch-action-none"
+          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={() => setRapidFire(true)}
+          onPointerUp={() => setRapidFire(false)}
+          onPointerLeave={() => setRapidFire(false)}
+          onPointerCancel={() => setRapidFire(false)}
           onClick={enabled ? makeTransaction : resetGame}
         >
           <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
-          {enabled ? "Send new transaction" : "Play again"}
+          {enabled ? "Send new transactions" : "Play again"}
         </span>
       </div>
     </div>
