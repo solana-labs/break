@@ -44,7 +44,6 @@ export default class Supply {
       count
     );
 
-    console.log("BATCH CREATED", { feeAccounts, programAccounts });
     const createdAccounts = Math.min(
       feeAccounts.length,
       programAccounts.length
@@ -55,10 +54,10 @@ export default class Supply {
     };
   };
 
-  reserveAccounts = (count: number): boolean => {
+  reserveAccounts = async (count: number): Promise<boolean> => {
     return (
-      this.feeAccounts.supply.reserve(count) &&
-      this.programAccounts.supply.reserve(count)
+      (await this.feeAccounts.supply.reserve(count)) &&
+      (await this.programAccounts.supply.reserve(count))
     );
   };
 

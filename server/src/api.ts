@@ -60,7 +60,7 @@ export default class ApiServer {
         return;
       }
 
-      const reserved = supply.reserveAccounts(split);
+      const reserved = await supply.reserveAccounts(split);
       let programAccounts, feeAccounts;
       if (reserved) {
         // Collect payment for reserved accounts
