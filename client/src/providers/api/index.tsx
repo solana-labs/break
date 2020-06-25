@@ -80,6 +80,7 @@ export function ApiProvider({ children }: ApiProviderProps) {
   const { httpUrl } = useServer();
   const httpUrlRef = React.useRef(httpUrl);
   React.useEffect(() => {
+    httpUrlRef.current = httpUrl;
     initConfig(dispatch, httpUrlRef);
   }, [httpUrl]);
 
