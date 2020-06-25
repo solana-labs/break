@@ -307,10 +307,8 @@ export function useCreateTx() {
   const blockhash = useBlockhash();
   const dispatch = useDispatch();
   const socket = useSocket();
-
-  if (!blockhash || !socket || !config || !accounts) return undefined;
-
-  return () => {
+  return React.useCallback(() => {
+    if (!blockhash || !socket || !config || !accounts) return;
     const id = idCounter.current;
     if (id < accounts.accountCapacity) {
       idCounter.current++;
@@ -325,5 +323,5 @@ export function useCreateTx() {
     } else {
       console.error("Exceeded account capacity");
     }
-  };
+  }, [blockhash, socket, config, accounts, dispatch]);
 }
