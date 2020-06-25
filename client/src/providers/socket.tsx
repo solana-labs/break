@@ -1,5 +1,4 @@
 import * as React from "react";
-import { sleep } from "utils";
 import { useServer } from "./server";
 
 type SetSocket = React.Dispatch<React.SetStateAction<WebSocket | undefined>>;
@@ -15,7 +14,8 @@ export function SocketProvider({ children }: SocketProviderProps) {
 
   const { webSocketUrl } = useServer();
   React.useEffect(() => {
-    newSocket(webSocketUrl, setSocket, setActiveUsers);
+    const socket = newSocket(webSocketUrl, setSocket, setActiveUsers);
+    return () => socket.close();
   }, [webSocketUrl]);
 
   return (
@@ -31,7 +31,7 @@ function newSocket(
   webSocketUrl: string,
   setSocket: SetSocket,
   setActiveUsers: SetActiveUsers
-) {
+): WebSocket {
   const socket = new WebSocket(webSocketUrl);
   const timeoutId = setTimeout(() => {
     if (socket.readyState !== WebSocket.OPEN) {
@@ -47,15 +47,17 @@ function newSocket(
     }
   };
   socket.onclose = async () => {
-    await sleep(2000);
     clearTimeout(timeoutId);
-    setSocket(undefined);
-    newSocket(webSocketUrl, setSocket, setActiveUsers);
+    setSocket((socket) => {
+      if (socket && socket.url === webSocketUrl) return undefined;
+      return socket;
+    });
   };
   socket.onerror = async (err) => {
     console.error(err);
     socket.close();
   };
+  return socket;
 }
 
 export function useSocket() {

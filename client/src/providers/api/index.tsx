@@ -78,13 +78,13 @@ export function ApiProvider({ children }: ApiProviderProps) {
   });
 
   const { httpUrl } = useServer();
+  const httpUrlRef = React.useRef(httpUrl);
   React.useEffect(() => {
-    initConfig(dispatch, httpUrl);
+    initConfig(dispatch, httpUrlRef);
   }, [httpUrl]);
 
   const config = state.config;
   const paymentRequired = config?.paymentRequired;
-  const httpUrlRef = React.useRef(httpUrl);
   React.useEffect(() => {
     httpUrlRef.current = httpUrl;
     if (paymentRequired !== false) return;
@@ -100,13 +100,20 @@ export function ApiProvider({ children }: ApiProviderProps) {
   );
 }
 
-async function initConfig(dispatch: Dispatch, httpUrl: string): Promise<void> {
+async function initConfig(
+  dispatch: Dispatch,
+  httpUrlRef: React.MutableRefObject<string>
+): Promise<void> {
   dispatch({
     status: ConfigStatus.Fetching,
   });
 
-  let initialized = false;
-  while (!initialized) {
+  const httpUrl = httpUrlRef.current;
+
+  let retries = 3;
+  while (retries > 0 && httpUrl === httpUrlRef.current) {
+    retries--;
+
     try {
       const body = JSON.stringify({ split: splitParam });
       const response = await fetch(
@@ -127,7 +134,7 @@ async function initConfig(dispatch: Dispatch, httpUrl: string): Promise<void> {
         status: ConfigStatus.Initialized,
         config: configFromInit(data),
       });
-      initialized = true;
+      break;
     } catch (err) {
       console.error("Failed to initialize", err);
       dispatch({ status: ConfigStatus.Failure });
@@ -160,8 +167,9 @@ async function refreshAccounts(
   });
 
   const httpUrl = httpUrlRef.current;
-  let refreshed = false;
-  while (!refreshed && httpUrl === httpUrlRef.current) {
+  let retries = 3;
+  while (retries > 0 && httpUrl === httpUrlRef.current) {
+    retries--;
     try {
       const postData: RefreshData = {};
       if (splitParam) {
@@ -206,8 +214,7 @@ async function refreshAccounts(
           accounts: configFromAccounts(data),
         });
       }
-
-      refreshed = true;
+      break;
     } catch (err) {
       console.error("Failed to refresh fee accounts", err);
       await sleep(2000);
