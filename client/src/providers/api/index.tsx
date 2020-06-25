@@ -131,15 +131,20 @@ async function initConfig(
         throw new Error("Received invalid response");
       }
 
-      dispatch({
-        status: ConfigStatus.Initialized,
-        config: configFromInit(data),
-      });
+      if (httpUrl === httpUrlRef.current) {
+        dispatch({
+          status: ConfigStatus.Initialized,
+          config: configFromInit(data),
+        });
+      }
+
       break;
     } catch (err) {
       console.error("Failed to initialize", err);
-      dispatch({ status: ConfigStatus.Failure });
-      await sleep(2000);
+      if (httpUrl === httpUrlRef.current) {
+        dispatch({ status: ConfigStatus.Failure });
+        await sleep(2000);
+      }
     }
   }
 }
@@ -196,7 +201,9 @@ async function refreshAccounts(
       if (response.status === 400) {
         const error = await response.text();
         console.error("Failed to refresh fee accounts", error);
-        dispatch({ status: ConfigStatus.Failure });
+        if (httpUrl === httpUrlRef.current) {
+          dispatch({ status: ConfigStatus.Failure });
+        }
       } else if (response.status === 500) {
         const error = await response.text();
         throw new Error(error);
@@ -210,10 +217,12 @@ async function refreshAccounts(
           throw new Error("Received invalid response");
         }
 
-        dispatch({
-          status: ConfigStatus.Ready,
-          accounts: configFromAccounts(data),
-        });
+        if (httpUrl === httpUrlRef.current) {
+          dispatch({
+            status: ConfigStatus.Ready,
+            accounts: configFromAccounts(data),
+          });
+        }
       }
       break;
     } catch (err) {
