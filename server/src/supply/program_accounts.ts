@@ -13,11 +13,7 @@ const TX_PER_BYTE = 8;
 
 // Provides program state accounts for break game clients
 export default class ProgramAccountSupply {
-  constructor(
-    public supply: AccountSupply,
-    public accountSpace: number,
-    public accountCost: number
-  ) {}
+  constructor(public supply: AccountSupply, public accountCost: number) {}
 
   static async create(
     connection: Connection,
@@ -49,6 +45,6 @@ export default class ProgramAccountSupply {
     );
     const signatureFee = feeCalculator.lamportsPerSignature;
     const cost = rent + 2 * signatureFee;
-    return new ProgramAccountSupply(supply, space, cost);
+    return new ProgramAccountSupply(supply, cost);
   }
 }

@@ -310,7 +310,7 @@ export function useCreateTx() {
   return React.useCallback(() => {
     if (!blockhash || !socket || !config || !accounts) return;
     const id = idCounter.current;
-    if (id < accounts.accountCapacity) {
+    if (id < accounts.accountCapacity * accounts.programAccounts.length) {
       idCounter.current++;
       createTransaction(
         blockhash,
