@@ -1,13 +1,8 @@
 import React from "react";
-import {
-  Config,
-  configFromInit,
-  configFromAccounts,
-  AccountsConfig,
-} from "./config";
-import { sleep, PAYMENT_ACCOUNT } from "utils";
+import { Config, AccountsConfig } from "./config";
 import { useServer } from "providers/server";
 import { useBalance } from "providers/payment";
+import { fetchWithRetry } from "./request";
 
 export enum ConfigStatus {
   Initialized,
@@ -40,8 +35,8 @@ interface Failure {
   status: ConfigStatus.Failure;
 }
 
-type Action = Initialized | Fetching | Ready | Failure;
-type Dispatch = (action: Action) => void;
+export type Action = Initialized | Fetching | Ready | Failure;
+export type Dispatch = (action: Action) => void;
 
 function configReducer(state: State, action: Action): State {
   switch (action.status) {
@@ -105,131 +100,18 @@ async function initConfig(
   dispatch: Dispatch,
   httpUrlRef: React.MutableRefObject<string>
 ): Promise<void> {
-  dispatch({
-    status: ConfigStatus.Fetching,
-  });
-
-  const httpUrl = httpUrlRef.current;
-
-  let retries = 3;
-  while (retries > 0 && httpUrl === httpUrlRef.current) {
-    retries--;
-
-    try {
-      const body = JSON.stringify({ split: splitParam });
-      const response = await fetch(
-        new Request(httpUrl + "/init", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body,
-        })
-      );
-      const data = await response.json();
-      if (!("cluster" in data) || !("programId" in data)) {
-        throw new Error("Received invalid response");
-      }
-
-      if (httpUrl === httpUrlRef.current) {
-        dispatch({
-          status: ConfigStatus.Initialized,
-          config: configFromInit(data),
-        });
-      }
-
-      break;
-    } catch (err) {
-      console.error("Failed to initialize", err);
-      if (httpUrl === httpUrlRef.current) {
-        dispatch({ status: ConfigStatus.Failure });
-        await sleep(2000);
-      }
-    }
-  }
+  return fetchWithRetry(dispatch, httpUrlRef, { route: "init" });
 }
-
-const splitParam = ((): number | undefined => {
-  const split = parseInt(
-    new URLSearchParams(window.location.search).get("split") || ""
-  );
-  if (!isNaN(split)) {
-    return split;
-  }
-})();
-
-type RefreshData = {
-  split?: number;
-  paymentKey?: string;
-};
 
 async function refreshAccounts(
   dispatch: Dispatch,
   httpUrlRef: React.MutableRefObject<string>,
   paymentRequired: boolean
-) {
-  dispatch({
-    status: ConfigStatus.Fetching,
+): Promise<void> {
+  return fetchWithRetry(dispatch, httpUrlRef, {
+    route: "accounts",
+    paymentRequired,
   });
-
-  const httpUrl = httpUrlRef.current;
-  let retries = 3;
-  while (retries > 0 && httpUrl === httpUrlRef.current) {
-    retries--;
-    try {
-      const postData: RefreshData = {};
-      if (splitParam) {
-        postData.split = splitParam;
-      }
-      if (paymentRequired) {
-        postData.paymentKey = Buffer.from(PAYMENT_ACCOUNT.secretKey).toString(
-          "base64"
-        );
-      }
-
-      const body = JSON.stringify(postData);
-      const response = await fetch(
-        new Request(httpUrl + "/accounts", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body,
-        })
-      );
-
-      if (response.status === 400) {
-        const error = await response.text();
-        console.error("Failed to refresh fee accounts", error);
-        if (httpUrl === httpUrlRef.current) {
-          dispatch({ status: ConfigStatus.Failure });
-        }
-      } else if (response.status === 500) {
-        const error = await response.text();
-        throw new Error(error);
-      } else {
-        const data = await response.json();
-        if (
-          !("programAccounts" in data) ||
-          !("feeAccounts" in data) ||
-          !("accountCapacity" in data)
-        ) {
-          throw new Error("Received invalid response");
-        }
-
-        if (httpUrl === httpUrlRef.current) {
-          dispatch({
-            status: ConfigStatus.Ready,
-            accounts: configFromAccounts(data),
-          });
-        }
-      }
-      break;
-    } catch (err) {
-      console.error("Failed to refresh fee accounts", err);
-      await sleep(2000);
-    }
-  }
 }
 
 export function useAccounts() {
