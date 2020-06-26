@@ -15,18 +15,35 @@ import { PaymentCard } from "./PaymentCard";
 export default function Game() {
   const [gameState] = useGameState();
   const showPayment = gameState === "payment";
+  const loading = gameState === "loading";
+
   return (
     <div className="container min-vh-100 d-flex flex-column">
       <div>
         <Header />
-        <Stats />
+        {!showPayment && !loading && <Stats />}
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          {showPayment ? <PaymentCard /> : <TransactionContainer enabled />}
+          {loading ? (
+            <EmptyCard />
+          ) : showPayment ? (
+            <PaymentCard />
+          ) : (
+            <TransactionContainer enabled />
+          )}
         </div>
       </div>
       <TransactionModal />
+    </div>
+  );
+}
+
+export function EmptyCard() {
+  return (
+    <div className="card mb-0 h-100">
+      <div className="card-header"></div>
+      <div className="card-body"></div>
     </div>
   );
 }
@@ -58,7 +75,7 @@ type StatProps = {
 };
 function StatCard({ label, value, icon }: StatProps) {
   return (
-    <div className="col-6 col-lg-3 d-flex flex-column">
+    <div className="stat-card col-6 col-lg-3 d-flex flex-column">
       <div className="card flex-grow-1">
         <div className="card-body">
           <div className="row align-items-center">

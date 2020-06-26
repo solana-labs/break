@@ -80,7 +80,7 @@ async function fetchInit(httpUrl: string): Promise<Action | "retry"> {
     };
   } catch (err) {
     console.error("Failed to initialize", err);
-    return { status: ConfigStatus.Failure };
+    return { status: ConfigStatus.Failure, config: undefined };
   }
 }
 
@@ -116,7 +116,7 @@ async function fetchAccounts(
     );
 
     if (response.status === 400) {
-      return { status: ConfigStatus.Failure };
+      return { status: ConfigStatus.Failure, accounts: undefined };
     } else if (response.status === 500) {
       const error = await response.text();
       throw new Error(error);
