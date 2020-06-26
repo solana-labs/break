@@ -20,20 +20,19 @@ export function PaymentCard() {
   const gameCostLamports = useConfig()?.gameCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
   const address = PAYMENT_ACCOUNT.publicKey.toBase58();
-  const copyAddress = () => navigator.clipboard.writeText(address);
   const balanceSufficient =
     balance !== "loading" && balance >= gameCostLamports;
 
   return (
-    <div className="card h-100 mb-0">
+    <div className="card mb-0">
       <div className="card-header">
         <h3 className="card-header-title">
-          {balanceSufficient ? "Press Play to Start" : "Transfer SOL to Play"}
+          {balance === "loading"
+            ? "Loading"
+            : balanceSufficient
+            ? "Press Play to Start"
+            : "Transfer SOL to Play"}
         </h3>
-        <span className="btn btn-sm btn-primary ml-4" onClick={copyAddress}>
-          <span className="fe fe-clipboard mr-2"></span>
-          Address
-        </span>
       </div>
       <div className="card-body d-flex justify-content-center align-items-center">
         <QRCode
@@ -42,12 +41,10 @@ export function PaymentCard() {
           bgColor="#000"
           fgColor="#FFF"
           renderAs="svg"
-          className="qr-code w-100 h-100"
+          className="qr-code"
         />
       </div>
-      <div className="card-footer">
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 }
@@ -56,46 +53,67 @@ function Footer() {
   const balance = useBalance();
   const gameCostLamports = useConfig()?.gameCost || 0;
   const refreshAccounts = useRefreshAccounts();
+  const address = PAYMENT_ACCOUNT.publicKey.toBase58();
+  const [copied, setCopied] = React.useState(false);
+  const copyAddress = () => {
+    navigator.clipboard.writeText(address);
+    setCopied(true);
+  };
 
-  if (balance === "loading") {
-    return (
-      <div className="d-flex flex-column align-items-center">
-        <div className="d-flex align-items-center">
-          <span className="spinner-grow spinner-grow-sm mr-2"></span>
-          <h3 className="mb-0">Loading balance...</h3>
-        </div>
-      </div>
-    );
-  }
+  React.useEffect(() => {
+    if (!copied) return;
+    const timeoutId = setTimeout(() => {
+      setCopied(false);
+    }, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [copied]);
 
   const sufficient = balance >= gameCostLamports;
   return (
     <>
-      <div className="row mb-3 d-flex align-items-center">
-        <div className="col font-weight-bold">One Play:</div>
-        <div className="col-auto">
-          <span className="badge badge-dark">
-            <h4 className="mb-0">{lamportsToSolString(gameCostLamports)}</h4>
+      <div className="card-footer">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div className="font-weight-bold">Wallet Address</div>
+          <span className="btn btn-sm btn-primary" onClick={copyAddress}>
+            <span className="fe fe-clipboard mr-2"></span>
+            {copied ? "Copied" : "Copy"}
           </span>
         </div>
-      </div>
 
-      <div className="row d-flex align-items-center">
-        <div className="col font-weight-bold">Wallet Balance:</div>
-        <div className="col-auto">
+        <div className="d-flex mb-4 pb-4 border-bottom">
           <span className="badge badge-dark">
-            <h4 className="mb-0">{lamportsToSolString(balance)}</h4>
+            <h4 className="mb-0">{address}</h4>
           </span>
+        </div>
+
+        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
+          <div className="font-weight-bold">Wallet Balance</div>
+          <span className="badge badge-dark">
+            <h4 className="mb-0">
+              {balance === "loading" ? balance : lamportsToSolString(balance)}
+            </h4>
+          </span>
+        </div>
+
+        <div className="row d-flex align-items-center">
+          <div className="col font-weight-bold">One Play</div>
+          <div className="col-auto">
+            <span className="badge badge-dark">
+              <h4 className="mb-0">{lamportsToSolString(gameCostLamports)}</h4>
+            </span>
+          </div>
         </div>
       </div>
 
       {sufficient && (
-        <span
-          className="btn btn-pink mt-4 w-100 text-uppercase"
-          onClick={refreshAccounts}
-        >
-          Play
-        </span>
+        <div className="card-footer">
+          <span
+            className="btn btn-pink w-100 text-uppercase"
+            onClick={refreshAccounts}
+          >
+            Play
+          </span>
+        </div>
       )}
     </>
   );

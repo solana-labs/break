@@ -2,11 +2,35 @@
   overflow-x: scroll;
   flex-wrap: nowrap;
   max-width: 800px;
+
+  @include media-breakpoint-down(sm) {
+    padding-bottom: 10px !important;
+  }
+
+  scrollbar-color: #2a2a2a transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    height: 0.4rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background: #2a2a2a;
+  }
 }
 
 .stat-circle {
   height: 200px;
   width: 200px;
+  @include media-breakpoint-down(sm) {
+    height: 175px;
+    width: 175px;
+  }
 }
 
 .results-summary h3 {

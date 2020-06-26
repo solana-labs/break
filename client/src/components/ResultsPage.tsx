@@ -119,10 +119,10 @@ function Stats() {
 
   return (
     <div className="d-flex justify-content-center">
-      <div className="stats d-flex pb-5 justify-content-between w-100">
+      <div className="stats d-flex mb-5 justify-content-between w-100">
         <StatCircle
           data={confData}
-          title="Avg. Confirmation Time"
+          title="Average Confirmation"
           value={avgConfTime ? avgConfTime.toFixed(2) + "s" : "---"}
         />
         <StatCircle

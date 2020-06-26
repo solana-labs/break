@@ -33,7 +33,7 @@ export function LoadingModal({ show }: { show: boolean }) {
           {cancel && (
             <div className="p-4 border-top-dark">
               <span onClick={() => setShowModal(true)} className="btn btn-info">
-                Choose another cluster
+                Try another cluster
               </span>
             </div>
           )}

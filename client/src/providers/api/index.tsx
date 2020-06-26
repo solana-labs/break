@@ -33,6 +33,8 @@ interface Ready {
 
 interface Failure {
   status: ConfigStatus.Failure;
+  config?: undefined;
+  accounts?: undefined;
 }
 
 export type Action = Initialized | Fetching | Ready | Failure;

@@ -1,0 +1,22 @@
+@include media-breakpoint-up(lg) {
+  .stat-card {
+    padding: 10px;
+    &:first-child {
+      padding-left: 12px;
+    }
+    &:last-child {
+      padding-right: 12px;
+    }
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .stat-card {
+    &:nth-child(odd) {
+      padding-right: 6px;
+    }
+    &:nth-child(even) {
+      padding-left: 6px;
+    }
+  }
+}
