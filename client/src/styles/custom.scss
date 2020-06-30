@@ -83,6 +83,29 @@
   touch-action: none;
 }
 
-.text-ellipsis {
-  text-overflow: ellipsis;
+.popover-container {
+  position: relative;
+
+  .popover {
+    max-width: fit-content;
+
+    &.right {
+      left: -1.5rem;
+    }
+
+    &.bs-popover-bottom {
+      background: $gray-750-dark;
+      top: 1.5rem;
+    }
+
+    .popover-body {
+      color: white;
+      min-width: max-content;
+    }
+
+    .arrow::after {
+      border-top-color: $gray-750-dark;
+      border-bottom-color: $gray-750-dark;
+    }
+  }
 }

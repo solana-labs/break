@@ -102,7 +102,7 @@ function Footer() {
 
         <div className="d-flex mb-4 pb-4 border-bottom">
           <span className="badge badge-dark overflow-hidden">
-            <h4 className="mb-0 overflow-hidden text-ellipsis">{address}</h4>
+            <h4 className="mb-0 text-truncate">{address}</h4>
           </span>
         </div>
 

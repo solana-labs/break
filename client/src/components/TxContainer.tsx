@@ -72,7 +72,10 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   return (
     <div className="card h-100 mb-0">
       <div className="card-header">
-        <div className="text-truncate">Live Transaction Statuses</div>
+        <div className="d-flex align-items-center">
+          <HelpButton />
+          <span className="text-truncate">Live Transaction Statuses</span>
+        </div>
         <div className="text-primary d-none d-md-block">
           {enabled ? "Press any key to send a transaction" : "Game finished"}
         </div>
@@ -108,6 +111,52 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
           {enabled ? "Send new transactions" : "Play again"}
         </span>
       </div>
+    </div>
+  );
+}
+
+function Legend({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <div className="popover bs-popover-bottom right show">
+      <div className="arrow" />
+      <div className="popover-body">
+        <div className="d-flex flex-column">
+          <div className="d-flex align-items-center mb-3">
+            <div className="btn square legend slideInRight btn-dark mr-2" />
+            <span>Pending transaction</span>
+          </div>
+
+          <div className="d-flex align-items-center mb-3">
+            <div className="btn square legend slideInRight btn-primary mr-2" />
+            <span>Confirmed transaction</span>
+          </div>
+
+          <div className="d-flex align-items-center">
+            <div className="btn square legend slideInRight btn-danger mr-2" />
+            <span>Failed transaction</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HelpButton() {
+  const [show, setShow] = React.useState(false);
+
+  return (
+    <div
+      className="popover-container c-pointer mr-3"
+      onClick={() => setShow(true)}
+      onMouseOver={() => setShow(true)}
+      onMouseOut={() => {
+        console.log("onMouseOut");
+        setShow(false);
+      }}
+    >
+      <span className="fe fe-help-circle"></span>
+      <Legend show={show} />
     </div>
   );
 }

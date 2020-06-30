@@ -16,12 +16,13 @@ export default function Game() {
   const [gameState] = useGameState();
   const showPayment = gameState === "payment";
   const loading = gameState === "loading";
+  const showStats = gameState === "ready" || typeof gameState === "number";
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
       <div>
         <Header />
-        {!showPayment && !loading && <Stats />}
+        {showStats && <Stats />}
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
