@@ -4,11 +4,17 @@ import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
 import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
 import ClusterStatusButton from "./ClusterStatusButton";
+import { useBalance } from "providers/payment";
+import { useConfig, useRefreshAccounts } from "providers/api";
 
 export function Header() {
   const [gameState] = useGameState();
   const [, setRefresh] = React.useState<boolean>(false);
   const resetGame = useResetGame();
+  const balance = useBalance();
+  const gameCostLamports = useConfig()?.gameCost || 0;
+  const refreshAccounts = useRefreshAccounts();
+  const balanceSufficient = balance >= gameCostLamports;
 
   React.useEffect(() => {
     if (typeof gameState === "number") {
@@ -20,43 +26,42 @@ export function Header() {
   }, [gameState]);
 
   const cta = () => {
-    if (gameState !== "reset") {
-      let text;
-      switch (gameState) {
-        case "ready": {
-          text = `${COUNTDOWN_SECS}s`;
-          break;
-        }
-        case "loading": {
-          text = "Loading";
-          break;
-        }
-        case "payment": {
-          text = "Play";
-          break;
-        }
-        default: {
-          const timer =
-            COUNTDOWN_SECS - Math.floor((performance.now() - gameState) / 1000);
-          text = `${timer}s`;
-        }
-      }
-
+    if (gameState === "payment" && balanceSufficient) {
       return (
-        <div className="btn-group">
-          <div className="btn btn-pink btn-secondary">
-            <span className="fe fe-clock" />
-          </div>
-          <div className="btn btn-pink btn-secondary gameState text-center">
-            {text}
-          </div>
+        <div className="btn btn-pink" onClick={refreshAccounts}>
+          Play
         </div>
       );
     }
 
+    if (gameState === "loading" || gameState === "payment") {
+      return null;
+    }
+
+    if (gameState === "reset") {
+      return (
+        <div className="btn btn-pink" onClick={resetGame}>
+          Play Again
+        </div>
+      );
+    }
+
+    let secondsRemaining = COUNTDOWN_SECS;
+    if (gameState !== "ready") {
+      secondsRemaining = Math.max(
+        0,
+        COUNTDOWN_SECS - Math.floor((performance.now() - gameState) / 1000)
+      );
+    }
+
     return (
-      <div className="btn btn-pink" onClick={resetGame}>
-        Play Again
+      <div className="btn-group">
+        <div className="btn btn-pink btn-secondary">
+          <span className="fe fe-clock" />
+        </div>
+        <div className="btn btn-pink btn-secondary gameState text-center">
+          {secondsRemaining}s
+        </div>
       </div>
     );
   };
