@@ -28,7 +28,7 @@ export function Header() {
   const cta = () => {
     if (gameState === "payment" && balanceSufficient) {
       return (
-        <div className="btn btn-pink" onClick={refreshAccounts}>
+        <div className="btn btn-pink lift" onClick={refreshAccounts}>
           Play
         </div>
       );
@@ -40,7 +40,7 @@ export function Header() {
 
     if (gameState === "reset") {
       return (
-        <div className="btn btn-pink" onClick={resetGame}>
+        <div className="btn btn-pink lift" onClick={resetGame}>
           Play Again
         </div>
       );
@@ -77,9 +77,18 @@ export function Header() {
           <div className="col-auto">
             <div className="d-flex flex-row align-items-center">
               {cta()}
-              <div className="d-md-inline-block d-none ml-2">
+              <div className="d-md-inline-block d-none ml-3">
                 <ClusterStatusButton />
               </div>
+              <a
+                className="btn btn-white lift ml-3"
+                href="https://github.com/solana-labs/break"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span className="fe fe-github mr-2"></span>
+                Source
+              </a>
             </div>
           </div>
         </div>
