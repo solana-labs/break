@@ -1,6 +1,6 @@
 import * as React from "react";
 import { TransactionSignature } from "@solana/web3.js";
-import { useConfig, useAccounts } from "../api";
+import { useConfig, useAccounts, useConnection } from "../api";
 import { useBlockhash } from "../blockhash";
 import { ConfirmedHelper } from "./confirmed";
 import { TpsProvider, TpsContext } from "./tps";
@@ -188,14 +188,22 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 type ProviderProps = { children: React.ReactNode };
 export function TransactionsProvider({ children }: ProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, []);
-  const config = useConfig();
+  const connection = useConnection();
 
   React.useEffect(() => {
-    if (!config) return;
     dispatch({
       type: ActionType.ResetState,
     });
-  }, [config]);
+
+    if (connection === undefined) return;
+    const rootSubscription = connection.onRootChange((root: number) =>
+      dispatch({ type: ActionType.RecordRoot, root })
+    );
+
+    return () => {
+      connection.removeRootChangeListener(rootSubscription);
+    };
+  }, [connection]);
 
   return (
     <StateContext.Provider value={state}>

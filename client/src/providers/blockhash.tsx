@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Blockhash, Connection } from "@solana/web3.js";
-import { useConfig } from "./api";
+import { useConnection } from "./api";
 import { sleep } from "utils";
 
 const POLL_INTERVAL_MS = 20000;
@@ -46,16 +46,16 @@ const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 type BlockhashProviderProps = { children: React.ReactNode };
 export function BlockhashProvider({ children }: BlockhashProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, {});
-  const clusterUrl = useConfig()?.clusterUrl;
-  const clusterUrlRef = React.useRef(clusterUrl || "");
+  const connection = useConnection();
+  const connectionRef = React.useRef(connection);
 
   React.useEffect(() => {
-    if (!clusterUrl) return;
+    if (connection === undefined) return;
 
-    clusterUrlRef.current = clusterUrl;
-    refresh(dispatch, clusterUrlRef);
+    connectionRef.current = connection;
+    refresh(dispatch, connectionRef);
     const timerId = window.setInterval(
-      () => refresh(dispatch, clusterUrlRef),
+      () => refresh(dispatch, connectionRef),
       POLL_INTERVAL_MS
     );
 
@@ -63,7 +63,7 @@ export function BlockhashProvider({ children }: BlockhashProviderProps) {
       clearInterval(timerId);
       dispatch({ type: ActionType.Stop });
     };
-  }, [clusterUrl]);
+  }, [connection]);
 
   return (
     <StateContext.Provider value={state}>
@@ -85,14 +85,14 @@ export function useBlockhash() {
 
 async function refresh(
   dispatch: Dispatch,
-  clusterUrlRef: React.MutableRefObject<string>
+  connectionRef: React.MutableRefObject<Connection | undefined>
 ) {
   let blockhash = undefined;
-  const clusterUrl = clusterUrlRef.current;
-  const connection = new Connection(clusterUrl);
-  while (blockhash === undefined && clusterUrl === clusterUrlRef.current) {
+  const connection = connectionRef.current;
+  if (connection === undefined) return;
+  while (blockhash === undefined && connection === connectionRef.current) {
     try {
-      blockhash = (await connection.getRecentBlockhash()).blockhash;
+      blockhash = (await connection.getRecentBlockhash("max")).blockhash;
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
       console.error("Failed to refresh blockhash", err);
