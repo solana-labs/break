@@ -22,6 +22,12 @@ export function PaymentCard() {
   const address = PAYMENT_ACCOUNT.publicKey.toBase58();
   const balanceSufficient =
     balance !== "loading" && balance >= gameCostLamports;
+  let trustWalletDeepLink = `https://link.trustwallet.com/send?coin=501&address=${address}`;
+
+  // Only the iOS TW handles amount correctly at the moment
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+    trustWalletDeepLink += "&amount=" + gameCostSol;
+  }
 
   return (
     <div className="card mb-0">
@@ -33,6 +39,14 @@ export function PaymentCard() {
             ? "Press Play to Start"
             : "Transfer SOL to Play"}
         </h3>
+        <a
+          className="btn btn-sm btn-info"
+          href={trustWalletDeepLink}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Use Trust Wallet
+        </a>
       </div>
       <div className="card-body d-flex justify-content-center align-items-center">
         <QRCode
