@@ -3,6 +3,7 @@ import { Config, AccountsConfig } from "./config";
 import { useServer } from "providers/server";
 import { useBalance } from "providers/payment";
 import { fetchWithRetry } from "./request";
+import { Connection } from "@solana/web3.js";
 
 export enum ConfigStatus {
   Initialized,
@@ -14,6 +15,7 @@ export enum ConfigStatus {
 interface State {
   status: ConfigStatus;
   config?: Config;
+  connection?: Connection;
   accounts?: AccountsConfig;
 }
 
@@ -132,6 +134,11 @@ export function useConfig() {
   return context.config;
 }
 
+export function useConnection() {
+  const config = useConfig();
+  return config?.connection;
+}
+
 export function useIsFetching() {
   const context = React.useContext(StateContext);
   if (!context) {
@@ -161,9 +168,10 @@ export function useRefreshAccounts() {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
   const [httpUrlRef, dispatch] = context;
-  const paymentRequired = useConfig()?.paymentRequired;
+  const config = useConfig();
+  const paymentRequired = config?.paymentRequired;
   const balance = useBalance();
-  const cost = useConfig()?.gameCost;
+  const cost = config?.gameCost;
   return React.useCallback(() => {
     if (paymentRequired === undefined || cost === undefined) return;
     if (paymentRequired && balance < cost) {

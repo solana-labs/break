@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { AccountInfo, Connection, Commitment } from "@solana/web3.js";
-import { useConfig, useAccounts } from "../api";
+import { AccountInfo, Commitment } from "@solana/web3.js";
+import { useAccounts, useConnection } from "../api";
 import { useDispatch, ActionType } from "./index";
 import * as Bytes from "utils/bytes";
 
@@ -26,19 +26,15 @@ const commitmentParam = (): Commitment => {
 type Props = { children: React.ReactNode };
 export function ConfirmedHelper({ children }: Props) {
   const dispatch = useDispatch();
-  const config = useConfig();
+  const connection = useConnection();
   const accounts = useAccounts();
 
   React.useEffect(() => {
-    if (!config || !accounts) return;
-
-    const connection = new Connection(config.clusterUrl, "recent");
-    const rootSubscription = connection.onRootChange((root: number) =>
-      dispatch({ type: ActionType.RecordRoot, root })
-    );
+    if (connection === undefined || accounts === undefined) return;
 
     const commitment = commitmentParam();
     const partitionCount = accounts.programAccounts.length;
+
     const accountSubscriptions = accounts.programAccounts.map(
       (account, partition) => {
         return connection.onAccountChange(
@@ -54,12 +50,11 @@ export function ConfirmedHelper({ children }: Props) {
     );
 
     return () => {
-      connection.removeRootChangeListener(rootSubscription);
       accountSubscriptions.forEach((listener) => {
         connection.removeAccountChangeListener(listener);
       });
     };
-  }, [dispatch, config, accounts]);
+  }, [dispatch, connection, accounts]);
 
   return <>{children}</>;
 }

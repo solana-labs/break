@@ -1,8 +1,15 @@
-import { Account, clusterApiUrl, PublicKey, Cluster } from "@solana/web3.js";
+import {
+  Account,
+  clusterApiUrl,
+  PublicKey,
+  Cluster,
+  Connection,
+} from "@solana/web3.js";
 
 export interface Config {
-  cluster?: Cluster;
+  cluster: Cluster | undefined;
   clusterUrl: string;
+  connection: Connection;
   programId: PublicKey;
   gameCost: number;
   paymentRequired: boolean;
@@ -27,11 +34,14 @@ function stringToCluster(str: string | undefined): Cluster | undefined {
 }
 
 export function configFromInit(response: any): Config {
+  const cluster = stringToCluster(response.cluster);
+  const clusterUrl = response.cluster
+    ? clusterApiUrl(response.cluster)
+    : response.clusterUrl;
   return {
-    cluster: stringToCluster(response.cluster),
-    clusterUrl: response.cluster
-      ? clusterApiUrl(response.cluster)
-      : response.clusterUrl,
+    cluster,
+    clusterUrl,
+    connection: new Connection(clusterUrl),
     programId: new PublicKey(response.programId),
     // Add 1 lamport because if the account is left with 0 lamports,
     // we won't get a notification for it

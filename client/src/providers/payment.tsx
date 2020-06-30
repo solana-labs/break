@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Connection, AccountInfo } from "@solana/web3.js";
+import { AccountInfo } from "@solana/web3.js";
 import { useConfig } from "./api";
 import { PAYMENT_ACCOUNT } from "utils";
 
@@ -10,16 +10,20 @@ type Props = { children: React.ReactNode };
 export function PaymentProvider({ children }: Props) {
   const [balance, setBalance] = React.useState<Balance>("loading");
   const config = useConfig();
-  const clusterUrl = config?.clusterUrl;
+  const connection = config?.connection;
   const paymentRequired = config?.paymentRequired;
 
   const refreshBalance = React.useCallback(() => {
-    if (!clusterUrl || !paymentRequired) return;
-    const connection = new Connection(clusterUrl, "singleGossip");
-    connection.getBalance(PAYMENT_ACCOUNT.publicKey).then((balance: number) => {
-      setBalance(balance);
-    });
-  }, [clusterUrl, paymentRequired]);
+    if (connection === undefined || paymentRequired !== true) return;
+    connection
+      .getBalance(PAYMENT_ACCOUNT.publicKey, "singleGossip")
+      .then((balance: number) => {
+        setBalance(balance);
+      })
+      .catch((err) => {
+        console.error("Failed to refresh balance", err);
+      });
+  }, [connection, paymentRequired]);
 
   React.useEffect(() => {
     refreshBalance();
@@ -33,9 +37,7 @@ export function PaymentProvider({ children }: Props) {
   }, [refreshBalance]);
 
   React.useEffect(() => {
-    if (!clusterUrl || !paymentRequired) return;
-
-    const connection = new Connection(clusterUrl);
+    if (connection === undefined || paymentRequired !== true) return;
     const subscription = connection.onAccountChange(
       PAYMENT_ACCOUNT.publicKey,
       (accountInfo: AccountInfo) => setBalance(accountInfo.lamports),
@@ -45,7 +47,7 @@ export function PaymentProvider({ children }: Props) {
     return () => {
       connection.removeAccountChangeListener(subscription);
     };
-  }, [clusterUrl, paymentRequired]);
+  }, [connection, paymentRequired]);
 
   return (
     <StateContext.Provider value={balance}>{children}</StateContext.Provider>
