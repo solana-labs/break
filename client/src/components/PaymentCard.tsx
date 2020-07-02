@@ -1,9 +1,8 @@
 import React from "react";
 import QRCode from "qrcode.react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Account, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useConfig, useRefreshAccounts } from "providers/api";
-import { PAYMENT_ACCOUNT } from "utils";
-import { useBalance } from "providers/payment";
+import { useBalance } from "providers/balance";
 
 export function lamportsToSolString(
   lamports: number,
@@ -15,11 +14,11 @@ export function lamportsToSolString(
   );
 }
 
-export function PaymentCard() {
+export function PaymentCard({ account }: { account: Account }) {
   const balance = useBalance();
   const gameCostLamports = useConfig()?.gameCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
-  const address = PAYMENT_ACCOUNT.publicKey.toBase58();
+  const address = account.publicKey.toBase58();
   const balanceSufficient =
     balance !== "loading" && balance >= gameCostLamports;
 
@@ -64,17 +63,18 @@ export function PaymentCard() {
           className="qr-code"
         />
       </div>
-      <Footer />
+      <Footer account={account} />
     </div>
   );
 }
 
-function Footer() {
+function Footer({ account }: { account: Account }) {
   const balance = useBalance();
   const gameCostLamports = useConfig()?.gameCost || 0;
   const refreshAccounts = useRefreshAccounts();
-  const address = PAYMENT_ACCOUNT.publicKey.toBase58();
+  const address = account.publicKey.toBase58();
   const [copied, setCopied] = React.useState(false);
+
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
     setCopied(true);
