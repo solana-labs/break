@@ -1,29 +1,39 @@
 import * as React from "react";
 import { AccountInfo } from "@solana/web3.js";
 import { useConfig } from "./api";
-import { PAYMENT_ACCOUNT } from "utils";
+import { useAccountState } from "./account";
 
 type Balance = number | "loading";
 const StateContext = React.createContext<Balance | undefined>(undefined);
 
 type Props = { children: React.ReactNode };
-export function PaymentProvider({ children }: Props) {
+export function BalanceProvider({ children }: Props) {
   const [balance, setBalance] = React.useState<Balance>("loading");
+  const [account] = useAccountState();
   const config = useConfig();
   const connection = config?.connection;
   const paymentRequired = config?.paymentRequired;
 
   const refreshBalance = React.useCallback(() => {
-    if (connection === undefined || paymentRequired !== true) return;
-    connection
-      .getBalance(PAYMENT_ACCOUNT.publicKey, "singleGossip")
-      .then((balance: number) => {
+    if (
+      account === undefined ||
+      connection === undefined ||
+      paymentRequired !== true
+    )
+      return;
+
+    (async () => {
+      try {
+        const balance = await connection.getBalance(
+          account.publicKey,
+          "singleGossip"
+        );
         setBalance(balance);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("Failed to refresh balance", err);
-      });
-  }, [connection, paymentRequired]);
+      }
+    })();
+  }, [account, connection, paymentRequired]);
 
   React.useEffect(() => {
     refreshBalance();
@@ -37,9 +47,14 @@ export function PaymentProvider({ children }: Props) {
   }, [refreshBalance]);
 
   React.useEffect(() => {
-    if (connection === undefined || paymentRequired !== true) return;
+    if (
+      account === undefined ||
+      connection === undefined ||
+      paymentRequired !== true
+    )
+      return;
     const subscription = connection.onAccountChange(
-      PAYMENT_ACCOUNT.publicKey,
+      account.publicKey,
       (accountInfo: AccountInfo) => setBalance(accountInfo.lamports),
       "singleGossip"
     );
@@ -47,17 +62,17 @@ export function PaymentProvider({ children }: Props) {
     return () => {
       connection.removeAccountChangeListener(subscription);
     };
-  }, [connection, paymentRequired]);
+  }, [account, connection, paymentRequired]);
 
   return (
     <StateContext.Provider value={balance}>{children}</StateContext.Provider>
   );
 }
 
-export function useBalance() {
-  const balance = React.useContext(StateContext);
-  if (balance === undefined) {
-    throw new Error(`useBalance must be used within a PaymentProvider`);
+export function useBalance(): Balance {
+  const state = React.useContext(StateContext);
+  if (state === undefined) {
+    throw new Error(`useBalance must be used within a BalanceProvider`);
   }
-  return balance;
+  return state;
 }

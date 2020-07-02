@@ -4,7 +4,7 @@ import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
 import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
 import ClusterStatusButton from "./ClusterStatusButton";
-import { useBalance } from "providers/payment";
+import { useBalance } from "providers/balance";
 import { useConfig, useRefreshAccounts } from "providers/api";
 
 export function Header() {

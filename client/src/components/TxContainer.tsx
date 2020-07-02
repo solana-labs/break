@@ -150,10 +150,7 @@ function HelpButton() {
       className="popover-container c-pointer mr-3"
       onClick={() => setShow(true)}
       onMouseOver={() => setShow(true)}
-      onMouseOut={() => {
-        console.log("onMouseOut");
-        setShow(false);
-      }}
+      onMouseOut={() => setShow(false)}
     >
       <span className="fe fe-help-circle"></span>
       <Legend show={show} />

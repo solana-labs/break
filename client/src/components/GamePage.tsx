@@ -8,15 +8,25 @@ import {
   useAvgConfirmationTime,
 } from "providers/transactions";
 import { Header } from "./Header";
+import { useAccountState } from "providers/account";
 import { useActiveUsers } from "providers/socket";
 import { useGameState } from "providers/game";
 import { PaymentCard } from "./PaymentCard";
+import { useHistory, useLocation } from "react-router-dom";
 
 export default function Game() {
   const [gameState] = useGameState();
   const showPayment = gameState === "payment";
   const loading = gameState === "loading";
   const showStats = gameState === "ready" || typeof gameState === "number";
+  const [account] = useAccountState();
+  const history = useHistory();
+  const location = useLocation();
+
+  if (!account) {
+    history.push({ ...location, pathname: "/setup" });
+    return null;
+  }
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
@@ -29,7 +39,7 @@ export default function Game() {
           {loading ? (
             <EmptyCard />
           ) : showPayment ? (
-            <PaymentCard />
+            <PaymentCard account={account} />
           ) : (
             <TransactionContainer enabled />
           )}

@@ -1,6 +1,7 @@
 import { configFromInit, configFromAccounts } from "./config";
-import { sleep, PAYMENT_ACCOUNT } from "utils";
+import { sleep } from "utils";
 import { Action, Dispatch, ConfigStatus } from "./index";
+import { Account } from "@solana/web3.js";
 
 const SPLIT = ((): number | undefined => {
   const split = parseInt(
@@ -17,7 +18,7 @@ type InitRequest = {
 
 type AccountsRequest = {
   route: "accounts";
-  paymentRequired: boolean;
+  paymentAccount: Account | undefined;
 };
 
 type Request = AccountsRequest | InitRequest;
@@ -39,7 +40,7 @@ export async function fetchWithRetry(
     let response: Action | "retry";
     switch (request.route) {
       case "accounts": {
-        response = await fetchAccounts(httpUrl, request.paymentRequired);
+        response = await fetchAccounts(httpUrl, request.paymentAccount);
         break;
       }
       case "init": {
@@ -86,7 +87,7 @@ async function fetchInit(httpUrl: string): Promise<Action | "retry"> {
 
 async function fetchAccounts(
   httpUrl: string,
-  paymentRequired: boolean
+  paymentAccount: Account | undefined
 ): Promise<Action | "retry"> {
   type RefreshData = {
     split?: number;
@@ -97,8 +98,8 @@ async function fetchAccounts(
   if (SPLIT) {
     postData.split = SPLIT;
   }
-  if (paymentRequired) {
-    postData.paymentKey = Buffer.from(PAYMENT_ACCOUNT.secretKey).toString(
+  if (paymentAccount) {
+    postData.paymentKey = Buffer.from(paymentAccount.secretKey).toString(
       "base64"
     );
   }

@@ -17,6 +17,8 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
+    "@toruslabs/fetch-node-details": "^2.3.0",
+    "@toruslabs/torus.js": "^2.2.1",
     "@types/bs58": "^4.0.1",
     "@types/chai": "^4.2.11",
     "@types/chart.js": "^2.9.19",
@@ -38,8 +40,10 @@
     "react": "^16.13.1",
     "react-chartjs-2": "^2.9.0",
     "react-dom": "^16.13.1",
+    "react-google-login": "^5.1.20",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.0",
+    "tweetnacl": "^1.0.3",
     "typescript": "^3.8.0"
   },
   "eslintConfig": {

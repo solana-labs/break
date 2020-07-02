@@ -1,9 +1,10 @@
 import React from "react";
 import { Config, AccountsConfig } from "./config";
 import { useServer } from "providers/server";
-import { useBalance } from "providers/payment";
+import { useBalance } from "providers/balance";
 import { fetchWithRetry } from "./request";
-import { Connection } from "@solana/web3.js";
+import { Account, Connection } from "@solana/web3.js";
+import { useAccountState } from "providers/account";
 
 export enum ConfigStatus {
   Initialized,
@@ -88,7 +89,7 @@ export function ApiProvider({ children }: ApiProviderProps) {
   React.useEffect(() => {
     httpUrlRef.current = httpUrl;
     if (paymentRequired !== false) return;
-    refreshAccounts(dispatch, httpUrlRef, paymentRequired);
+    refreshAccounts(dispatch, httpUrlRef, undefined);
   }, [httpUrl, paymentRequired]);
 
   return (
@@ -110,11 +111,11 @@ async function initConfig(
 async function refreshAccounts(
   dispatch: Dispatch,
   httpUrlRef: React.MutableRefObject<string>,
-  paymentRequired: boolean
+  paymentAccount: Account | undefined
 ): Promise<void> {
   return fetchWithRetry(dispatch, httpUrlRef, {
     route: "accounts",
-    paymentRequired,
+    paymentAccount,
   });
 }
 
@@ -169,16 +170,22 @@ export function useRefreshAccounts() {
   }
   const [httpUrlRef, dispatch] = context;
   const config = useConfig();
+  const [paymentAccount] = useAccountState();
   const paymentRequired = config?.paymentRequired;
   const balance = useBalance();
   const cost = config?.gameCost;
   return React.useCallback(() => {
     if (paymentRequired === undefined || cost === undefined) return;
-    if (paymentRequired && balance < cost) {
-      dispatch({ status: ConfigStatus.Fetching });
-      dispatch({ status: ConfigStatus.Failure });
-      return;
+    if (paymentRequired) {
+      if (!paymentAccount || balance === "loading" || balance < cost) {
+        // TODO: Fix hack
+        dispatch({ status: ConfigStatus.Fetching });
+        dispatch({ status: ConfigStatus.Failure });
+        return;
+      }
+      refreshAccounts(dispatch, httpUrlRef, paymentAccount);
+    } else {
+      refreshAccounts(dispatch, httpUrlRef, undefined);
     }
-    refreshAccounts(dispatch, httpUrlRef, paymentRequired);
-  }, [httpUrlRef, dispatch, paymentRequired, balance, cost]);
+  }, [httpUrlRef, dispatch, paymentAccount, paymentRequired, balance, cost]);
 }
