@@ -153,7 +153,7 @@ export default function Setup() {
                       <div className="col-auto">
                         <span
                           className="btn btn-white"
-                          onClick={() => onSignIn}
+                          onClick={onSignIn}
                         >
                           <img
                             height="18"
