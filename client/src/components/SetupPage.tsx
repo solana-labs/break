@@ -17,6 +17,7 @@ import { PAYMENT_ACCOUNT } from "utils";
 type NodeDetails = {
   torusNodeEndpoints: any;
   torusIndexes: any;
+  torusNodePub: any;
 };
 
 const CLIENT_ID =
@@ -83,21 +84,30 @@ export default function Setup() {
     let unmounted = false;
     (async () => {
       const torus = new Torus();
-      const { torusNodeEndpoints, torusIndexes } = nodeDetails;
+      const { torusNodeEndpoints, torusNodePub, torusIndexes } = nodeDetails;
 
       try {
+        const verifierId = googleResponse.getBasicProfile().getEmail();
+
+        // Creates a new key for the verifierId if it doesn't exist yet
+        await torus.getPublicAddress(
+          torusNodeEndpoints,
+          torusNodePub,
+          { verifier: VERIFIER, verifierId },
+          false
+        );
+
         let idToken = googleResponse.getAuthResponse().id_token;
         if (!newSignIn) {
           // Ensure that we are not using a cached auth token
           idToken = (await googleResponse.reloadAuthResponse()).id_token;
         }
 
-        const verifier_id = googleResponse.getBasicProfile().getEmail();
         const { privKey } = await torus.retrieveShares(
           torusNodeEndpoints,
           torusIndexes,
           VERIFIER,
-          { verifier_id },
+          { verifier_id: verifierId },
           idToken
         );
         if (unmounted) return;
@@ -151,10 +161,7 @@ export default function Setup() {
                         </p>
                       </div>
                       <div className="col-auto">
-                        <span
-                          className="btn btn-white"
-                          onClick={onSignIn}
-                        >
+                        <span className="btn btn-white" onClick={onSignIn}>
                           <img
                             height="18"
                             width="18"
