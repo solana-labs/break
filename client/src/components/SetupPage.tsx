@@ -19,11 +19,6 @@ type NodeDetails = {
   torusIndexes: any;
 };
 
-type UserInfo = {
-  idToken: string;
-  verifier_id: string;
-};
-
 const CLIENT_ID =
   "785716588020-p8kdid1dltqsafcl23g82fb9funikaj7.apps.googleusercontent.com";
 const VERIFIER = "breaksolana-google";
@@ -36,17 +31,19 @@ const NODE_DETAILS = new NodeDetailsManager({
 
 export default function Setup() {
   const [account, setAccount] = useAccountState();
-  const [userInfo, setUserInfo] = React.useState<UserInfo>();
+  const [googleResponse, setGoogleResponse] = React.useState<
+    GoogleLoginResponse
+  >();
   const [nodeDetails, setNodeDetails] = React.useState<NodeDetails>();
   const history = useHistory();
   const location = useLocation();
+  const [newSignIn, setNewSignIn] = React.useState(false);
+  const [error, setError] = React.useState("");
 
   const responseGoogle = React.useCallback(
-    (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
+    async (response: GoogleLoginResponse | GoogleLoginResponseOffline) => {
       if (!("code" in response)) {
-        const verifier_id = response.getBasicProfile().getEmail();
-        const idToken = response.getAuthResponse().id_token;
-        setUserInfo({ verifier_id, idToken });
+        setGoogleResponse(response);
       }
     },
     []
@@ -55,9 +52,17 @@ export default function Setup() {
   const { signIn, loaded } = useGoogleLogin({
     clientId: CLIENT_ID,
     onSuccess: responseGoogle,
-    onFailure: (err) => console.error("Failed to login", err),
+    onFailure: (err) => {
+      console.error("Failed to login", err);
+      setError(err.details);
+    },
     isSignedIn: true,
   });
+
+  const onSignIn = React.useCallback(() => {
+    setNewSignIn(true);
+    signIn();
+  }, [signIn]);
 
   React.useEffect(() => {
     let unmounted = false;
@@ -73,15 +78,21 @@ export default function Setup() {
   }, []);
 
   React.useEffect(() => {
-    if (!nodeDetails || !userInfo) return;
-
-    const { torusNodeEndpoints, torusIndexes } = nodeDetails;
-    const { idToken, verifier_id } = userInfo;
+    if (!nodeDetails || !googleResponse) return;
 
     let unmounted = false;
     (async () => {
       const torus = new Torus();
+      const { torusNodeEndpoints, torusIndexes } = nodeDetails;
+
       try {
+        let idToken = googleResponse.getAuthResponse().id_token;
+        if (!newSignIn) {
+          // Ensure that we are not using a cached auth token
+          idToken = (await googleResponse.reloadAuthResponse()).id_token;
+        }
+
+        const verifier_id = googleResponse.getBasicProfile().getEmail();
         const { privKey } = await torus.retrieveShares(
           torusNodeEndpoints,
           torusIndexes,
@@ -92,8 +103,7 @@ export default function Setup() {
         if (unmounted) return;
         const torusKey = Buffer.from(privKey.toString(), "hex");
         const keyPair = nacl.sign.keyPair.fromSeed(torusKey);
-        const torusAccount = new Account(keyPair.secretKey);
-        setAccount(torusAccount);
+        setAccount(new Account(keyPair.secretKey));
       } catch (err) {
         console.error("failed to fetch torus key", err);
       }
@@ -102,7 +112,7 @@ export default function Setup() {
     return () => {
       unmounted = true;
     };
-  }, [nodeDetails, userInfo, setAccount]);
+  }, [nodeDetails, googleResponse, newSignIn, setAccount]);
 
   React.useEffect(() => {
     if (account) {
@@ -110,8 +120,8 @@ export default function Setup() {
     }
   }, [account, history, location]);
 
-  const loadingWallet = !!userInfo;
-  const showWalletSetup = loaded && !userInfo;
+  const loadingWallet = !!googleResponse;
+  const showWalletSetup = loaded && !googleResponse;
   const showLoading = !showWalletSetup;
   return (
     <>
@@ -125,7 +135,15 @@ export default function Setup() {
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-card card mb-0">
-              <div className="card-header">Setup Wallet</div>
+              <div className="card-header">
+                <div className="flex-shrink-0 flex-basis-auto">
+                  Setup Wallet
+                </div>
+                <div className="text-truncate text-warning small ml-5">
+                  {error}
+                </div>
+              </div>
+
               <div className="card-body">
                 <ul className="list-group list-group-flush list my-n4">
                   <li className="list-group-item">
@@ -137,7 +155,10 @@ export default function Setup() {
                         </p>
                       </div>
                       <div className="col-auto">
-                        <span className="btn btn-white" onClick={signIn}>
+                        <span
+                          className="btn btn-white"
+                          onClick={() => onSignIn}
+                        >
                           <img
                             height="18"
                             width="18"

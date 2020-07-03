@@ -23,10 +23,10 @@ export default function Game() {
   const history = useHistory();
   const location = useLocation();
 
-  if (!account) {
-    history.push({ ...location, pathname: "/setup" });
-    return null;
-  }
+  React.useEffect(() => {
+    if (!account && showPayment)
+      history.push({ ...location, pathname: "/setup" });
+  }, [account, history, location, showPayment]);
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
@@ -36,7 +36,7 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          {loading ? (
+          {loading || !account ? (
             <EmptyCard />
           ) : showPayment ? (
             <PaymentCard account={account} />

@@ -12,9 +12,11 @@ import ClusterModal from "components/ClusterModal";
 
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
+  const isSetupPage = !!useRouteMatch("/setup")?.isExact;
   const [gameState] = useGameState();
   const [showClusterModal] = useClusterModal();
-  const showLoadingModal = !isHomePage && gameState === "loading";
+  const showLoadingModal =
+    !isHomePage && !isSetupPage && gameState === "loading";
 
   return (
     <div className="main-content">
