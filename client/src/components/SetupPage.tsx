@@ -106,6 +106,8 @@ export default function Setup() {
         setAccount(new Account(keyPair.secretKey));
       } catch (err) {
         console.error("failed to fetch torus key", err);
+        setGoogleResponse(undefined);
+        setError("Failed to fetch Torus key");
       }
     })();
 
@@ -125,13 +127,7 @@ export default function Setup() {
   const showLoading = !showWalletSetup;
   return (
     <>
-      <div className="container min-vh-100 d-flex flex-column">
-        <div>
-          <Header />
-        </div>
-      </div>
-      <LoadingModal show={showLoading} wallet={loadingWallet} />
-      <div className={`modal fade${showWalletSetup ? " show" : ""}`}>
+      <div className={`modal z-auto fade${showWalletSetup ? " show" : ""}`}>
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content">
             <div className="modal-card card mb-0">
@@ -193,7 +189,11 @@ export default function Setup() {
           </div>
         </div>
       </div>
-      <Overlay show />
+      <div className="container min-vh-100 d-flex flex-column">
+        <Header />
+      </div>
+      <LoadingModal show={showLoading} wallet={loadingWallet} />
+      <Overlay show={showLoading} />
     </>
   );
 }
