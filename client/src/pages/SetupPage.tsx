@@ -1,17 +1,18 @@
 import * as React from "react";
+import { useHistory, useLocation } from "react-router-dom";
 import nacl from "tweetnacl";
 import NodeDetailsManager from "@toruslabs/fetch-node-details";
 import Torus from "@toruslabs/torus.js";
 import { Account } from "@solana/web3.js";
+
+import { Header } from "components/Header";
+import { LoadingModal } from "components/LoadingModal";
 import { useAccountState } from "providers/account";
 import {
   useGoogleLogin,
   GoogleLoginResponse,
   GoogleLoginResponseOffline,
 } from "react-google-login";
-import { Header } from "./Header";
-import { LoadingModal } from "./LoadingModal";
-import { useHistory, useLocation } from "react-router-dom";
 import { PAYMENT_ACCOUNT } from "utils";
 
 type NodeDetails = {
