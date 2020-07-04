@@ -19,8 +19,10 @@ export function BalanceProvider({ children }: Props) {
       account === undefined ||
       connection === undefined ||
       paymentRequired !== true
-    )
+    ) {
+      setBalance("loading");
       return;
+    }
 
     (async () => {
       try {

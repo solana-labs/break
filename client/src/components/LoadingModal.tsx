@@ -16,7 +16,7 @@ export function LoadingModal({
   }
 
   React.useEffect(() => {
-    if (wallet || !show || showModal) return;
+    if (wallet !== undefined || !show || showModal) return;
 
     const timeoutId = window.setTimeout(() => {
       setCancel(true);

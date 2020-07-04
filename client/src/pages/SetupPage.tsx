@@ -31,15 +31,16 @@ const NODE_DETAILS = new NodeDetailsManager({
   proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183",
 }).getNodeDetails();
 
+type GoogleStatus = "cached" | "fresh";
 export default function Setup() {
   const [account, setAccount] = useAccountState();
+  const [googleStatus, setGoogleStatus] = React.useState<GoogleStatus>();
   const [googleResponse, setGoogleResponse] = React.useState<
     GoogleLoginResponse
   >();
   const [nodeDetails, setNodeDetails] = React.useState<NodeDetails>();
   const history = useHistory();
   const location = useLocation();
-  const [newSignIn, setNewSignIn] = React.useState(false);
   const [error, setError] = React.useState("");
 
   const responseGoogle = React.useCallback(
@@ -51,20 +52,33 @@ export default function Setup() {
     []
   );
 
+  const disconnectGoogle = React.useCallback(() => {
+    if (!googleResponse) return;
+    googleResponse.disconnect();
+    setGoogleResponse(undefined);
+  }, [googleResponse]);
+
   const { signIn, loaded } = useGoogleLogin({
     clientId: CLIENT_ID,
     onSuccess: responseGoogle,
     onFailure: (err) => {
       console.error("Failed to login", err);
-      setError(err.details);
+      setGoogleStatus(undefined);
+      setError("Failed to login");
     },
     isSignedIn: true,
   });
 
-  const onSignIn = React.useCallback(() => {
-    setNewSignIn(true);
-    signIn();
-  }, [signIn]);
+  const onSignIn = React.useCallback(
+    (status: GoogleStatus) => {
+      setGoogleStatus(status);
+      if (status === "fresh") {
+        disconnectGoogle();
+        signIn();
+      }
+    },
+    [disconnectGoogle, signIn]
+  );
 
   React.useEffect(() => {
     let unmounted = false;
@@ -80,7 +94,7 @@ export default function Setup() {
   }, []);
 
   React.useEffect(() => {
-    if (!nodeDetails || !googleResponse) return;
+    if (!nodeDetails || !googleResponse || !googleStatus) return;
 
     let unmounted = false;
     (async () => {
@@ -99,8 +113,7 @@ export default function Setup() {
         );
 
         let idToken = googleResponse.getAuthResponse().id_token;
-        if (!newSignIn) {
-          // Ensure that we are not using a cached auth token
+        if (googleStatus === "cached") {
           idToken = (await googleResponse.reloadAuthResponse()).id_token;
         }
 
@@ -117,7 +130,7 @@ export default function Setup() {
         setAccount(new Account(keyPair.secretKey));
       } catch (err) {
         console.error("failed to fetch torus key", err);
-        setGoogleResponse(undefined);
+        setGoogleStatus(undefined);
         setError("Failed to fetch Torus key");
       }
     })();
@@ -125,7 +138,7 @@ export default function Setup() {
     return () => {
       unmounted = true;
     };
-  }, [nodeDetails, googleResponse, newSignIn, setAccount]);
+  }, [nodeDetails, googleResponse, googleStatus, setAccount]);
 
   React.useEffect(() => {
     if (account) {
@@ -134,7 +147,7 @@ export default function Setup() {
   }, [account, history, location]);
 
   const loadingWallet = !!googleResponse;
-  const showWalletSetup = loaded && !googleResponse;
+  const showWalletSetup = loaded && !googleStatus;
   const showLoading = !showWalletSetup;
   return (
     <>
@@ -144,7 +157,7 @@ export default function Setup() {
             <div className="modal-card card mb-0">
               <div className="card-header">
                 <div className="flex-shrink-0 flex-basis-auto">
-                  Setup Wallet
+                  Select Wallet
                 </div>
                 <div className="text-truncate text-warning small ml-5">
                   {error}
@@ -153,6 +166,30 @@ export default function Setup() {
 
               <div className="card-body">
                 <ul className="list-group list-group-flush list my-n4">
+                  {googleResponse && (
+                    <li className="list-group-item">
+                      <div className="row align-items-center">
+                        <div className="col">
+                          <h4 className="mb-1">Current wallet</h4>
+                          <p className="small mb-0 text-muted">
+                            Account:{" "}
+                            <span className="text-primary">
+                              {googleResponse.getBasicProfile().getEmail()}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="col-auto">
+                          <span
+                            className="btn btn-primary"
+                            onClick={() => onSignIn("cached")}
+                          >
+                            Select
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  )}
+
                   <li className="list-group-item">
                     <div className="row align-items-center">
                       <div className="col">
@@ -162,7 +199,10 @@ export default function Setup() {
                         </p>
                       </div>
                       <div className="col-auto">
-                        <span className="btn btn-white" onClick={onSignIn}>
+                        <span
+                          className="btn btn-white"
+                          onClick={() => onSignIn("fresh")}
+                        >
                           <img
                             height="18"
                             width="18"
@@ -184,7 +224,10 @@ export default function Setup() {
                       <div className="col-auto">
                         <span
                           className="btn btn-white"
-                          onClick={() => setAccount(PAYMENT_ACCOUNT)}
+                          onClick={() => {
+                            disconnectGoogle();
+                            setAccount(PAYMENT_ACCOUNT);
+                          }}
                         >
                           Select
                         </span>

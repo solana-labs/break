@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Doughnut, ChartData } from "react-chartjs-2";
-import { useHistory, useLocation } from "react-router-dom";
+import { Redirect, useLocation } from "react-router-dom";
 
 import { Header } from "components/Header";
 import { TransactionContainer } from "components/TxContainer";
@@ -14,15 +14,12 @@ import {
 import { COUNTDOWN_SECS } from "providers/game";
 
 export default function Results() {
-  const history = useHistory();
-  const location = useLocation();
   const createdCount = useCreatedCount();
+  const location = useLocation();
 
-  React.useEffect(() => {
-    if (createdCount === 0) {
-      history.push({ ...location, pathname: "/game" });
-    }
-  }, [createdCount, history, location]);
+  if (createdCount === 0) {
+    return <Redirect to={{ ...location, pathname: "/game" }} />;
+  }
 
   return (
     <div className="container min-vh-100 d-flex flex-column">

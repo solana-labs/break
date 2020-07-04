@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Account } from "@solana/web3.js";
 
-type SetAccount = (account: Account) => void;
+type SetAccount = (account: Account | undefined) => void;
 type State = {
   account: Account | undefined;
   setAccount: SetAccount;
