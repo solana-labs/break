@@ -5,6 +5,7 @@ import Home from "pages/HomePage";
 import Game from "pages/GamePage";
 import Setup from "pages/SetupPage";
 import Results from "pages/ResultsPage";
+import Wallet from "pages/WalletPage";
 
 import ClusterModal from "components/ClusterModal";
 import { LoadingModal } from "components/LoadingModal";
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/game" exact component={Game} />
         <Route path="/setup" exact component={Setup} />
         <Route path="/results" exact component={Results} />
+        <Route path="/wallet" exact component={Wallet} />
         <Redirect from="*" to="/" exact />
       </Switch>
       <LoadingModal show={showLoadingModal} />

@@ -5,6 +5,7 @@ import {
   useRefreshAccounts,
   useAccounts,
   useIsFetching,
+  useClearAccounts,
 } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
@@ -32,17 +33,17 @@ export function GameStateProvider({ children }: Props) {
   const isFetching = useIsFetching();
 
   React.useEffect(() => {
-    const isReady = blockhash && config && socket && accounts;
-    if (!isReady) {
-      const paymentRequired = config?.paymentRequired === true;
-      if (paymentRequired && !isFetching && !accounts) {
-        setGameState("payment");
-      } else {
-        setGameState("loading");
-      }
+    const paymentRequired = config?.paymentRequired === true;
+    const needsPayment = paymentRequired && !isFetching && !accounts;
+    const doneLoading =
+      blockhash && config && socket && (needsPayment || accounts);
+    if (!doneLoading) {
+      setGameState("loading");
+    } else if (needsPayment) {
+      setGameState("payment");
     } else {
       setGameState((gameState) => {
-        if (gameState === "loading") {
+        if (gameState === "loading" || gameState === "payment") {
           return isResultsRoute ? "reset" : "ready";
         }
         return gameState;
@@ -81,6 +82,8 @@ export function useGameState() {
 
 export function useResetGame() {
   const refreshAccounts = useRefreshAccounts();
+  const paymentRequired = useConfig()?.paymentRequired;
+  const clearAccounts = useClearAccounts();
   const history = useHistory();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -88,6 +91,17 @@ export function useResetGame() {
   return React.useCallback(() => {
     dispatch({ type: ActionType.ResetState });
     history.push({ ...location, pathname: "/game" });
-    refreshAccounts();
-  }, [refreshAccounts, history, location, dispatch]);
+    if (paymentRequired) {
+      clearAccounts();
+    } else {
+      refreshAccounts();
+    }
+  }, [
+    refreshAccounts,
+    paymentRequired,
+    clearAccounts,
+    history,
+    location,
+    dispatch,
+  ]);
 }

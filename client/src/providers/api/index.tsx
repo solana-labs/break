@@ -163,6 +163,19 @@ export function useClusterParam(): string {
   }
 }
 
+export function useClearAccounts() {
+  const context = React.useContext(DispatchContext);
+  if (!context) {
+    throw new Error(`useClearAccounts must be used within a ApiProvider`);
+  }
+
+  const [, dispatch] = context;
+  return React.useCallback(() => {
+    dispatch({ status: ConfigStatus.Fetching });
+    dispatch({ status: ConfigStatus.Failure });
+  }, [dispatch]);
+}
+
 export function useRefreshAccounts() {
   const context = React.useContext(DispatchContext);
   if (!context) {
@@ -178,7 +191,6 @@ export function useRefreshAccounts() {
     if (paymentRequired === undefined || cost === undefined) return;
     if (paymentRequired) {
       if (!paymentAccount || balance === "loading" || balance < cost) {
-        // TODO: Fix hack
         dispatch({ status: ConfigStatus.Fetching });
         dispatch({ status: ConfigStatus.Failure });
         return;

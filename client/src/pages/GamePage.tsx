@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useHistory, useLocation } from "react-router-dom";
+import { Redirect, useLocation } from "react-router-dom";
 
 import { Header } from "components/Header";
 import { PaymentCard } from "components/PaymentCard";
@@ -20,13 +20,15 @@ export default function Game() {
   const loading = gameState === "loading";
   const showStats = gameState === "ready" || typeof gameState === "number";
   const [account] = useAccountState();
-  const history = useHistory();
   const location = useLocation();
 
-  React.useEffect(() => {
-    if (!account && showPayment)
-      history.push({ ...location, pathname: "/setup" });
-  }, [account, history, location, showPayment]);
+  if (showPayment) {
+    if (!account) {
+      return <Redirect to={{ ...location, pathname: "/setup" }} />;
+    } else {
+      return <Redirect to={{ ...location, pathname: "/wallet" }} />;
+    }
+  }
 
   return (
     <div className="container min-vh-100 d-flex flex-column">
@@ -36,9 +38,9 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          {loading || !account ? (
+          {loading ? (
             <EmptyCard />
-          ) : showPayment ? (
+          ) : showPayment && account ? (
             <PaymentCard account={account} />
           ) : (
             <TransactionContainer enabled />
