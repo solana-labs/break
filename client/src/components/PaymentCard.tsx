@@ -1,6 +1,7 @@
 import React from "react";
 import QRCode from "qrcode.react";
 import { Account, LAMPORTS_PER_SOL } from "@solana/web3.js";
+
 import { useConfig, useRefreshAccounts } from "providers/api";
 import { useBalance } from "providers/balance";
 
@@ -14,6 +15,24 @@ export function lamportsToSolString(
   );
 }
 
+export function getTrustWalletLink(
+  address: string,
+  amountSol: number
+): string | undefined {
+  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const android = /Android/i.test(navigator.userAgent);
+  if (!iOS && !android) return;
+
+  let trustWalletDeepLink = `https://link.trustwallet.com/send?coin=501&address=${address}`;
+
+  // Only the iOS TW handles amount correctly at the moment
+  if (iOS) {
+    trustWalletDeepLink += "&amount=" + amountSol;
+  }
+
+  return trustWalletDeepLink;
+}
+
 export function PaymentCard({ account }: { account: Account }) {
   const balance = useBalance();
   const gameCostLamports = useConfig()?.gameCost || 0;
@@ -21,16 +40,7 @@ export function PaymentCard({ account }: { account: Account }) {
   const address = account.publicKey.toBase58();
   const balanceSufficient =
     balance !== "loading" && balance >= gameCostLamports;
-
-  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const showTrustWallet = /Android/i.test(navigator.userAgent) || iOS;
-
-  let trustWalletDeepLink = `https://link.trustwallet.com/send?coin=501&address=${address}`;
-
-  // Only the iOS TW handles amount correctly at the moment
-  if (iOS) {
-    trustWalletDeepLink += "&amount=" + gameCostSol;
-  }
+  const trustWalletDeepLink = getTrustWalletLink(address, gameCostSol);
 
   return (
     <div className="card mb-0">
@@ -42,14 +52,14 @@ export function PaymentCard({ account }: { account: Account }) {
             ? "Press Play to Start"
             : "Transfer SOL to Play"}
         </h3>
-        {showTrustWallet && (
+        {trustWalletDeepLink && (
           <a
             className="btn btn-sm btn-info"
             href={trustWalletDeepLink}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Use Trust Wallet
+            Fund with Trust Wallet
           </a>
         )}
       </div>
