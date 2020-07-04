@@ -1,14 +1,15 @@
 import * as React from "react";
 import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 
-import Home from "components/HomePage";
-import Game from "components/GamePage";
-import Setup from "components/SetupPage";
-import Results from "components/ResultsPage";
+import Home from "pages/HomePage";
+import Game from "pages/GamePage";
+import Setup from "pages/SetupPage";
+import Results from "pages/ResultsPage";
+
+import ClusterModal from "components/ClusterModal";
 import { LoadingModal } from "components/LoadingModal";
 import { useGameState } from "providers/game";
 import { useClusterModal } from "providers/server";
-import ClusterModal from "components/ClusterModal";
 
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;

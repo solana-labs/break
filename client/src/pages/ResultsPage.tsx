@@ -2,6 +2,7 @@ import * as React from "react";
 import { Doughnut, ChartData } from "react-chartjs-2";
 import { useHistory, useLocation } from "react-router-dom";
 
+import { Header } from "components/Header";
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
 import {
@@ -10,7 +11,6 @@ import {
   useDroppedCount,
   useAvgConfirmationTime,
 } from "providers/transactions";
-import { Header } from "./Header";
 import { COUNTDOWN_SECS } from "providers/game";
 
 export default function Results() {

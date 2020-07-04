@@ -1,5 +1,8 @@
 import * as React from "react";
+import { useHistory, useLocation } from "react-router-dom";
 
+import { Header } from "components/Header";
+import { PaymentCard } from "components/PaymentCard";
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
 import {
@@ -7,12 +10,9 @@ import {
   useCreatedCount,
   useAvgConfirmationTime,
 } from "providers/transactions";
-import { Header } from "./Header";
 import { useAccountState } from "providers/account";
 import { useActiveUsers } from "providers/socket";
 import { useGameState } from "providers/game";
-import { PaymentCard } from "./PaymentCard";
-import { useHistory, useLocation } from "react-router-dom";
 
 export default function Game() {
   const [gameState] = useGameState();
