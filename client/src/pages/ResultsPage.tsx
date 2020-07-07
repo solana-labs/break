@@ -43,19 +43,19 @@ function Summary() {
   const capacityUsed = (100 * confirmedCount) / (COUNTDOWN_SECS * 50000);
   return (
     <div className="row justify-content-center mb-5 results-summary px-4">
-      <a href="leaderboard.break.solana.com" rel="noreferrer noopener">
-        <button className="btn btn-warning">Leaderboard</button>
-      </a>
-      <h3 className="text-center">
-        With{" "}
-        <span className="text-primary font-weight-bold">{confirmedCount}</span>{" "}
-        transactions in {COUNTDOWN_SECS} seconds you took up{" "}
-        <span className="text-primary font-weight-bold">
-          {capacityUsed.toFixed(3)}%
-        </span>{" "}
-        of Solana’s capacity.
-      </h3>
-      {/* <h3 className="text-center">
+      <div className="col-12">
+        <h3 className="text-center">
+          With{" "}
+          <span className="text-primary font-weight-bold">
+            {confirmedCount}
+          </span>{" "}
+          transactions in {COUNTDOWN_SECS} seconds you took up{" "}
+          <span className="text-primary font-weight-bold">
+            {capacityUsed.toFixed(3)}%
+          </span>{" "}
+          of Solana’s capacity.
+        </h3>
+        {/* <h3 className="text-center">
         Today, players around the world have submitted{" "}
         <span className="text-primary font-weight-bold">{confirmedCount}</span>{" "}
         transactions, which is{" "}
@@ -64,20 +64,27 @@ function Summary() {
         </span>{" "}
         of Solana’s capacity.
       </h3> */}
-      <h3>
-        To process the same amount of transactions, Bitcoin would have taken{" "}
-        <span className="text-primary font-weight-bold">
-          {new Date((confirmedCount / 4) * 1000).toISOString().substr(11, 8)}
-        </span>
-        .
-      </h3>
-      <h3>
-        To process the same amount of transactions, Ethereum would have taken{" "}
-        <span className="text-primary font-weight-bold">
-          {new Date((confirmedCount / 15) * 1000).toISOString().substr(11, 8)}
-        </span>
-        .
-      </h3>
+        <h3 className="text-center">
+          To process the same amount of transactions, Bitcoin would have taken{" "}
+          <span className="text-primary font-weight-bold">
+            {new Date((confirmedCount / 4) * 1000).toISOString().substr(11, 8)}
+          </span>
+          . Ethereum would have taken{" "}
+          <span className="text-primary font-weight-bold">
+            {new Date((confirmedCount / 15) * 1000).toISOString().substr(11, 8)}
+          </span>
+          .
+        </h3>
+      </div>
+      <div className="col-12 text-center py-3">
+        <a
+          className="text-center"
+          href="https://leaderboard.break.solana.com"
+          rel="noreferrer noopener"
+        >
+          <button className="btn btn-warning">Leaderboard</button>
+        </a>
+      </div>
     </div>
   );
 }
