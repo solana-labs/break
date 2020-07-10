@@ -11,18 +11,14 @@ export function TransactionModal() {
   const selectTx = useSelectTransaction();
   const onClose = () => selectTx(undefined);
   const show = !!selectedTx;
-  const clusterParam = useClusterParam();
 
   const renderContent = () => {
     if (!selectedTx) return null;
 
-    const { signature } = selectedTx;
-    const explorerLink = `https://explorer.solana.com/tx/${signature}?${clusterParam}`;
-
     return (
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-card card">
+          <div className="modal-card card mb-0">
             <div className="card-header">
               <h4 className="card-header-title">Transaction Details</h4>
 
@@ -33,16 +29,6 @@ export function TransactionModal() {
 
             <div className="card-body">
               <TransactionDetails transaction={selectedTx} />
-            </div>
-            <div className="card-footer">
-              <a
-                href={explorerLink}
-                target={"_blank"}
-                rel="noopener noreferrer"
-                className="btn btn-pink text-uppercase"
-              >
-                View on Explorer
-              </a>
             </div>
           </div>
         </div>
@@ -70,47 +56,124 @@ export function TransactionDetails({
 }: {
   transaction: TransactionState;
 }) {
-  if (!transaction) return null;
+  const clusterParam = useClusterParam();
+  const { signature, feeAccount, programAccount } = transaction.details;
+  const explorerLink = (path: string) =>
+    `https://explorer.solana.com/${path}?${clusterParam}`;
+  const feeAddress = feeAccount.toBase58();
+  const dataAddress = programAccount.toBase58();
 
   function displaySignature() {
-    if (transaction.signature) {
-      return (
-        <p>
-          Signature: <code className="text-white">{transaction.signature}</code>
-        </p>
-      );
-    }
+    return (
+      <>
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div className="">Signature</div>
+          <div>
+            <a
+              href={explorerLink("tx/" + signature)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm btn-white"
+            >
+              <span className="fe fe-external-link mr-2"></span>
+              Explorer
+            </a>
+          </div>
+        </div>
+        <div className="d-flex mb-4">
+          <span className="badge badge-dark overflow-hidden">
+            <h4 className="mb-0 text-truncate">{signature}</h4>
+          </span>
+        </div>
+      </>
+    );
+  }
 
-    return null;
+  function displayAccounts() {
+    return (
+      <>
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <div className="">Fee Account</div>
+          <div>
+            <a
+              href={explorerLink("address/" + feeAddress)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm btn-white"
+            >
+              <span className="fe fe-external-link mr-2"></span>
+              Explorer
+            </a>
+          </div>
+        </div>
+
+        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
+          <div className="">Break Account</div>
+          <div>
+            <a
+              href={explorerLink("address/" + dataAddress)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-sm btn-white"
+            >
+              <span className="fe fe-external-link mr-2"></span>
+              Explorer
+            </a>
+          </div>
+        </div>
+      </>
+    );
   }
 
   function displayFinalized() {
     if (transaction.status === "success") {
-      return (
-        <p>
-          Finalization Status: {transaction.pending ? "Pending" : "Finalized"}
-        </p>
-      );
+      if (transaction.pending) {
+        return (
+          <div>
+            <span className="spinner-grow spinner-grow-sm mr-2"></span>
+            Pending
+          </div>
+        );
+      } else {
+        return <span className="text-success">Finalized</span>;
+      }
+    } else {
+      return "N/A";
     }
-    return null;
   }
 
   function displayConfTime() {
     switch (transaction.status) {
       case "success":
-        return <p>Confirmation Time: {transaction.confirmationTime} sec</p>;
+        return (
+          <span className="text-success">
+            {transaction.confirmationTime} sec
+          </span>
+        );
       case "pending":
-        return <p>Processing</p>;
+        return (
+          <div>
+            <span className="spinner-grow spinner-grow-sm mr-2"></span>
+            Processing
+          </div>
+        );
       case "timeout":
-        return <p>Unconfirmed: Timed out</p>;
+        return <span className="text-warning">Timed out</span>;
     }
   }
 
   return (
-    <div className={"square-info-container"}>
-      {displayConfTime()}
+    <>
       {displaySignature()}
-      {displayFinalized()}
-    </div>
+      {displayAccounts()}
+      <div className="d-flex justify-content-between mb-4">
+        <div className="">Confirmation Time</div>
+        {displayConfTime()}
+      </div>
+      <div className="d-flex justify-content-between">
+        <div className="">Finalization Status</div>
+        {displayFinalized()}
+      </div>
+    </>
   );
 }

@@ -92,7 +92,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
           ) : null}
           <div ref={scrollEl} className="square-container" tabIndex={0}>
             {transactions.map((tx) => (
-              <TransactionSquare key={tx.signature} transaction={tx} />
+              <TransactionSquare key={tx.details.signature} transaction={tx} />
             ))}
           </div>
         </div>
