@@ -15,6 +15,9 @@ import {
 } from "react-google-login";
 import { PAYMENT_ACCOUNT } from "utils";
 
+// Disable Torus login in production for now
+const ENABLE_TORUS = window.location.origin !== "https://break.solana.com";
+
 type NodeDetails = {
   torusNodeEndpoints: any;
   torusIndexes: any;
@@ -25,11 +28,10 @@ const CLIENT_ID =
   "785716588020-p8kdid1dltqsafcl23g82fb9funikaj7.apps.googleusercontent.com";
 const VERIFIER = "breaksolana-google";
 
-// Eager load because it's quite slow
 const NODE_DETAILS = new NodeDetailsManager({
   network: "ropsten",
   proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183",
-}).getNodeDetails();
+});
 
 type GoogleStatus = "cached" | "fresh";
 export default function Setup() {
@@ -62,11 +64,12 @@ export default function Setup() {
     clientId: CLIENT_ID,
     onSuccess: responseGoogle,
     onFailure: (err) => {
+      if (!ENABLE_TORUS) return;
       console.error("Failed to login", err);
       setGoogleStatus(undefined);
       setError("Failed to login");
     },
-    isSignedIn: true,
+    isSignedIn: ENABLE_TORUS,
   });
 
   const onSignIn = React.useCallback(
@@ -81,12 +84,16 @@ export default function Setup() {
   );
 
   React.useEffect(() => {
+    if (!ENABLE_TORUS) return;
+
     let unmounted = false;
-    NODE_DETAILS.then((details) => {
-      !unmounted && setNodeDetails(details);
-    }).catch((err) => {
-      console.error("failed to fetch torus node details", err);
-    });
+    NODE_DETAILS.getNodeDetails()
+      .then((details) => {
+        !unmounted && setNodeDetails(details);
+      })
+      .catch((err) => {
+        console.error("failed to fetch torus node details", err);
+      });
 
     return () => {
       unmounted = true;
@@ -190,36 +197,40 @@ export default function Setup() {
                     </li>
                   )}
 
-                  <li className="list-group-item">
-                    <div className="row align-items-center">
-                      <div className="col">
-                        <h4 className="mb-1">Recoverable wallet</h4>
-                        <p className="small mb-0 text-muted">
-                          Powered by <a href="https://tor.us/">Torus</a>
-                        </p>
+                  {ENABLE_TORUS && (
+                    <li className="list-group-item">
+                      <div className="row align-items-center">
+                        <div className="col">
+                          <h4 className="mb-1">Recoverable wallet</h4>
+                          <p className="small mb-0 text-muted">
+                            Powered by <a href="https://tor.us/">Torus</a>
+                          </p>
+                        </div>
+                        <div className="col-auto">
+                          <span
+                            className="btn btn-white"
+                            onClick={() => onSignIn("fresh")}
+                          >
+                            <img
+                              height="18"
+                              width="18"
+                              src="/google.svg"
+                              className="mt-n1"
+                              alt="Google"
+                            />
+                          </span>
+                        </div>
                       </div>
-                      <div className="col-auto">
-                        <span
-                          className="btn btn-white"
-                          onClick={() => onSignIn("fresh")}
-                        >
-                          <img
-                            height="18"
-                            width="18"
-                            src="/google.svg"
-                            className="mt-n1"
-                            alt="Google"
-                          />
-                        </span>
-                      </div>
-                    </div>
-                  </li>
+                    </li>
+                  )}
 
                   <li className="list-group-item">
                     <div className="row align-items-center">
                       <div className="col">
                         <h4 className="mb-1">Local wallet</h4>
-                        <p className="small mb-0 text-muted">Less Secure</p>
+                        <p className="small mb-0 text-muted">
+                          Saved to browser storage
+                        </p>
                       </div>
                       <div className="col-auto">
                         <span
