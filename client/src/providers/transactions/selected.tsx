@@ -16,7 +16,9 @@ export function SelectedTxProvider({ children }: ProviderProps) {
   >(undefined);
 
   React.useEffect(() => {
-    selectTransaction(transactions.find((tx) => tx.signature === signature));
+    selectTransaction(
+      transactions.find((tx) => tx.details.signature === signature)
+    );
   }, [transactions, signature]);
 
   return (

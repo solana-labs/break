@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function TransactionSquare({ transaction }: Props) {
-  const { status, signature } = transaction;
+  const { status, details } = transaction;
   const selectTransaction = useSelectTransaction();
 
   let statusClass = "";
@@ -23,7 +23,7 @@ export function TransactionSquare({ transaction }: Props) {
 
   return (
     <div
-      onClick={() => selectTransaction(signature)}
+      onClick={() => selectTransaction(details.signature)}
       className={`btn square slideInRight btn-${statusClass}`}
     />
   );

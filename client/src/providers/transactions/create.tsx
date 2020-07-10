@@ -6,7 +6,12 @@ import {
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as Bytes from "utils/bytes";
-import { Dispatch, PendingTransaction, ActionType } from "./index";
+import {
+  Dispatch,
+  PendingTransaction,
+  ActionType,
+  TransactionDetails,
+} from "./index";
 import { AccountsConfig } from "../api/config";
 
 const SEND_TIMEOUT_MS = 45000;
@@ -46,9 +51,16 @@ export function createTransaction(
     dispatch({ type: ActionType.TimeoutTransaction, trackingId });
   }, SEND_TIMEOUT_MS);
 
+  const details: TransactionDetails = {
+    id: bitId,
+    feeAccount: feeAccount.publicKey,
+    programAccount: programDataAccount,
+    signature,
+  };
+
   dispatch({
     type: ActionType.NewTransaction,
-    signature,
+    details,
     trackingId,
     pendingTransaction,
   });

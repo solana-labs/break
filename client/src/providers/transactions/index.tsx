@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TransactionSignature } from "@solana/web3.js";
+import { TransactionSignature, PublicKey } from "@solana/web3.js";
 import { useConfig, useAccounts, useConnection } from "../api";
 import { useBlockhash } from "../blockhash";
 import { ConfirmedHelper } from "./confirmed";
@@ -14,9 +14,16 @@ export type PendingTransaction = {
   timeoutId?: number;
 };
 
+export type TransactionDetails = {
+  id: number;
+  feeAccount: PublicKey;
+  programAccount: PublicKey;
+  signature: TransactionSignature;
+};
+
 type SuccessState = {
   status: "success";
-  signature: TransactionSignature;
+  details: TransactionDetails;
   slot: number;
   confirmationTime: number;
   pending?: PendingTransaction;
@@ -24,13 +31,13 @@ type SuccessState = {
 
 type TimeoutState = {
   status: "timeout";
-  signature: TransactionSignature;
+  details: TransactionDetails;
 };
 
 type PendingState = {
   status: "pending";
   pending: PendingTransaction;
-  signature: TransactionSignature;
+  details: TransactionDetails;
 };
 
 export type TransactionStatus = "success" | "timeout" | "pending";
@@ -58,7 +65,7 @@ type UpdateIds = {
 type NewTransaction = {
   type: ActionType.NewTransaction;
   trackingId: number;
-  signature: TransactionSignature;
+  details: TransactionDetails;
   pendingTransaction: PendingTransaction;
 };
 
@@ -87,11 +94,11 @@ type State = TransactionState[];
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case ActionType.NewTransaction: {
-      const { signature, pendingTransaction } = action;
+      const { details, pendingTransaction } = action;
       return [
         ...state,
         {
-          signature,
+          details,
           status: "pending",
           pending: pendingTransaction,
         },
@@ -106,10 +113,10 @@ function reducer(state: State, action: Action): State {
       clearInterval(timeout.pending.retryId);
 
       return state.map((tx) => {
-        if (tx.signature === timeout.signature) {
+        if (tx.details.signature === timeout.details.signature) {
           return {
             status: "timeout",
-            signature: tx.signature,
+            details: tx.details,
           };
         } else {
           return tx;
@@ -130,7 +137,7 @@ function reducer(state: State, action: Action): State {
           if (retryUntil === "confirmed") clearInterval(tx.pending.retryId);
           return {
             status: "success",
-            signature: tx.signature,
+            details: tx.details,
             slot: action.slot,
             confirmationTime,
             pending: { ...tx.pending },
@@ -138,7 +145,7 @@ function reducer(state: State, action: Action): State {
         } else if (tx.status === "success" && tx.pending && !ids.has(id)) {
           return {
             status: "pending",
-            signature: tx.signature,
+            details: tx.details,
             pending: { ...tx.pending },
           };
         }
