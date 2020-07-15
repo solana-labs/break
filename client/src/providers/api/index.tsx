@@ -153,13 +153,11 @@ export function useClusterParam(): string {
   if (!context) {
     throw new Error(`useClusterParam must be used within a ApiProvider`);
   }
-  const config = context?.config;
-  if (!config) return `cluster=devnet`;
-  const { cluster, clusterUrl } = config;
-  if (cluster) {
+  const cluster = context?.config?.cluster;
+  if (cluster && cluster !== "mainnet-beta") {
     return `cluster=${cluster}`;
   } else {
-    return `clusterUrl=${clusterUrl}`;
+    return "";
   }
 }
 

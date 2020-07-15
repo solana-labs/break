@@ -71,7 +71,7 @@ async function fetchInit(httpUrl: string): Promise<Action | "retry"> {
       })
     );
     const data = await response.json();
-    if (!("cluster" in data) || !("programId" in data)) {
+    if (!("clusterUrl" in data) || !("programId" in data)) {
       throw new Error("Received invalid response");
     }
 
