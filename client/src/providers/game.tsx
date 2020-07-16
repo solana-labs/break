@@ -6,6 +6,7 @@ import {
   useAccounts,
   useIsFetching,
   useClearAccounts,
+  useConnection,
 } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
@@ -13,16 +14,23 @@ import { useDispatch, ActionType } from "providers/transactions";
 
 export const COUNTDOWN_SECS = 15;
 
-type GameState = "loading" | "payment" | "ready" | number | "reset";
+type GameState = "loading" | "payment" | "play" | "reset";
 type SetGameState = React.Dispatch<React.SetStateAction<GameState>>;
 const GameStateContext = React.createContext<
   [GameState, SetGameState] | undefined
 >(undefined);
 
+type SetCountdown = React.Dispatch<React.SetStateAction<number | undefined>>;
+const CountdownContext = React.createContext<
+  [number | undefined, SetCountdown] | undefined
+>(undefined);
+
 type Props = { children: React.ReactNode };
 export function GameStateProvider({ children }: Props) {
+  const [countdown, setCountdown] = React.useState<number>();
   const [gameState, setGameState] = React.useState<GameState>("loading");
-  const resultsTimerRef = React.useRef<NodeJS.Timer | undefined>(undefined);
+  const resultsTimerRef = React.useRef<NodeJS.Timer>();
+  const connection = useConnection();
   const history = useHistory();
   const location = useLocation();
   const blockhash = useBlockhash();
@@ -30,7 +38,12 @@ export function GameStateProvider({ children }: Props) {
   const accounts = useAccounts();
   const socket = useSocket();
   const isResultsRoute = !!useRouteMatch("/results");
+  const isGameRoute = !!useRouteMatch("/game");
   const isFetching = useIsFetching();
+
+  React.useEffect(() => {
+    setCountdown(undefined);
+  }, [isGameRoute, connection]);
 
   React.useEffect(() => {
     const paymentRequired = config?.paymentRequired === true;
@@ -44,7 +57,7 @@ export function GameStateProvider({ children }: Props) {
     } else {
       setGameState((gameState) => {
         if (gameState === "loading" || gameState === "payment") {
-          return isResultsRoute ? "reset" : "ready";
+          return isResultsRoute ? "reset" : "play";
         }
         return gameState;
       });
@@ -52,7 +65,7 @@ export function GameStateProvider({ children }: Props) {
   }, [isResultsRoute, isFetching, blockhash, config, accounts, socket]);
 
   React.useEffect(() => {
-    if (typeof gameState === "number") {
+    if (countdown !== undefined) {
       if (!resultsTimerRef.current) {
         resultsTimerRef.current = setTimeout(() => {
           setGameState("reset");
@@ -63,11 +76,13 @@ export function GameStateProvider({ children }: Props) {
       clearTimeout(resultsTimerRef.current);
       resultsTimerRef.current = undefined;
     }
-  }, [gameState, history, location]);
+  }, [countdown, history, location]);
 
   return (
     <GameStateContext.Provider value={[gameState, setGameState]}>
-      {children}
+      <CountdownContext.Provider value={[countdown, setCountdown]}>
+        {children}
+      </CountdownContext.Provider>
     </GameStateContext.Provider>
   );
 }
@@ -76,6 +91,14 @@ export function useGameState() {
   const context = React.useContext(GameStateContext);
   if (!context) {
     throw new Error(`useGameState must be used within a GameStateProvider`);
+  }
+  return context;
+}
+
+export function useCountdown() {
+  const context = React.useContext(CountdownContext);
+  if (!context) {
+    throw new Error(`useCountdown must be used within a GameStateProvider`);
   }
   return context;
 }

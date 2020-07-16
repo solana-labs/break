@@ -3,27 +3,33 @@ import useThrottle from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
 import { useCreateTx, useTransactions } from "providers/transactions";
-import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
+import {
+  useGameState,
+  useResetGame,
+  COUNTDOWN_SECS,
+  useCountdown,
+} from "providers/game";
 
 export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const scrollEl = useRef<HTMLDivElement>(null);
   const rawTransactions = useTransactions();
   const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
   const createTx = useCreateTx();
-  const [gameState, setGameState] = useGameState();
+  const [gameState] = useGameState();
+  const [countdown, setCountdown] = useCountdown();
   const resetGame = useResetGame();
   const [rapidFire, setRapidFire] = React.useState(false);
 
   const makeTransaction = useCallback(() => {
     if (enabled) {
-      if (typeof gameState === "number") {
+      if (countdown !== undefined) {
         createTx();
-      } else if (gameState === "ready") {
+      } else if (gameState === "play") {
         createTx();
-        setGameState(performance.now());
+        setCountdown(performance.now());
       }
     }
-  }, [enabled, createTx, gameState, setGameState]);
+  }, [enabled, createTx, gameState, countdown, setCountdown]);
 
   useEffect(() => {
     if (!rapidFire || !enabled) {

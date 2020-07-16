@@ -1,25 +1,33 @@
 import * as React from "react";
 import { useServer } from "./server";
 
-type SetSocket = React.Dispatch<React.SetStateAction<WebSocket | undefined>>;
+type SetSocket = React.Dispatch<React.SetStateAction<ServerSocket | undefined>>;
 const SocketContext = React.createContext<WebSocket | undefined>(undefined);
 
 type SetActiveUsers = React.Dispatch<React.SetStateAction<number>>;
 const ActiveUsersContext = React.createContext<number | undefined>(undefined);
 
+const SWITCH_URL_CODE = 4444;
+
+type ServerSocket = {
+  socket: WebSocket;
+  id: number;
+};
+
+let socketCounter = 0;
+
 type SocketProviderProps = { children: React.ReactNode };
 export function SocketProvider({ children }: SocketProviderProps) {
-  let [socket, setSocket] = React.useState<WebSocket | undefined>(undefined);
+  let [socket, setSocket] = React.useState<ServerSocket | undefined>(undefined);
   let [activeUsers, setActiveUsers] = React.useState<number>(1);
 
   const { webSocketUrl } = useServer();
   React.useEffect(() => {
-    const socket = newSocket(webSocketUrl, setSocket, setActiveUsers);
-    return () => socket.close();
+    newSocket(webSocketUrl, setSocket, setActiveUsers);
   }, [webSocketUrl]);
 
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={socket?.socket}>
       <ActiveUsersContext.Provider value={activeUsers}>
         {children}
       </ActiveUsersContext.Provider>
@@ -32,31 +40,50 @@ function newSocket(
   setSocket: SetSocket,
   setActiveUsers: SetActiveUsers
 ): WebSocket {
+  socketCounter++;
+  const id = socketCounter;
   const socket = new WebSocket(webSocketUrl);
-  const timeoutId = setTimeout(() => {
-    if (socket.readyState !== WebSocket.OPEN) {
-      socket.close();
-    }
-  }, 5000);
+  socket.onopen = () =>
+    setSocket((serverSocket) => {
+      if (!serverSocket || serverSocket.id <= id) {
+        if (serverSocket && serverSocket.socket.readyState === WebSocket.OPEN) {
+          serverSocket.socket.close(SWITCH_URL_CODE);
+        }
+        return { socket, id };
+      } else {
+        socket.close(SWITCH_URL_CODE);
+        return serverSocket;
+      }
+    });
 
-  socket.onopen = () => setSocket(socket);
   socket.onmessage = (e) => {
     const data = JSON.parse(e.data);
     if ("activeUsers" in data) {
       setActiveUsers(data.activeUsers);
     }
   };
-  socket.onclose = async () => {
-    clearTimeout(timeoutId);
-    setSocket((socket) => {
-      if (socket && socket.url === webSocketUrl) return undefined;
-      return socket;
+
+  socket.onclose = async (event) => {
+    setSocket((serverSocket) => {
+      // Socket may have been updated already
+      if (!serverSocket || serverSocket.id === id) {
+        // Reconnect if close was not explicit
+        if (event.code !== SWITCH_URL_CODE) {
+          setTimeout(() => {
+            newSocket(webSocketUrl, setSocket, setActiveUsers);
+          }, 5000);
+        }
+        return undefined;
+      }
+      return serverSocket;
     });
   };
+
   socket.onerror = async (err) => {
     console.error(err);
     socket.close();
   };
+
   return socket;
 }
 

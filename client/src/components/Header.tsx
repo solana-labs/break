@@ -2,13 +2,19 @@ import * as React from "react";
 
 import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
-import { useGameState, useResetGame, COUNTDOWN_SECS } from "providers/game";
+import {
+  useGameState,
+  useResetGame,
+  COUNTDOWN_SECS,
+  useCountdown,
+} from "providers/game";
 import ClusterStatusButton from "./ClusterStatusButton";
 import { useBalance } from "providers/balance";
 import { useConfig, useRefreshAccounts } from "providers/api";
 
 export function Header() {
   const [gameState] = useGameState();
+  const [countdown] = useCountdown();
   const [, setRefresh] = React.useState<boolean>(false);
   const resetGame = useResetGame();
   const balance = useBalance();
@@ -17,13 +23,13 @@ export function Header() {
   const balanceSufficient = balance >= gameCostLamports;
 
   React.useEffect(() => {
-    if (typeof gameState === "number") {
+    if (countdown !== undefined) {
       const timerId = setInterval(() => {
         setRefresh((r) => !r);
       }, 1000);
       return () => clearTimeout(timerId);
     }
-  }, [gameState]);
+  }, [countdown]);
 
   const cta = () => {
     if (gameState === "payment" && balanceSufficient) {
@@ -47,10 +53,10 @@ export function Header() {
     }
 
     let secondsRemaining = COUNTDOWN_SECS;
-    if (gameState !== "ready") {
+    if (countdown !== undefined) {
       secondsRemaining = Math.max(
         0,
-        COUNTDOWN_SECS - Math.floor((performance.now() - gameState) / 1000)
+        COUNTDOWN_SECS - Math.floor((performance.now() - countdown) / 1000)
       );
     }
 

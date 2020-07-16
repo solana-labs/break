@@ -74,7 +74,9 @@ export function createTransaction(
     );
     if (retryUntil === null || retryUntil !== "disabled") {
       pendingTransaction.retryId = window.setInterval(() => {
-        socket.send(serialized);
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(serialized);
+        }
       }, RETRY_INTERVAL_MS);
     }
   }, 1);

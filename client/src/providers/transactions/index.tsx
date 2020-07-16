@@ -312,7 +312,7 @@ export function useCreateTx() {
   const config = useConfig();
   const accounts = useAccounts();
   const idCounter = React.useRef<number>(0);
-  const programDataAccount = accounts?.programAccounts[0];
+  const programDataAccount = accounts?.programAccounts[0].toBase58();
 
   // Reset counter when program data accounts are refreshed
   React.useEffect(() => {
