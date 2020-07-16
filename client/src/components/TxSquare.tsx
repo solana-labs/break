@@ -8,13 +8,20 @@ interface Props {
   transaction: TransactionState;
 }
 
+const debugMode = new URLSearchParams(window.location.search).has("debug");
+
 export function TransactionSquare({ transaction }: Props) {
   const { status, details } = transaction;
   const selectTransaction = useSelectTransaction();
 
   let statusClass = "";
-  if (status === "success") {
+  let confirmationTime = "-";
+  let slot = "-";
+  if (transaction.status === "success") {
     statusClass = "primary";
+    confirmationTime = "" + Math.floor(transaction.confirmationTime * 1000);
+    const slotString = "" + transaction.slot;
+    slot = slotString.substring(slotString.length - 3);
   } else if (status === "timeout") {
     statusClass = "danger";
   } else {
@@ -24,7 +31,14 @@ export function TransactionSquare({ transaction }: Props) {
   return (
     <div
       onClick={() => selectTransaction(details.signature)}
-      className={`btn square slideInRight btn-${statusClass}`}
-    />
+      className={`btn d-flex flex-column justify-content-center align-items-center square slideInRight btn-${statusClass}`}
+    >
+      {debugMode && (
+        <>
+          <div>#{slot}</div>
+          <div>{confirmationTime}ms</div>
+        </>
+      )}
+    </div>
   );
 }
