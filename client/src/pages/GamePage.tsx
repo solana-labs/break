@@ -12,13 +12,14 @@ import {
 } from "providers/transactions";
 import { useAccountState } from "providers/account";
 import { useActiveUsers } from "providers/socket";
-import { useGameState } from "providers/game";
+import { useGameState, useCountdown } from "providers/game";
 
 export default function Game() {
   const [gameState] = useGameState();
+  const [countdown] = useCountdown();
   const showPayment = gameState === "payment";
   const loading = gameState === "loading";
-  const showStats = gameState === "ready" || typeof gameState === "number";
+  const showStats = gameState === "play" || countdown !== undefined;
   const [account] = useAccountState();
   const location = useLocation();
 
@@ -38,7 +39,7 @@ export default function Game() {
       </div>
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          {loading ? (
+          {loading && countdown === undefined ? (
             <EmptyCard />
           ) : showPayment && account ? (
             <PaymentCard account={account} />

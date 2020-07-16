@@ -33,10 +33,7 @@ export async function fetchWithRetry(
   });
 
   const httpUrl = httpUrlRef.current;
-  let retries = 3;
-  while (retries > 0 && httpUrl === httpUrlRef.current) {
-    retries--;
-
+  while (httpUrl === httpUrlRef.current) {
     let response: Action | "retry";
     switch (request.route) {
       case "accounts": {
@@ -81,7 +78,7 @@ async function fetchInit(httpUrl: string): Promise<Action | "retry"> {
     };
   } catch (err) {
     console.error("Failed to initialize", err);
-    return { status: ConfigStatus.Failure, config: undefined };
+    return "retry";
   }
 }
 

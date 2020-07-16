@@ -53,10 +53,10 @@ const ServerContext = React.createContext<[Server, SetServer] | undefined>(
 
 type ProviderProps = { children: React.ReactNode };
 export function ServerProvider({ children }: ProviderProps) {
-  const [server, setServer] = React.useState<Server>(DEFAULT_SERVER);
-  const [showModal, setShowModal] = React.useState(false);
   const query = new URLSearchParams(useLocation().search);
   const serverParam = parseQuery(query);
+  const [server, setServer] = React.useState<Server>(serverParam);
+  const [showModal, setShowModal] = React.useState(false);
 
   // Update state when query params change
   React.useEffect(() => {
