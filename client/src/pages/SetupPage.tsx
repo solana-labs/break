@@ -15,8 +15,14 @@ import {
 } from "react-google-login";
 import { PAYMENT_ACCOUNT } from "utils";
 
-// Disable Torus login in production for now
-const ENABLE_TORUS = window.location.origin !== "https://break.solana.com";
+const origin = window.location.origin;
+const USE_TORUS_TESTNET = origin === "http://localhost:3000";
+
+// Torus is only enabled for authorized domains
+const ENABLE_TORUS =
+  USE_TORUS_TESTNET ||
+  origin === "https://break.solana.com" ||
+  origin === "https://staging.break.solana.com";
 
 type NodeDetails = {
   torusNodeEndpoints: any;
@@ -25,13 +31,17 @@ type NodeDetails = {
 };
 
 const CLIENT_ID =
+  "785716588020-b5a4fheugq38c23do3p2l73iumfrklnr.apps.googleusercontent.com";
+const TEST_CLIENT_ID =
   "785716588020-p8kdid1dltqsafcl23g82fb9funikaj7.apps.googleusercontent.com";
 const VERIFIER = "breaksolana-google";
 
-const NODE_DETAILS = new NodeDetailsManager({
-  network: "ropsten",
-  proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183",
-});
+const NODE_DETAILS = USE_TORUS_TESTNET
+  ? new NodeDetailsManager({
+      network: "ropsten",
+      proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183",
+    })
+  : (new (NodeDetailsManager as any)() as NodeDetailsManager);
 
 type GoogleStatus = "cached" | "fresh";
 export default function Setup() {
@@ -61,7 +71,7 @@ export default function Setup() {
   }, [googleResponse]);
 
   const { signIn, loaded } = useGoogleLogin({
-    clientId: CLIENT_ID,
+    clientId: USE_TORUS_TESTNET ? TEST_CLIENT_ID : CLIENT_ID,
     onSuccess: responseGoogle,
     onFailure: (err) => {
       if (!ENABLE_TORUS) return;
