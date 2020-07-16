@@ -170,6 +170,12 @@ export function TransactionDetails({
         <div className="">Confirmation Time</div>
         {displayConfTime()}
       </div>
+      {transaction.status === "success" && (
+        <div className="d-flex justify-content-between mb-4">
+          <div className="">Block</div>
+          {transaction.slot}
+        </div>
+      )}
       <div className="d-flex justify-content-between">
         <div className="">Finalization Status</div>
         {displayFinalized()}
