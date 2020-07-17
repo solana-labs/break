@@ -30,7 +30,7 @@ export default class ApiServer {
 
   static async start(app: Express, httpServer: http.Server): Promise<void> {
     const connection = new Connection(url, "recent");
-    const tpuProxy = new TpuProxy(connection);
+    const tpuProxy = await TpuProxy.create(connection);
     WebSocketServer.start(httpServer, tpuProxy);
 
     const feeCalculator = await ApiServer.getFeeCalculator(connection);
