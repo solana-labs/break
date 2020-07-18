@@ -115,7 +115,7 @@ export default class TpuProxy {
     this.sockets = sockets;
 
     oldSockets.forEach((socket) => {
-      socket.disconnect();
+      socket.close();
     });
   };
 
