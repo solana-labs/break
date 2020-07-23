@@ -115,7 +115,7 @@ export default function Setup() {
 
     let unmounted = false;
     (async () => {
-      const torus = new Torus();
+      const torus = new Torus({});
       const { torusNodeEndpoints, torusNodePub, torusIndexes } = nodeDetails;
 
       try {
