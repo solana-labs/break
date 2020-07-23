@@ -20,7 +20,7 @@
     "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
-    "@solana/web3.js": "^0.63.0",
+    "@solana/web3.js": "^0.63.1",
     "@types/cors": "^2.8.6",
     "@types/express": "^4.17.2",
     "@types/node": "^12.7.0",
