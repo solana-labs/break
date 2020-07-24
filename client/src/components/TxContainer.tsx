@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import useThrottle from "@react-hook/throttle";
+import { useThrottle } from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
 import { useCreateTx, useTransactions } from "providers/transactions";

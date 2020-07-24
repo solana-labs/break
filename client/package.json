@@ -12,7 +12,7 @@
     "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\""
   },
   "dependencies": {
-    "@react-hook/throttle": "^1.0.12",
+    "@react-hook/throttle": "^2.2.0",
     "@solana/web3.js": "^0.59.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
