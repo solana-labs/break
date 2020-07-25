@@ -7,6 +7,7 @@ import { TpsProvider, TpsContext } from "./tps";
 import { createTransaction } from "./create";
 import { SelectedTxProvider } from "./selected";
 import { useSocket } from "../socket";
+import { reportError } from "utils";
 
 export type PendingTransaction = {
   sentAt: number;
@@ -336,7 +337,10 @@ export function useCreateTx() {
         socket
       );
     } else {
-      console.error("Exceeded account capacity");
+      reportError(
+        new Error("Account capacity exceeded"),
+        "failed to create transaction"
+      );
     }
   }, [blockhash, socket, config, accounts, dispatch]);
 }

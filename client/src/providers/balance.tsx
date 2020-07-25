@@ -2,6 +2,7 @@ import * as React from "react";
 import { AccountInfo } from "@solana/web3.js";
 import { useConfig } from "./api";
 import { useAccountState } from "./account";
+import { reportError } from "utils";
 
 type Balance = number | "loading";
 const StateContext = React.createContext<Balance | undefined>(undefined);
@@ -32,7 +33,7 @@ export function BalanceProvider({ children }: Props) {
         );
         setBalance(balance);
       } catch (err) {
-        console.error("Failed to refresh balance", err);
+        reportError(err, "Failed to refresh balance");
       }
     })();
   }, [account, connection, paymentRequired]);
