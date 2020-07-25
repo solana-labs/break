@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useServer } from "./server";
+import { reportError } from "utils";
 
 type SetSocket = React.Dispatch<React.SetStateAction<ServerSocket | undefined>>;
 const SocketContext = React.createContext<WebSocket | undefined>(undefined);
@@ -69,6 +70,7 @@ function newSocket(
       if (!serverSocket || serverSocket.id === id) {
         // Reconnect if close was not explicit
         if (event.code !== SWITCH_URL_CODE) {
+          reportError(new Error("Socket was closed"), "Socket closed");
           setTimeout(() => {
             newSocket(webSocketUrl, setSocket, setActiveUsers);
           }, 5000);
@@ -79,8 +81,7 @@ function newSocket(
     });
   };
 
-  socket.onerror = async (err) => {
-    console.error(err);
+  socket.onerror = async () => {
     socket.close();
   };
 

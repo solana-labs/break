@@ -13,7 +13,7 @@ import {
   GoogleLoginResponse,
   GoogleLoginResponseOffline,
 } from "react-google-login";
-import { PAYMENT_ACCOUNT } from "utils";
+import { PAYMENT_ACCOUNT, reportError } from "utils";
 
 const origin = window.location.origin;
 const USE_TORUS_TESTNET = origin === "http://localhost:3000";
@@ -75,7 +75,7 @@ export default function Setup() {
     onSuccess: responseGoogle,
     onFailure: (err) => {
       if (!ENABLE_TORUS) return;
-      console.error("Failed to login", err);
+      reportError(err, "Google login failed");
       setGoogleStatus(undefined);
       setError("Failed to login");
     },
@@ -102,7 +102,7 @@ export default function Setup() {
         !unmounted && setNodeDetails(details);
       })
       .catch((err) => {
-        console.error("failed to fetch torus node details", err);
+        reportError(err, "Fetching torus node details");
       });
 
     return () => {
@@ -146,7 +146,7 @@ export default function Setup() {
         const keyPair = nacl.sign.keyPair.fromSeed(torusKey);
         setAccount(new Account(keyPair.secretKey));
       } catch (err) {
-        console.error("failed to fetch torus key", err);
+        reportError(err, "failed to fetch torus key");
         setGoogleStatus(undefined);
         setError("Failed to fetch Torus key");
       }

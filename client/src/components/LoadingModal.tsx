@@ -33,7 +33,7 @@ export function LoadingModal({
         <div className="modal-content w-auto">
           <div className="py-4 pl-4 pr-5">
             <div className="d-flex align-items-center justify-content-center">
-              <span className="spinner-grow mr-2"></span>
+              <span className="spinner-grow spinner-grow-sm mr-3"></span>
               <h2 className="mb-0">{!cancel ? loadingText : "Retrying"}...</h2>
             </div>
           </div>
