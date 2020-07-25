@@ -1,5 +1,5 @@
 import { configFromInit, configFromAccounts } from "./config";
-import { sleep } from "utils";
+import { sleep, reportError } from "utils";
 import { Action, Dispatch, ConfigStatus } from "./index";
 import { Account } from "@solana/web3.js";
 
@@ -77,7 +77,7 @@ async function fetchInit(httpUrl: string): Promise<Action | "retry"> {
       config: configFromInit(data),
     };
   } catch (err) {
-    console.error("Failed to initialize", err);
+    reportError(err, "/init failed");
     return "retry";
   }
 }
@@ -131,7 +131,7 @@ async function fetchAccounts(
       return { status: ConfigStatus.Ready, accounts: configFromAccounts(data) };
     }
   } catch (err) {
-    console.error("Failed to refresh fee accounts", err);
+    reportError(err, "/accounts failed");
     return "retry";
   }
 }

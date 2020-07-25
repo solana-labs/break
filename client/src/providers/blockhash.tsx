@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Blockhash, Connection } from "@solana/web3.js";
 import { useConnection } from "./api";
-import { sleep } from "utils";
+import { sleep, reportError } from "utils";
 
 const POLL_INTERVAL_MS = 20000;
 
@@ -95,7 +95,7 @@ async function refresh(
       blockhash = (await connection.getRecentBlockhash("max")).blockhash;
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
-      console.error("Failed to refresh blockhash", err);
+      reportError(err, "Failed to refresh blockhash");
       await sleep(1000);
     }
   }
