@@ -20,7 +20,7 @@
     "@testing-library/react": "^10.4.7",
     "@testing-library/user-event": "^12.1.0",
     "@toruslabs/fetch-node-details": "^2.3.0",
-    "@toruslabs/torus.js": "^2.2.4",
+    "@toruslabs/torus.js": "^2.2.5",
     "@types/bs58": "^4.0.1",
     "@types/chai": "^4.2.12",
     "@types/chart.js": "^2.9.19",
