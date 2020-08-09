@@ -7,7 +7,7 @@ import {
 import * as Bytes from "utils/bytes";
 import { CreateTransactionMessage } from "./create-transaction-rpc";
 
-var self: any = globalThis;
+let self: any = globalThis;
 
 function createTransaction(message: CreateTransactionMessage) {
   const {
