@@ -38,7 +38,7 @@ export class CreateTransactionRPC {
       let callbacks = this.callbacks[message.trackingId];
       delete this.callbacks[message.trackingId];
 
-      if ('error' in message) {
+      if ("error" in message) {
         callbacks[1](message.error);
         return;
       }
@@ -47,7 +47,9 @@ export class CreateTransactionRPC {
     }
   }
 
-  createTransaction(message: CreateTransactionMessage): Promise<CreateTransactionResponseMessage> {
+  createTransaction(
+    message: CreateTransactionMessage
+  ): Promise<CreateTransactionResponseMessage> {
     return new Promise((resolve, reject) => {
       this.callbacks[message.trackingId] = [resolve, reject];
       this.worker.postMessage(message);

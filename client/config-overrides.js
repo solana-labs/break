@@ -5,8 +5,8 @@ module.exports = function override(config, env) {
 
   config.module.rules.unshift({
     test: /\.worker\.ts$/,
-    loader: 'worker-loader'
+    loader: "worker-loader",
   });
 
   return config;
-}
+};

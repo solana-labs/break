@@ -1,9 +1,8 @@
-
 import {
   Transaction,
   TransactionInstruction,
   PublicKey,
-  Account
+  Account,
 } from "@solana/web3.js";
 import * as Bytes from "utils/bytes";
 import { CreateTransactionMessage } from "./create-transaction-rpc";
@@ -17,11 +16,17 @@ function createTransaction(message: CreateTransactionMessage) {
     programId,
     bitId,
     feeAccountSecretKey,
-    programDataAccount
+    programDataAccount,
   } = message;
 
   const instruction = new TransactionInstruction({
-    keys: [{ pubkey: new PublicKey(programDataAccount), isWritable: true, isSigner: false }],
+    keys: [
+      {
+        pubkey: new PublicKey(programDataAccount),
+        isWritable: true,
+        isSigner: false,
+      },
+    ],
     programId: new PublicKey(programId),
     data: Buffer.from(Bytes.instructionDataFromId(bitId)),
   });
@@ -36,7 +41,7 @@ function createTransaction(message: CreateTransactionMessage) {
   ctx.postMessage({
     trackingId: trackingId,
     signature: signatureBuffer,
-    serializedTransaction: transaction.serialize()
+    serializedTransaction: transaction.serialize(),
   });
 }
 
@@ -45,12 +50,12 @@ ctx.onmessage = (event: any) => {
 
   try {
     createTransaction(message);
-  } catch(error) {
+  } catch (error) {
     ctx.postMessage({
       trackingId: message.trackingId,
-      error: error
+      error: error,
     });
   }
 };
 
-export default {} as typeof Worker & {new (): Worker};
+export default {} as typeof Worker & { new (): Worker };
