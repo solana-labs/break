@@ -80,6 +80,6 @@ export function createTransaction(
       }
     }, 1);
   }, (error: any) => {
-    console.log(error);
+    console.error(error);
   });
 }
