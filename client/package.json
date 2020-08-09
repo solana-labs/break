@@ -15,7 +15,7 @@
     "@bugsnag/js": "^7.2.1",
     "@bugsnag/plugin-react": "^7.2.1",
     "@react-hook/throttle": "^2.2.0",
-    "@solana/web3.js": "^0.64.2",
+    "@solana/web3.js": "^0.66.1",
     "@testing-library/jest-dom": "^5.11.2",
     "@testing-library/react": "^10.4.8",
     "@testing-library/user-event": "^12.1.0",
