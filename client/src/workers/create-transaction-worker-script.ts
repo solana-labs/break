@@ -11,7 +11,6 @@ import { CreateTransactionMessage } from "./create-transaction-rpc";
 const ctx: Worker = self as any;
 
 function createTransaction(message: CreateTransactionMessage) {
-
   const {
     trackingId,
     blockhash,
@@ -39,7 +38,6 @@ function createTransaction(message: CreateTransactionMessage) {
     signature: signatureBuffer,
     serializedTransaction: transaction.serialize()
   });
-
 }
 
 ctx.onmessage = (event: any) => {

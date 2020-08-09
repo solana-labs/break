@@ -22,7 +22,6 @@ export interface CreateTransactionErrorMessage {
 }
 
 export class CreateTransactionRPC {
-
   private worker: CreateTransactionWorker;
 
   private callbacks: { [trackingId: string]: Function[] } = {};
@@ -54,5 +53,4 @@ export class CreateTransactionRPC {
       this.worker.postMessage(message);
     });
   }
-
 }
