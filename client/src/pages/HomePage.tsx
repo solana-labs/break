@@ -31,16 +31,6 @@ export default class Home extends React.Component {
                 Solana. During the next fifteen seconds, send as many
                 transactions as you can by mashing your keyboard.
               </p>
-              <p className="introduction">
-                Over the next three days, players of Break have a chance to win
-                prizes up to <b>$10,000 USD.</b> Read more about the competition{" "}
-                <a
-                  href="https://medium.com/solana-labs"
-                  rel="noreferrer noopener"
-                >
-                  here.
-                </a>
-              </p>
             </div>
             <div className="col-12">
               <Link
