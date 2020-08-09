@@ -1,4 +1,5 @@
 {
+  "name": "@solana/break-app",
   "cacheDirectories": [
     "client/node_modules",
     "server/node_modules"
