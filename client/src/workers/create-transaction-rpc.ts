@@ -1,3 +1,4 @@
+
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import CreateTransactionWorker from "worker-loader!./create-transaction-worker-script";
 
