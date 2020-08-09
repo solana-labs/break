@@ -25,7 +25,6 @@ export function createTransaction(
   dispatch: Dispatch,
   socket: WebSocket
 ) {
-
   const { feeAccounts, programAccounts } = accounts;
 
   const bitId = Math.floor(trackingId / feeAccounts.length);
@@ -42,7 +41,6 @@ export function createTransaction(
     feeAccountSecretKey: feeAccount.secretKey
   })
   .then((response: CreateTransactionResponseMessage) => {
-
     const {
       signature,
       serializedTransaction
