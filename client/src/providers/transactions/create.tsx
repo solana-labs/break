@@ -1,11 +1,8 @@
 import {
   Blockhash,
-  Transaction,
-  TransactionInstruction,
-  PublicKey,
+  PublicKey
 } from "@solana/web3.js";
 import bs58 from "bs58";
-import * as Bytes from "utils/bytes";
 import {
   Dispatch,
   PendingTransaction,
@@ -13,9 +10,12 @@ import {
   TransactionDetails,
 } from "./index";
 import { AccountsConfig } from "../api/config";
+import { CreateTransactionRPC, CreateTransactionResponseMessage } from "../../workers/create-transaction-rpc";
 
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
+
+const workerRPC = new CreateTransactionRPC();
 
 export function createTransaction(
   blockhash: Blockhash,
@@ -25,59 +25,63 @@ export function createTransaction(
   dispatch: Dispatch,
   socket: WebSocket
 ) {
+
   const { feeAccounts, programAccounts } = accounts;
 
   const bitId = Math.floor(trackingId / feeAccounts.length);
   const accountIndex = trackingId % feeAccounts.length;
   const programDataAccount = programAccounts[accountIndex];
   const feeAccount = feeAccounts[accountIndex];
-  const instruction = new TransactionInstruction({
-    keys: [{ pubkey: programDataAccount, isWritable: true, isSigner: false }],
-    programId,
-    data: Buffer.from(Bytes.instructionDataFromId(bitId)),
+
+  workerRPC.createTransaction({
+    trackingId: trackingId,
+    blockhash: blockhash,
+    programId: programId.toBase58(),
+    programDataAccount: programDataAccount.toBase58(),
+    bitId: bitId,
+    feeAccountSecretKey: feeAccount.secretKey
+  })
+  .then((response: CreateTransactionResponseMessage) => {
+
+    const {
+      signature,
+      serializedTransaction
+    } = response;
+
+    const sentAt = performance.now();
+
+    const pendingTransaction: PendingTransaction = { sentAt };
+    pendingTransaction.timeoutId = window.setTimeout(() => {
+      dispatch({ type: ActionType.TimeoutTransaction, trackingId });
+    }, SEND_TIMEOUT_MS);
+
+    const details: TransactionDetails = {
+      id: bitId,
+      feeAccount: feeAccount.publicKey,
+      programAccount: programDataAccount,
+      signature: bs58.encode(signature),
+    };
+
+    dispatch({
+      type: ActionType.NewTransaction,
+      details,
+      trackingId,
+      pendingTransaction,
+    });
+
+    setTimeout(() => {
+      const retryUntil = new URLSearchParams(window.location.search).get(
+        "retry_until"
+      );
+      if (retryUntil === null || retryUntil !== "disabled") {
+        pendingTransaction.retryId = window.setInterval(() => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(serializedTransaction);
+          }
+        }, RETRY_INTERVAL_MS);
+      }
+    }, 1);
+  }, (error: any) => {
+    console.log(error);
   });
-
-  const transaction = new Transaction();
-  transaction.add(instruction);
-
-  const sentAt = performance.now();
-  transaction.recentBlockhash = blockhash;
-  transaction.sign(feeAccount);
-  const signatureBuffer = transaction.signature;
-  if (!signatureBuffer) throw new Error("Failed to sign transaction");
-  const signature = bs58.encode(signatureBuffer);
-  const pendingTransaction: PendingTransaction = { sentAt };
-  pendingTransaction.timeoutId = window.setTimeout(() => {
-    dispatch({ type: ActionType.TimeoutTransaction, trackingId });
-  }, SEND_TIMEOUT_MS);
-
-  const details: TransactionDetails = {
-    id: bitId,
-    feeAccount: feeAccount.publicKey,
-    programAccount: programDataAccount,
-    signature,
-  };
-
-  dispatch({
-    type: ActionType.NewTransaction,
-    details,
-    trackingId,
-    pendingTransaction,
-  });
-
-  setTimeout(() => {
-    const serialized = transaction.serialize();
-    socket.send(serialized);
-
-    const retryUntil = new URLSearchParams(window.location.search).get(
-      "retry_until"
-    );
-    if (retryUntil === null || retryUntil !== "disabled") {
-      pendingTransaction.retryId = window.setInterval(() => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.send(serialized);
-        }
-      }, RETRY_INTERVAL_MS);
-    }
-  }, 1);
 }

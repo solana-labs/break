@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-app-rewired eject",
     "lint": "echo \"lint is run during build\"",
     "format": "prettier -c \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\"",
     "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\""
@@ -40,13 +40,15 @@
     "prettier": "^2.0.5",
     "qrcode.react": "^1.0.0",
     "react": "^16.13.1",
+    "react-app-rewired": "^2.1.6",
     "react-chartjs-2": "^2.10.0",
     "react-dom": "^16.13.1",
     "react-google-login": "^5.1.21",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "tweetnacl": "^1.0.3",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "worker-loader": "^3.0.1"
   },
   "eslintConfig": {
     "extends": "react-app"
