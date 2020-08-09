@@ -7,7 +7,7 @@ import {
 import * as Bytes from "utils/bytes";
 import { CreateTransactionMessage } from "./create-transaction-rpc";
 
-const ctx: Worker = self as any;
+var self: any = globalThis;
 
 function createTransaction(message: CreateTransactionMessage) {
   const {
@@ -38,24 +38,24 @@ function createTransaction(message: CreateTransactionMessage) {
 
   const signatureBuffer = transaction.signature;
 
-  ctx.postMessage({
+  self.postMessage({
     trackingId: trackingId,
     signature: signatureBuffer,
     serializedTransaction: transaction.serialize(),
   });
 }
 
-ctx.onmessage = (event: any) => {
-  const message: CreateTransactionMessage = event.data;
+self.onmessage = (event: any) => {
+  const message = event.data;
 
   try {
     createTransaction(message);
   } catch (error) {
-    ctx.postMessage({
+    self.postMessage({
       trackingId: message.trackingId,
       error: error,
     });
   }
 };
 
-export default {} as typeof Worker & { new (): Worker };
+export default {};

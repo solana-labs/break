@@ -1,5 +1,7 @@
+// eslint-disable-next-line import/no-webpack-loader-syntax
+import CreateTransactionWorker from "worker-loader!./create-transaction-worker-script";
+
 import { Blockhash } from "@solana/web3.js";
-import { CreateTransactionWorker } from "./create-transaction-worker";
 
 export interface CreateTransactionMessage {
   trackingId: number;
