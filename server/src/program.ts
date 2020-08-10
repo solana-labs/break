@@ -35,7 +35,9 @@ export default class ProgramLoader {
     while (true) {
       try {
         // If the program account already exists, don't try to load it again
-        const info = await connection.getAccountInfo(programAccount.publicKey);
+        const info = (
+          await connection.getParsedAccountInfo(programAccount.publicKey)
+        ).value;
         if (info?.executable) return programAccount.publicKey;
 
         const NUM_RETRIES = 100; /* allow some number of retries */
