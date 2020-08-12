@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@bugsnag/js": "^7.3.0",
-    "@bugsnag/plugin-react": "^7.2.1",
+    "@bugsnag/plugin-react": "^7.3.1",
     "@react-hook/throttle": "^2.2.0",
     "@solana/web3.js": "^0.68.0",
     "@testing-library/jest-dom": "^5.11.2",
