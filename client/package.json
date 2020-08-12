@@ -44,7 +44,7 @@
     "react-dom": "^16.13.1",
     "react-google-login": "^5.1.21",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.1",
+    "react-scripts": "3.4.2",
     "tweetnacl": "^1.0.3",
     "typescript": "^3.9.7"
   },
