@@ -12,28 +12,8 @@ export function reportError(err: Error, context: string) {
   });
 }
 
-function isIP() {
-  const hostname = window.location.hostname;
-  const r = RegExp(
-    "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])"
-  );
-  return r.test(hostname);
-}
-
-function isLocalHost() {
-  const hostname = window.location.hostname;
-  switch (hostname) {
-    case "localhost":
-    case "127.0.0.1":
-    case "0.0.0.0":
-      return true;
-    default:
-      return false;
-  }
-}
-
-export function enableCustomCluster() {
-  return isLocalHost() || isIP();
+export function isLocalHost() {
+  return window.location.hostname === "localhost";
 }
 
 export const PAYMENT_ACCOUNT = (() => {

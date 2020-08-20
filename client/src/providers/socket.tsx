@@ -40,10 +40,17 @@ function newSocket(
   webSocketUrl: string,
   setSocket: SetSocket,
   setActiveUsers: SetActiveUsers
-): WebSocket {
+): WebSocket | undefined {
   socketCounter++;
   const id = socketCounter;
-  const socket = new WebSocket(webSocketUrl);
+
+  let socket: WebSocket;
+  try {
+    socket = new WebSocket(webSocketUrl);
+  } catch (err) {
+    return;
+  }
+
   socket.onopen = () =>
     setSocket((serverSocket) => {
       if (!serverSocket || serverSocket.id <= id) {

@@ -14,6 +14,7 @@ import {
   GoogleLoginResponseOffline,
 } from "react-google-login";
 import { PAYMENT_ACCOUNT, reportError } from "utils";
+import { useGameState } from "providers/game";
 
 const origin = window.location.origin;
 const USE_TORUS_TESTNET = origin === "http://localhost:3000";
@@ -46,6 +47,7 @@ const NODE_DETAILS = USE_TORUS_TESTNET
 type GoogleStatus = "cached" | "fresh";
 export default function Setup() {
   const [account, setAccount] = useAccountState();
+  const [gameState] = useGameState();
   const [googleStatus, setGoogleStatus] = React.useState<GoogleStatus>();
   const [googleResponse, setGoogleResponse] = React.useState<
     GoogleLoginResponse
@@ -158,10 +160,10 @@ export default function Setup() {
   }, [nodeDetails, googleResponse, googleStatus, setAccount]);
 
   React.useEffect(() => {
-    if (account) {
+    if (gameState !== "payment" || account) {
       history.push({ ...location, pathname: "/game" });
     }
-  }, [account, history, location]);
+  }, [gameState, account, history, location]);
 
   const loadingWallet = !!googleResponse;
   const showWalletSetup = loaded && !googleStatus;
