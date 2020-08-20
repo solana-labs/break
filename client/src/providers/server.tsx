@@ -1,15 +1,17 @@
 import React from "react";
 import { clusterApiUrl, Cluster } from "@solana/web3.js";
 import { useLocation } from "react-router-dom";
-import { enableCustomCluster } from "utils";
+import { isLocalHost } from "../utils";
 
 type Server = Cluster | "custom";
-export const DEFAULT_SERVER = enableCustomCluster() ? "custom" : "mainnet-beta";
-export const SERVERS: Server[] = ["mainnet-beta", "testnet", "devnet"];
+export const DEFAULT_SERVER = isLocalHost() ? "custom" : "mainnet-beta";
+export const SERVERS: Server[] = isLocalHost()
+  ? ["custom"]
+  : ["mainnet-beta", "testnet", "devnet", "custom"];
 
-if (enableCustomCluster()) {
-  SERVERS.push("custom");
-}
+const DEFAULT_CUSTOM_URL = `http://${window.location.hostname}:${
+  process.env.PORT || 8080
+}`;
 
 export function serverName(server: Server): string {
   switch (server) {
@@ -37,6 +39,8 @@ function parseQuery(query: URLSearchParams): Server {
       return "testnet";
     case "mainnet-beta":
       return "mainnet-beta";
+    case "custom":
+      return "custom";
     default:
       return DEFAULT_SERVER;
   }
@@ -46,16 +50,22 @@ type SetShowModal = React.Dispatch<React.SetStateAction<boolean>>;
 const ModalContext = React.createContext<[boolean, SetShowModal] | undefined>(
   undefined
 );
+type SetCustomUrl = React.Dispatch<React.SetStateAction<string>>;
 type SetServer = React.Dispatch<React.SetStateAction<Server>>;
-const ServerContext = React.createContext<[Server, SetServer] | undefined>(
-  undefined
-);
+type ServerState = {
+  server: Server;
+  setServer: SetServer;
+  customUrl: string;
+  setCustomUrl: SetCustomUrl;
+};
+const ServerContext = React.createContext<ServerState | undefined>(undefined);
 
 type ProviderProps = { children: React.ReactNode };
 export function ServerProvider({ children }: ProviderProps) {
   const query = new URLSearchParams(useLocation().search);
   const serverParam = parseQuery(query);
   const [server, setServer] = React.useState<Server>(serverParam);
+  const [customUrl, setCustomUrl] = React.useState<string>(DEFAULT_CUSTOM_URL);
   const [showModal, setShowModal] = React.useState(false);
 
   // Update state when query params change
@@ -64,7 +74,9 @@ export function ServerProvider({ children }: ProviderProps) {
   }, [serverParam]);
 
   return (
-    <ServerContext.Provider value={[server, setServer]}>
+    <ServerContext.Provider
+      value={{ server, setServer, customUrl, setCustomUrl }}
+    >
       <ModalContext.Provider value={[showModal, setShowModal]}>
         {children}
       </ModalContext.Provider>
@@ -72,14 +84,13 @@ export function ServerProvider({ children }: ProviderProps) {
   );
 }
 
-function getServerUrl(server: Server) {
+function getServerUrl(server: Server, customUrl: string) {
   switch (server) {
     case "custom": {
-      const hostname = window.location.hostname;
-      return `http://${hostname}:${process.env.PORT || 8080}`;
+      return customUrl;
     }
     default: {
-      const useHttp = enableCustomCluster();
+      const useHttp = isLocalHost();
       let slug: string = server;
       if (server === "mainnet-beta") {
         slug = "mainnet";
@@ -96,8 +107,8 @@ export function useServer() {
   if (!context) {
     throw new Error(`useServer must be used within a ServerProvider`);
   }
-  const [server] = context;
-  const httpUrl = getServerUrl(server);
+  const { server, customUrl } = context;
+  const httpUrl = getServerUrl(server, customUrl);
   const webSocketUrl = httpUrl.replace("http", "ws");
 
   return {
@@ -107,6 +118,14 @@ export function useServer() {
     info: serverInfo(server),
     name: serverName(server),
   };
+}
+
+export function useCustomUrl(): [string, SetCustomUrl] {
+  const context = React.useContext(ServerContext);
+  if (!context) {
+    throw new Error(`useCustomUrl must be used within a ServerProvider`);
+  }
+  return [context.customUrl, context.setCustomUrl];
 }
 
 export function useClusterModal() {
