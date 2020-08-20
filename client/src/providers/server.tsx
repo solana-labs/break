@@ -1,14 +1,14 @@
 import React from "react";
 import { clusterApiUrl, Cluster } from "@solana/web3.js";
 import { useLocation } from "react-router-dom";
-import { isLocalHost } from "utils";
+import { enableCustomCluster } from "utils";
 
-type Server = Cluster | "local";
-export const DEFAULT_SERVER = isLocalHost() ? "local" : "mainnet-beta";
+type Server = Cluster | "custom";
+export const DEFAULT_SERVER = enableCustomCluster() ? "custom" : "mainnet-beta";
 export const SERVERS: Server[] = ["mainnet-beta", "testnet", "devnet"];
 
-if (isLocalHost()) {
-  SERVERS.push("local");
+if (enableCustomCluster()) {
+  SERVERS.push("custom");
 }
 
 export function serverName(server: Server): string {
@@ -19,13 +19,13 @@ export function serverName(server: Server): string {
       return "Testnet";
     case "devnet":
       return "Devnet";
-    case "local":
-      return "Local";
+    case "custom":
+      return "Custom";
   }
 }
 
 export function serverInfo(server: Server): string {
-  return server === "local" ? "Use local server" : clusterApiUrl(server);
+  return server === "custom" ? "Use custom server" : clusterApiUrl(server);
 }
 
 function parseQuery(query: URLSearchParams): Server {
@@ -74,12 +74,12 @@ export function ServerProvider({ children }: ProviderProps) {
 
 function getServerUrl(server: Server) {
   switch (server) {
-    case "local": {
+    case "custom": {
       const hostname = window.location.hostname;
       return `http://${hostname}:${process.env.PORT || 8080}`;
     }
     default: {
-      const useHttp = isLocalHost();
+      const useHttp = enableCustomCluster();
       let slug: string = server;
       if (server === "mainnet-beta") {
         slug = "mainnet";
