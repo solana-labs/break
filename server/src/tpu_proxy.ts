@@ -74,11 +74,9 @@ export default class TpuProxy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onTransaction = (data: any): void => {
     if (TPU_DISABLED) {
-      try {
-        this.connection.sendRawTransaction(data);
-      } catch (err) {
-        console.error("failed to send raw tx");
-      }
+      this.connection.sendRawTransaction(data).catch((err) => {
+        console.error(err, "failed to send raw tx");
+      });
       return;
     }
 
