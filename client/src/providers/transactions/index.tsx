@@ -11,6 +11,7 @@ import { reportError } from "utils";
 
 export type PendingTransaction = {
   sentAt: number;
+  targetSlot: number;
   retryId?: number;
   timeoutId?: number;
 };
@@ -22,13 +23,41 @@ export type TransactionDetails = {
   signature: TransactionSignature;
 };
 
+type Timing = {
+  sentAt: number;
+  recent?: number;
+  single?: number;
+  singleGossip?: number;
+};
+
 type SuccessState = {
   status: "success";
   details: TransactionDetails;
-  slot: number;
-  confirmationTime: number;
+  slot: {
+    target: number;
+    landed?: number;
+    estimated: number;
+  };
+  timing: Timing;
   pending?: PendingTransaction;
 };
+
+export const COMMITMENT_PARAM = ((): TrackedCommitment => {
+  const commitment = new URLSearchParams(window.location.search).get(
+    "commitment"
+  );
+  switch (commitment) {
+    case "recent":
+    case "single": {
+      return commitment;
+    }
+    default: {
+      return "singleGossip";
+    }
+  }
+})();
+
+export type TrackedCommitment = "single" | "singleGossip" | "recent";
 
 type TimeoutState = {
   status: "timeout";
@@ -51,6 +80,7 @@ export enum ActionType {
   TimeoutTransaction,
   ResetState,
   RecordRoot,
+  LandedTxs,
 }
 
 type UpdateIds = {
@@ -60,7 +90,14 @@ type UpdateIds = {
     partition: number;
     partitionCount: number;
   };
-  slot: number;
+  commitment: TrackedCommitment;
+  estimatedSlot: number;
+};
+
+type LandedTxs = {
+  type: ActionType.LandedTxs;
+  signatures: TransactionSignature[];
+  slots: number[];
 };
 
 type NewTransaction = {
@@ -89,7 +126,8 @@ type Action =
   | UpdateIds
   | TimeoutTransaction
   | ResetState
-  | RecordRoot;
+  | RecordRoot
+  | LandedTxs;
 
 type State = TransactionState[];
 function reducer(state: State, action: Action): State {
@@ -131,24 +169,59 @@ function reducer(state: State, action: Action): State {
         if (trackingId % partitionCount !== partition) return tx;
         const id = Math.floor(trackingId / partitionCount);
         if (tx.status === "pending" && ids.has(id)) {
-          const confirmationTime = timeElapsed(tx.pending.sentAt);
-          const retryUntil = new URLSearchParams(window.location.search).get(
-            "retry_until"
-          );
-          if (retryUntil === "confirmed") clearInterval(tx.pending.retryId);
+          // Optimistically confirmed, no need to continue retry
+          if (
+            action.commitment === "singleGossip" ||
+            action.commitment === "single"
+          ) {
+            clearInterval(tx.pending.retryId);
+            clearTimeout(tx.pending.timeoutId);
+          }
+
           return {
             status: "success",
             details: tx.details,
-            slot: action.slot,
-            confirmationTime,
-            pending: { ...tx.pending },
+            slot: {
+              target: tx.pending.targetSlot,
+              estimated: action.estimatedSlot,
+            },
+            timing: {
+              sentAt: tx.pending.sentAt,
+              [action.commitment]: timeElapsed(tx.pending.sentAt),
+            },
+            pending: tx.pending,
           };
-        } else if (tx.status === "success" && tx.pending && !ids.has(id)) {
-          return {
-            status: "pending",
-            details: tx.details,
-            pending: { ...tx.pending },
-          };
+        } else if (tx.status === "success") {
+          if (ids.has(id)) {
+            // Already recorded conf time
+            if (tx.timing[action.commitment] !== undefined) {
+              return tx;
+            }
+
+            // Optimistically confirmed, no need to continue retry
+            if (
+              tx.pending &&
+              (action.commitment === "singleGossip" ||
+                action.commitment === "single")
+            ) {
+              clearInterval(tx.pending.retryId);
+              clearTimeout(tx.pending.timeoutId);
+            }
+
+            return {
+              ...tx,
+              timing: {
+                ...tx.timing,
+                [action.commitment]: timeElapsed(tx.timing.sentAt),
+              },
+            };
+          } else if (tx.pending && !ids.has(id)) {
+            return {
+              status: "pending",
+              details: tx.details,
+              pending: { ...tx.pending },
+            };
+          }
         }
         return tx;
       });
@@ -169,12 +242,20 @@ function reducer(state: State, action: Action): State {
 
     case ActionType.RecordRoot: {
       const foundRooted = state.find((tx) => {
-        return tx.status === "success" && tx.pending && tx.slot === action.root;
+        return (
+          tx.status === "success" &&
+          tx.pending &&
+          tx.slot.landed === action.root
+        );
       });
       if (!foundRooted) return state;
 
       return state.map((tx) => {
-        if (tx.status === "success" && tx.pending && tx.slot === action.root) {
+        if (
+          tx.status === "success" &&
+          tx.pending &&
+          tx.slot.landed === action.root
+        ) {
           clearInterval(tx.pending.retryId);
           clearTimeout(tx.pending.timeoutId);
           return {
@@ -186,10 +267,33 @@ function reducer(state: State, action: Action): State {
         }
       });
     }
+
+    case ActionType.LandedTxs: {
+      return state.map((tx) => {
+        if (tx.status === "success") {
+          const index = action.signatures.findIndex(
+            (val) => val === tx.details.signature
+          );
+          if (index >= 0) {
+            return {
+              ...tx,
+              slot: {
+                ...tx.slot,
+                landed: action.slots[index],
+              },
+            };
+          }
+        }
+        return tx;
+      });
+    }
   }
 }
 
 export type Dispatch = (action: Action) => void;
+const SlotContext = React.createContext<
+  React.MutableRefObject<number | undefined> | undefined
+>(undefined);
 const StateContext = React.createContext<State | undefined>(undefined);
 const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
@@ -197,6 +301,12 @@ type ProviderProps = { children: React.ReactNode };
 export function TransactionsProvider({ children }: ProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, []);
   const connection = useConnection();
+  const targetSlot = React.useRef<number>();
+  const stateRef = React.useRef(state);
+
+  React.useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   React.useEffect(() => {
     dispatch({
@@ -204,23 +314,56 @@ export function TransactionsProvider({ children }: ProviderProps) {
     });
 
     if (connection === undefined) return;
-    const rootSubscription = connection.onRootChange((root: number) =>
-      dispatch({ type: ActionType.RecordRoot, root })
-    );
+    const slotSubscription = connection.onSlotChange(({ slot }) => {
+      targetSlot.current = slot;
+    });
+    const rootSubscription = connection.onRootChange((root) => {
+      dispatch({ type: ActionType.RecordRoot, root });
+    });
+
+    // Poll for signature statuses to determine which slot a tx landed in
+    const intervalId = setInterval(async () => {
+      const fetchStatuses: string[] = [];
+      stateRef.current.forEach((tx) => {
+        if (tx.status === "success" && tx.slot.landed === undefined) {
+          fetchStatuses.push(tx.details.signature);
+        }
+      });
+
+      if (fetchStatuses.length === 0) return;
+
+      const slots: number[] = [];
+      const signatures: TransactionSignature[] = [];
+      const statuses = (await connection.getSignatureStatuses(fetchStatuses))
+        .value;
+      for (var i = 0; i < statuses.length; i++) {
+        const status = statuses[i];
+        if (status !== null) {
+          slots.push(status.slot);
+          signatures.push(fetchStatuses[i]);
+        }
+      }
+      if (slots.length === 0) return;
+      dispatch({ type: ActionType.LandedTxs, slots, signatures });
+    }, 2000);
 
     return () => {
+      connection.removeSlotChangeListener(slotSubscription);
       connection.removeRootChangeListener(rootSubscription);
+      clearInterval(intervalId);
     };
   }, [connection]);
 
   return (
     <StateContext.Provider value={state}>
       <DispatchContext.Provider value={dispatch}>
-        <SelectedTxProvider>
-          <ConfirmedHelper>
-            <TpsProvider>{children}</TpsProvider>
-          </ConfirmedHelper>
-        </SelectedTxProvider>
+        <SlotContext.Provider value={targetSlot}>
+          <SelectedTxProvider>
+            <ConfirmedHelper>
+              <TpsProvider>{children}</TpsProvider>
+            </ConfirmedHelper>
+          </SelectedTxProvider>
+        </SlotContext.Provider>
       </DispatchContext.Provider>
     </StateContext.Provider>
   );
@@ -235,6 +378,17 @@ export function useDispatch() {
   const dispatch = React.useContext(DispatchContext);
   if (!dispatch) {
     throw new Error(`useDispatch must be used within a TransactionsProvider`);
+  }
+
+  return dispatch;
+}
+
+export function useTargetSlotRef() {
+  const dispatch = React.useContext(SlotContext);
+  if (!dispatch) {
+    throw new Error(
+      `useTargetSlotRef must be used within a TransactionsProvider`
+    );
   }
 
   return dispatch;
@@ -281,7 +435,8 @@ export function useAvgConfirmationTime() {
 
   const confirmed = state.reduce((confirmed: number[], tx) => {
     if (tx.status === "success") {
-      confirmed.push(tx.confirmationTime);
+      const confTime = tx.timing[COMMITMENT_PARAM];
+      if (confTime !== undefined) confirmed.push(confTime);
     }
     return confirmed;
   }, []);
@@ -313,6 +468,7 @@ export function useCreateTx() {
   const config = useConfig();
   const accounts = useAccounts();
   const idCounter = React.useRef<number>(0);
+  const targetSlotRef = useTargetSlotRef();
   const programDataAccount = accounts?.programAccounts[0].toBase58();
 
   // Reset counter when program data accounts are refreshed
@@ -324,12 +480,14 @@ export function useCreateTx() {
   const dispatch = useDispatch();
   const socket = useSocket();
   return React.useCallback(() => {
-    if (!blockhash || !socket || !config || !accounts) return;
+    if (!blockhash || !socket || !config || !accounts || !targetSlotRef.current)
+      return;
     const id = idCounter.current;
     if (id < accounts.accountCapacity * accounts.programAccounts.length) {
       idCounter.current++;
       createTransaction(
         blockhash,
+        targetSlotRef.current,
         config.programId,
         accounts,
         id,
@@ -342,5 +500,5 @@ export function useCreateTx() {
         "failed to create transaction"
       );
     }
-  }, [blockhash, socket, config, accounts, dispatch]);
+  }, [blockhash, socket, config, accounts, dispatch, targetSlotRef]);
 }

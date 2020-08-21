@@ -121,3 +121,10 @@
 .z-auto {
   z-index: auto !important;
 }
+
+.debug-row {
+  cursor: pointer;
+  &:hover {
+    background: #111;
+  }
+}

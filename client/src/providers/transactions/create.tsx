@@ -19,6 +19,7 @@ const RETRY_INTERVAL_MS = 500;
 
 export function createTransaction(
   blockhash: Blockhash,
+  targetSlot: number,
   programId: PublicKey,
   accounts: AccountsConfig,
   trackingId: number,
@@ -46,7 +47,7 @@ export function createTransaction(
   const signatureBuffer = transaction.signature;
   if (!signatureBuffer) throw new Error("Failed to sign transaction");
   const signature = bs58.encode(signatureBuffer);
-  const pendingTransaction: PendingTransaction = { sentAt };
+  const pendingTransaction: PendingTransaction = { sentAt, targetSlot };
   pendingTransaction.timeoutId = window.setTimeout(() => {
     dispatch({ type: ActionType.TimeoutTransaction, trackingId });
   }, SEND_TIMEOUT_MS);
