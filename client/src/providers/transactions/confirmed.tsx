@@ -1,24 +1,30 @@
 import * as React from "react";
 
-import { AccountInfo, Commitment } from "@solana/web3.js";
+import { AccountInfo } from "@solana/web3.js";
 import { useAccounts, useConnection } from "../api";
-import { useDispatch, ActionType } from "./index";
+import {
+  useDispatch,
+  ActionType,
+  TrackedCommitment,
+  COMMITMENT_PARAM,
+} from "./index";
 import * as Bytes from "utils/bytes";
 
-const commitmentParam = (): Commitment => {
-  const commitment = new URLSearchParams(window.location.search).get(
-    "commitment"
-  );
-  switch (commitment) {
+export const DEBUG_MODE = new URLSearchParams(window.location.search).has(
+  "debug"
+);
+
+// Determine commitment levels to subscribe to. "singleGossip" is used
+// to stop tx send retries so it must be returned
+const subscribedCommitments = (): TrackedCommitment[] => {
+  if (DEBUG_MODE) return ["recent", "single", "singleGossip"];
+  switch (COMMITMENT_PARAM) {
     case "recent":
-    case "single":
-    case "singleGossip":
-    case "max":
-    case "root": {
-      return commitment;
+    case "single": {
+      return [COMMITMENT_PARAM, "singleGossip"];
     }
     default: {
-      return "singleGossip";
+      return ["singleGossip"];
     }
   }
 };
@@ -32,26 +38,38 @@ export function ConfirmedHelper({ children }: Props) {
   React.useEffect(() => {
     if (connection === undefined || accounts === undefined) return;
 
-    const commitment = commitmentParam();
+    const commitments = subscribedCommitments();
     const partitionCount = accounts.programAccounts.length;
 
     const accountSubscriptions = accounts.programAccounts.map(
-      (account, partition) => {
-        return connection.onAccountChange(
-          account,
-          (accountInfo: AccountInfo<Buffer>, { slot }) => {
-            const ids = new Set(Bytes.programDataToIds(accountInfo.data));
-            const activeIdPartition = { ids, partition, partitionCount };
-            dispatch({ type: ActionType.UpdateIds, activeIdPartition, slot });
-          },
-          commitment
-        );
-      }
+      (account, partition) =>
+        commitments.map((commitment) =>
+          connection.onAccountChange(
+            account,
+            (accountInfo: AccountInfo<Buffer>, { slot }) => {
+              const ids = new Set(Bytes.programDataToIds(accountInfo.data));
+              const activeIdPartition = {
+                ids,
+                partition,
+                partitionCount,
+              };
+              dispatch({
+                type: ActionType.UpdateIds,
+                activeIdPartition,
+                commitment,
+                estimatedSlot: slot,
+              });
+            },
+            commitment
+          )
+        )
     );
 
     return () => {
-      accountSubscriptions.forEach((listener) => {
-        connection.removeAccountChangeListener(listener);
+      accountSubscriptions.forEach((listeners) => {
+        listeners.forEach((listener) => {
+          connection.removeAccountChangeListener(listener);
+        });
       });
     };
   }, [dispatch, connection, accounts]);
