@@ -30,7 +30,11 @@ export default class TpuProxy {
           const tpuAddresses: string[] = [];
           nodes.forEach((node) => {
             const tpu = nodesService.nodes.get(node);
-            if (tpu) tpuAddresses.push(tpu);
+            if (tpu) {
+              tpuAddresses.push(tpu);
+            } else {
+              console.error("NO TPU FOUND", node);
+            }
           });
           proxy.tpuAddresses = tpuAddresses;
           proxy.connect();
