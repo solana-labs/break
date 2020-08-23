@@ -10,20 +10,18 @@ import {
 } from "providers/api";
 import { useSocket } from "providers/socket";
 import { useBlockhash } from "providers/blockhash";
-import { useDispatch, ActionType } from "providers/transactions";
+import { useDispatch } from "providers/transactions";
 
 export const COUNTDOWN_SECS = 15;
 
 type GameState = "loading" | "payment" | "play" | "reset";
-type SetGameState = React.Dispatch<React.SetStateAction<GameState>>;
-const GameStateContext = React.createContext<
-  [GameState, SetGameState] | undefined
->(undefined);
+const GameStateContext = React.createContext<GameState | undefined>(undefined);
 
 type SetCountdown = React.Dispatch<React.SetStateAction<number | undefined>>;
-const CountdownContext = React.createContext<
-  [number | undefined, SetCountdown] | undefined
->(undefined);
+type CountdownState = [number | undefined, SetCountdown];
+const CountdownContext = React.createContext<CountdownState | undefined>(
+  undefined
+);
 
 type Props = { children: React.ReactNode };
 export function GameStateProvider({ children }: Props) {
@@ -78,9 +76,13 @@ export function GameStateProvider({ children }: Props) {
     }
   }, [countdown, history, location]);
 
+  const countdownState: CountdownState = React.useMemo(() => {
+    return [countdown, setCountdown];
+  }, [countdown]);
+
   return (
-    <GameStateContext.Provider value={[gameState, setGameState]}>
-      <CountdownContext.Provider value={[countdown, setCountdown]}>
+    <GameStateContext.Provider value={gameState}>
+      <CountdownContext.Provider value={countdownState}>
         {children}
       </CountdownContext.Provider>
     </GameStateContext.Provider>
@@ -112,7 +114,7 @@ export function useResetGame() {
   const dispatch = useDispatch();
 
   return React.useCallback(() => {
-    dispatch({ type: ActionType.ResetState });
+    dispatch({ type: "reset" });
     history.push({ ...location, pathname: "/game" });
     if (paymentRequired) {
       clearAccounts();

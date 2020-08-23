@@ -67,9 +67,10 @@ function configReducer(state: State, action: Action): State {
 }
 
 const StateContext = React.createContext<State | undefined>(undefined);
-const DispatchContext = React.createContext<
-  [React.MutableRefObject<string>, Dispatch] | undefined
+const RefContext = React.createContext<
+  React.MutableRefObject<string> | undefined
 >(undefined);
+const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
 type ApiProviderProps = { children: React.ReactNode };
 export function ApiProvider({ children }: ApiProviderProps) {
@@ -94,8 +95,8 @@ export function ApiProvider({ children }: ApiProviderProps) {
 
   return (
     <StateContext.Provider value={state}>
-      <DispatchContext.Provider value={[httpUrlRef, dispatch]}>
-        {children}
+      <DispatchContext.Provider value={dispatch}>
+        <RefContext.Provider value={httpUrlRef}>{children}</RefContext.Provider>
       </DispatchContext.Provider>
     </StateContext.Provider>
   );
@@ -162,12 +163,11 @@ export function useClusterParam(): string {
 }
 
 export function useClearAccounts() {
-  const context = React.useContext(DispatchContext);
-  if (!context) {
+  const dispatch = React.useContext(DispatchContext);
+  if (!dispatch) {
     throw new Error(`useClearAccounts must be used within a ApiProvider`);
   }
 
-  const [, dispatch] = context;
   return React.useCallback(() => {
     dispatch({ status: ConfigStatus.Fetching });
     dispatch({ status: ConfigStatus.Failure });
@@ -175,11 +175,14 @@ export function useClearAccounts() {
 }
 
 export function useRefreshAccounts() {
-  const context = React.useContext(DispatchContext);
-  if (!context) {
+  const dispatch = React.useContext(DispatchContext);
+  if (!dispatch) {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
-  const [httpUrlRef, dispatch] = context;
+  const httpUrlRef = React.useContext(RefContext);
+  if (!httpUrlRef) {
+    throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
+  }
   const config = useConfig();
   const [paymentAccount] = useAccountState();
   const paymentRequired = config?.paymentRequired;

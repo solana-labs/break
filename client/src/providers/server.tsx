@@ -47,9 +47,8 @@ function parseQuery(query: URLSearchParams): Server {
 }
 
 type SetShowModal = React.Dispatch<React.SetStateAction<boolean>>;
-const ModalContext = React.createContext<[boolean, SetShowModal] | undefined>(
-  undefined
-);
+type ModalState = [boolean, SetShowModal];
+const ModalContext = React.createContext<ModalState | undefined>(undefined);
 type SetCustomUrl = React.Dispatch<React.SetStateAction<string>>;
 type SetServer = React.Dispatch<React.SetStateAction<Server>>;
 type ServerState = {
@@ -73,11 +72,15 @@ export function ServerProvider({ children }: ProviderProps) {
     setServer(serverParam);
   }, [serverParam]);
 
+  const modalState: ModalState = React.useMemo(() => {
+    return [showModal, setShowModal];
+  }, [showModal]);
+
   return (
     <ServerContext.Provider
       value={{ server, setServer, customUrl, setCustomUrl }}
     >
-      <ModalContext.Provider value={[showModal, setShowModal]}>
+      <ModalContext.Provider value={modalState}>
         {children}
       </ModalContext.Provider>
     </ServerContext.Provider>

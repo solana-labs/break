@@ -7,7 +7,7 @@ import { useGameState } from "providers/game";
 
 export default function Wallet() {
   const [account] = useAccountState();
-  const [gameState] = useGameState();
+  const gameState = useGameState();
   const location = useLocation();
 
   if (!account) {

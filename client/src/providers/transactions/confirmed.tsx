@@ -2,12 +2,7 @@ import * as React from "react";
 
 import { AccountInfo } from "@solana/web3.js";
 import { useAccounts, useConnection } from "../api";
-import {
-  useDispatch,
-  ActionType,
-  TrackedCommitment,
-  COMMITMENT_PARAM,
-} from "./index";
+import { useDispatch, TrackedCommitment, COMMITMENT_PARAM } from "./index";
 import * as Bytes from "utils/bytes";
 
 export const DEBUG_MODE = new URLSearchParams(window.location.search).has(
@@ -54,10 +49,11 @@ export function ConfirmedHelper({ children }: Props) {
                 partitionCount,
               };
               dispatch({
-                type: ActionType.UpdateIds,
+                type: "update",
                 activeIdPartition,
                 commitment,
                 estimatedSlot: slot,
+                receivedAt: performance.now(),
               });
             },
             commitment
