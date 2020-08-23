@@ -2,9 +2,10 @@ import * as React from "react";
 import { useTransactions, TransactionState } from "./index";
 
 type SetSelected = React.Dispatch<React.SetStateAction<string | undefined>>;
-export const SelectedContext = React.createContext<
-  [TransactionState | undefined, SetSelected] | undefined
->(undefined);
+type SelectedState = [TransactionState | undefined, SetSelected];
+export const SelectedContext = React.createContext<SelectedState | undefined>(
+  undefined
+);
 type ProviderProps = { children: React.ReactNode };
 export function SelectedTxProvider({ children }: ProviderProps) {
   const transactions = useTransactions();
@@ -21,8 +22,12 @@ export function SelectedTxProvider({ children }: ProviderProps) {
     );
   }, [transactions, signature]);
 
+  const selectedState: SelectedState = React.useMemo(() => {
+    return [transaction, selectSignature];
+  }, [transaction]);
+
   return (
-    <SelectedContext.Provider value={[transaction, selectSignature]}>
+    <SelectedContext.Provider value={selectedState}>
       {children}
     </SelectedContext.Provider>
   );

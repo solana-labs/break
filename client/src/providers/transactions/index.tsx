@@ -1,13 +1,11 @@
 import * as React from "react";
+import { useThrottle } from "@react-hook/throttle";
 import { TransactionSignature, PublicKey } from "@solana/web3.js";
-import { useConfig, useAccounts, useConnection } from "../api";
-import { useBlockhash } from "../blockhash";
+import { useConnection } from "../api";
 import { ConfirmedHelper } from "./confirmed";
 import { TpsProvider, TpsContext } from "./tps";
-import { createTransaction } from "./create";
+import { CreateTxContext, CreateTxProvider } from "./create";
 import { SelectedTxProvider } from "./selected";
-import { useSocket } from "../socket";
-import { reportError } from "utils";
 
 export type PendingTransaction = {
   sentAt: number;
@@ -74,50 +72,50 @@ export type TransactionStatus = "success" | "timeout" | "pending";
 
 export type TransactionState = SuccessState | TimeoutState | PendingState;
 
-export enum ActionType {
-  NewTransaction,
-  UpdateIds,
-  TimeoutTransaction,
-  ResetState,
-  RecordRoot,
-  LandedTxs,
-}
+export type ActionType =
+  | "new"
+  | "update"
+  | "timeout"
+  | "reset"
+  | "root"
+  | "landed";
 
 type UpdateIds = {
-  type: ActionType.UpdateIds;
+  type: "update";
   activeIdPartition: {
     ids: Set<number>;
     partition: number;
     partitionCount: number;
   };
   commitment: TrackedCommitment;
+  receivedAt: number;
   estimatedSlot: number;
 };
 
 type LandedTxs = {
-  type: ActionType.LandedTxs;
+  type: "landed";
   signatures: TransactionSignature[];
   slots: number[];
 };
 
 type NewTransaction = {
-  type: ActionType.NewTransaction;
+  type: "new";
   trackingId: number;
   details: TransactionDetails;
   pendingTransaction: PendingTransaction;
 };
 
 type TimeoutTransaction = {
-  type: ActionType.TimeoutTransaction;
+  type: "timeout";
   trackingId: number;
 };
 
 type ResetState = {
-  type: ActionType.ResetState;
+  type: "reset";
 };
 
 type RecordRoot = {
-  type: ActionType.RecordRoot;
+  type: "root";
   root: number;
 };
 
@@ -132,7 +130,7 @@ type Action =
 type State = TransactionState[];
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case ActionType.NewTransaction: {
+    case "new": {
       const { details, pendingTransaction } = action;
       return [
         ...state,
@@ -144,7 +142,7 @@ function reducer(state: State, action: Action): State {
       ];
     }
 
-    case ActionType.TimeoutTransaction: {
+    case "timeout": {
       const trackingId = action.trackingId;
       if (trackingId >= state.length) return state;
       const timeout = state[trackingId];
@@ -163,7 +161,7 @@ function reducer(state: State, action: Action): State {
       });
     }
 
-    case ActionType.UpdateIds: {
+    case "update": {
       const { ids, partition, partitionCount } = action.activeIdPartition;
       return state.map((tx, trackingId) => {
         if (trackingId % partitionCount !== partition) return tx;
@@ -187,7 +185,10 @@ function reducer(state: State, action: Action): State {
             },
             timing: {
               sentAt: tx.pending.sentAt,
-              [action.commitment]: timeElapsed(tx.pending.sentAt),
+              [action.commitment]: timeElapsed(
+                tx.pending.sentAt,
+                action.receivedAt
+              ),
             },
             pending: tx.pending,
           };
@@ -212,7 +213,10 @@ function reducer(state: State, action: Action): State {
               ...tx,
               timing: {
                 ...tx.timing,
-                [action.commitment]: timeElapsed(tx.timing.sentAt),
+                [action.commitment]: timeElapsed(
+                  tx.timing.sentAt,
+                  action.receivedAt
+                ),
               },
             };
           } else if (
@@ -246,7 +250,7 @@ function reducer(state: State, action: Action): State {
       });
     }
 
-    case ActionType.ResetState: {
+    case "reset": {
       state.forEach((tx) => {
         if (tx.status === "pending") {
           clearTimeout(tx.pending.timeoutId);
@@ -259,7 +263,7 @@ function reducer(state: State, action: Action): State {
       return [];
     }
 
-    case ActionType.RecordRoot: {
+    case "root": {
       const foundRooted = state.find((tx) => {
         return (
           tx.status === "success" &&
@@ -287,7 +291,7 @@ function reducer(state: State, action: Action): State {
       });
     }
 
-    case ActionType.LandedTxs: {
+    case "landed": {
       return state.map((tx) => {
         if (tx.status === "success") {
           const index = action.signatures.findIndex(
@@ -329,7 +333,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
 
   React.useEffect(() => {
     dispatch({
-      type: ActionType.ResetState,
+      type: "reset",
     });
 
     if (connection === undefined) return;
@@ -337,7 +341,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
       targetSlot.current = slot;
     });
     const rootSubscription = connection.onRootChange((root) => {
-      dispatch({ type: ActionType.RecordRoot, root });
+      dispatch({ type: "root", root });
     });
 
     // Poll for signature statuses to determine which slot a tx landed in
@@ -363,7 +367,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
         }
       }
       if (slots.length === 0) return;
-      dispatch({ type: ActionType.LandedTxs, slots, signatures });
+      dispatch({ type: "landed", slots, signatures });
     }, 2000);
 
     return () => {
@@ -373,14 +377,21 @@ export function TransactionsProvider({ children }: ProviderProps) {
     };
   }, [connection]);
 
+  const [throttledState, setThrottledState] = useThrottle(state, 10);
+  React.useEffect(() => {
+    setThrottledState(state);
+  }, [state, setThrottledState]);
+
   return (
-    <StateContext.Provider value={state}>
+    <StateContext.Provider value={throttledState}>
       <DispatchContext.Provider value={dispatch}>
         <SlotContext.Provider value={targetSlot}>
           <SelectedTxProvider>
-            <ConfirmedHelper>
-              <TpsProvider>{children}</TpsProvider>
-            </ConfirmedHelper>
+            <CreateTxProvider>
+              <ConfirmedHelper>
+                <TpsProvider>{children}</TpsProvider>
+              </ConfirmedHelper>
+            </CreateTxProvider>
           </SelectedTxProvider>
         </SlotContext.Provider>
       </DispatchContext.Provider>
@@ -388,9 +399,11 @@ export function TransactionsProvider({ children }: ProviderProps) {
   );
 }
 
-function timeElapsed(sentAt: number): number {
-  const now = performance.now();
-  return parseFloat(((now - sentAt) / 1000).toFixed(3));
+function timeElapsed(
+  sentAt: number,
+  receivedAt: number = performance.now()
+): number {
+  return parseFloat(((receivedAt - sentAt) / 1000).toFixed(3));
 }
 
 export function useDispatch() {
@@ -483,41 +496,11 @@ export function useTps() {
   return tps;
 }
 
-export function useCreateTx() {
-  const config = useConfig();
-  const accounts = useAccounts();
-  const idCounter = React.useRef<number>(0);
-  const targetSlotRef = useTargetSlotRef();
-  const programDataAccount = accounts?.programAccounts[0].toBase58();
-
-  // Reset counter when program data accounts are refreshed
-  React.useEffect(() => {
-    idCounter.current = 0;
-  }, [programDataAccount]);
-
-  const blockhash = useBlockhash();
-  const dispatch = useDispatch();
-  const socket = useSocket();
-  return React.useCallback(() => {
-    if (!blockhash || !socket || !config || !accounts || !targetSlotRef.current)
-      return;
-    const id = idCounter.current;
-    if (id < accounts.accountCapacity * accounts.programAccounts.length) {
-      idCounter.current++;
-      createTransaction(
-        blockhash,
-        targetSlotRef.current,
-        config.programId,
-        accounts,
-        id,
-        dispatch,
-        socket
-      );
-    } else {
-      reportError(
-        new Error("Account capacity exceeded"),
-        "failed to create transaction"
-      );
-    }
-  }, [blockhash, socket, config, accounts, dispatch, targetSlotRef]);
+export function useCreateTxRef() {
+  const createTxRef = React.useContext(CreateTxContext);
+  if (createTxRef === undefined)
+    throw new Error(
+      `useCreateTxRef must be used within a TransactionsProvider`
+    );
+  return createTxRef;
 }

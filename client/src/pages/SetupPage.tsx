@@ -47,7 +47,7 @@ const NODE_DETAILS = USE_TORUS_TESTNET
 type GoogleStatus = "cached" | "fresh";
 export default function Setup() {
   const [account, setAccount] = useAccountState();
-  const [gameState] = useGameState();
+  const gameState = useGameState();
   const [googleStatus, setGoogleStatus] = React.useState<GoogleStatus>();
   const [googleResponse, setGoogleResponse] = React.useState<
     GoogleLoginResponse

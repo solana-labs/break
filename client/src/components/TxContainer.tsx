@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import { useThrottle } from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
-import { useCreateTx, useTransactions } from "providers/transactions";
+import { useCreateTxRef, useTransactions } from "providers/transactions";
 import {
   useGameState,
   useResetGame,
@@ -13,11 +12,8 @@ import { TxTableRow } from "./TxTableRow";
 import { DEBUG_MODE } from "providers/transactions/confirmed";
 
 export function TransactionContainer({ enabled }: { enabled?: boolean }) {
-  const scrollEl = useRef<HTMLDivElement>(null);
-  const rawTransactions = useTransactions();
-  const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
-  const createTx = useCreateTx();
-  const [gameState] = useGameState();
+  const createTxRef = useCreateTxRef();
+  const gameState = useGameState();
   const [countdown, setCountdown] = useCountdown();
   const resetGame = useResetGame();
   const [rapidFire, setRapidFire] = React.useState(false);
@@ -25,17 +21,19 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const makeTransaction = useCallback(() => {
     if (enabled) {
       if (countdown !== undefined) {
-        createTx();
+        createTxRef.current();
       } else if (gameState === "play") {
-        createTx();
+        createTxRef.current();
         setCountdown(performance.now());
       }
     }
-  }, [enabled, createTx, gameState, countdown, setCountdown]);
+  }, [enabled, createTxRef, gameState, countdown, setCountdown]);
 
   useEffect(() => {
-    if (!rapidFire || !enabled) {
+    if (rapidFire && !enabled) {
       setRapidFire(false);
+      return;
+    } else if (!rapidFire) {
       return;
     }
 
@@ -66,9 +64,51 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
     };
   }, [makeTransaction]);
 
-  useEffect(() => {
-    setTransactions(rawTransactions);
-  }, [rawTransactions, setTransactions]);
+  return (
+    <div className="card h-100 mb-0">
+      <div className="card-header">
+        <div className="d-flex align-items-center">
+          <HelpButton />
+          <span className="text-truncate">Live Transaction Statuses</span>
+        </div>
+        <div className="text-primary d-none d-md-block">
+          {enabled ? "Press any key to send a transaction" : "Game finished"}
+        </div>
+      </div>
+      <div className="card-body">
+        <div className="tx-wrapper border-1 border-primary h-100 position-relative">
+          {countdown === undefined && enabled ? (
+            <div className="d-flex h-100 justify-content-center align-items-center p-3">
+              <h2 className="text-center">
+                Try to break Solana's network by sending as many transactions as
+                you can in {COUNTDOWN_SECS} seconds!
+              </h2>
+            </div>
+          ) : null}
+          <InnerContainer />
+        </div>
+      </div>
+      <div className="card-footer">
+        <span
+          className="btn btn-pink w-100 text-uppercase text-truncate touch-action-none"
+          onContextMenu={(e) => e.preventDefault()}
+          onPointerDown={() => setRapidFire(true)}
+          onPointerUp={() => setRapidFire(false)}
+          onPointerLeave={() => setRapidFire(false)}
+          onPointerCancel={() => setRapidFire(false)}
+          onClick={enabled ? makeTransaction : resetGame}
+        >
+          <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
+          {enabled ? "Send new transactions" : "Play again"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function InnerContainer() {
+  const scrollEl = useRef<HTMLDivElement>(null);
+  const transactions = useTransactions();
 
   useEffect(() => {
     const current = scrollEl.current;
@@ -104,45 +144,24 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   );
 
   return (
-    <div className="card h-100 mb-0">
-      <div className="card-header">
-        <div className="d-flex align-items-center">
-          <HelpButton />
-          <span className="text-truncate">Live Transaction Statuses</span>
-        </div>
-        <div className="text-primary d-none d-md-block">
-          {enabled ? "Press any key to send a transaction" : "Game finished"}
-        </div>
-      </div>
-      <div className="card-body">
-        <div className="tx-wrapper border-1 border-primary h-100 position-relative">
-          {!transactions.length && enabled ? (
-            <div className="d-flex h-100 justify-content-center align-items-center p-3">
-              <h2 className="text-center">
-                Try to break Solana's network by sending as many transactions as
-                you can in {COUNTDOWN_SECS} seconds!
-              </h2>
-            </div>
-          ) : null}
-          <div ref={scrollEl} className="square-container" tabIndex={0}>
-            {renderTransactions}
-          </div>
-        </div>
-      </div>
-      <div className="card-footer">
-        <span
-          className="btn btn-pink w-100 text-uppercase text-truncate touch-action-none"
-          onContextMenu={(e) => e.preventDefault()}
-          onPointerDown={() => setRapidFire(true)}
-          onPointerUp={() => setRapidFire(false)}
-          onPointerLeave={() => setRapidFire(false)}
-          onPointerCancel={() => setRapidFire(false)}
-          onClick={enabled ? makeTransaction : resetGame}
-        >
-          <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
-          {enabled ? "Send new transactions" : "Play again"}
-        </span>
-      </div>
+    <div ref={scrollEl} className="square-container" tabIndex={0}>
+      {renderTransactions}
+    </div>
+  );
+}
+
+function HelpButton() {
+  const [show, setShow] = React.useState(false);
+
+  return (
+    <div
+      className="popover-container c-pointer mr-3"
+      onClick={() => setShow(true)}
+      onMouseOver={() => setShow(true)}
+      onMouseOut={() => setShow(false)}
+    >
+      <span className="fe fe-help-circle"></span>
+      <Legend show={show} />
     </div>
   );
 }
@@ -170,22 +189,6 @@ function Legend({ show }: { show: boolean }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function HelpButton() {
-  const [show, setShow] = React.useState(false);
-
-  return (
-    <div
-      className="popover-container c-pointer mr-3"
-      onClick={() => setShow(true)}
-      onMouseOver={() => setShow(true)}
-      onMouseOut={() => setShow(false)}
-    >
-      <span className="fe fe-help-circle"></span>
-      <Legend show={show} />
     </div>
   );
 }
