@@ -215,7 +215,26 @@ function reducer(state: State, action: Action): State {
                 [action.commitment]: timeElapsed(tx.timing.sentAt),
               },
             };
-          } else if (tx.pending && !ids.has(id)) {
+          } else if (
+            action.commitment === "recent" &&
+            tx.pending &&
+            !ids.has(id)
+          ) {
+            // Don't revert to pending state if we already received timing info for other commitments
+            if (
+              tx.timing["single"] !== undefined ||
+              tx.timing["singleGossip"] !== undefined
+            ) {
+              return {
+                ...tx,
+                timing: {
+                  ...tx.timing,
+                  recent: undefined,
+                },
+              };
+            }
+
+            // Revert to pending state because the previous notification likely came from a fork
             return {
               status: "pending",
               details: tx.details,
