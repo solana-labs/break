@@ -4,7 +4,7 @@ import { promisify } from "util";
 import Redis from "redis";
 
 const SUPPLY_SIZE = 50;
-const BATCH_SIZE = 4;
+const BATCH_SIZE = parseInt(process.env.CREATE_ACCOUNT_BATCH_SIZE || "") || 10;
 
 export const TX_PER_ACCOUNT =
   parseInt(process.env.TX_PER_ACCOUNT || "") || 1000;
@@ -108,7 +108,9 @@ export default class AccountSupply {
 
       size = await this.size();
       console.log(`${this.name}: ${size}`);
-      if (incomplete) await sleep(1000);
+
+      // If incomplete, probably getting rate-limited
+      if (incomplete) await sleep(5000);
     }
 
     this.replenishing = false;
