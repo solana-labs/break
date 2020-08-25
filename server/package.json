@@ -38,7 +38,7 @@
     "typescript": "^3.9.7",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
-    "webpack-node-externals": "^2.5.1",
+    "webpack-node-externals": "^2.5.2",
     "ws": "^7.3.1"
   }
 }
