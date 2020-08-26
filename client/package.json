@@ -38,7 +38,7 @@
     "chart.js": "^2.9.3",
     "lodash.debounce": "^4.0.8",
     "node-sass": "^4.14.1",
-    "prettier": "^2.1.0",
+    "prettier": "^2.1.1",
     "qrcode.react": "^1.0.0",
     "react": "^16.13.1",
     "react-chartjs-2": "^2.10.0",
