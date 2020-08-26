@@ -1,8 +1,5 @@
 import * as React from "react";
-import {
-  Blockhash,
-  PublicKey,
-} from "@solana/web3.js";
+import { Blockhash, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 import {
   Dispatch,
