@@ -6,6 +6,7 @@ import {
   FeeCalculator,
   SystemProgram,
   sendAndConfirmTransaction,
+  BPF_LOADER_PROGRAM_ID,
 } from "@solana/web3.js";
 import path from "path";
 import _fs from "fs";
@@ -74,7 +75,8 @@ export default class ProgramLoader {
           connection,
           loaderAccount,
           programAccount,
-          elfData
+          elfData,
+          BPF_LOADER_PROGRAM_ID
         );
         console.log("Program Loaded");
         break;
