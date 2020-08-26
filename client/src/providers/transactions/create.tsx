@@ -45,6 +45,7 @@ export function createTransaction(
       (response: CreateTransactionResponseMessage) => {
         const { signature, serializedTransaction } = response;
 
+        socket.send(serializedTransaction);
         const sentAt = performance.now();
 
         const pendingTransaction: PendingTransaction = { sentAt };
@@ -66,18 +67,16 @@ export function createTransaction(
           pendingTransaction,
         });
 
-        setTimeout(() => {
-          const retryUntil = new URLSearchParams(window.location.search).get(
-            "retry_until"
-          );
-          if (retryUntil === null || retryUntil !== "disabled") {
-            pendingTransaction.retryId = window.setInterval(() => {
-              if (socket.readyState === WebSocket.OPEN) {
-                socket.send(serializedTransaction);
-              }
-            }, RETRY_INTERVAL_MS);
-          }
-        }, 1);
+        const retryUntil = new URLSearchParams(window.location.search).get(
+          "retry_until"
+        );
+        if (retryUntil === null || retryUntil !== "disabled") {
+          pendingTransaction.retryId = window.setInterval(() => {
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(serializedTransaction);
+            }
+          }, RETRY_INTERVAL_MS);
+        }
       },
       (error: any) => {
         console.error(error);
