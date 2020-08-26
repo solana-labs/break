@@ -15,7 +15,7 @@ import { useActiveUsers } from "providers/socket";
 import { useGameState, useCountdown } from "providers/game";
 
 export default function Game() {
-  const [gameState] = useGameState();
+  const gameState = useGameState();
   const [countdown] = useCountdown();
   const showPayment = gameState === "payment";
   const loading = gameState === "loading";

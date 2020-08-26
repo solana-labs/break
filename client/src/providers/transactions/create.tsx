@@ -1,24 +1,92 @@
-import { Blockhash, PublicKey } from "@solana/web3.js";
+import * as React from "react";
+import {
+  Blockhash,
+  PublicKey,
+} from "@solana/web3.js";
 import bs58 from "bs58";
 import {
   Dispatch,
   PendingTransaction,
-  ActionType,
   TransactionDetails,
+  useTargetSlotRef,
+  useDispatch,
 } from "./index";
 import { AccountsConfig } from "../api/config";
 import {
   CreateTransactionRPC,
   CreateTransactionResponseMessage,
 } from "../../workers/create-transaction-rpc";
+import { useConfig, useAccounts } from "providers/api";
+import { useBlockhash } from "providers/blockhash";
+import { useSocket } from "providers/socket";
+import { reportError } from "utils";
 
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
 
 const workerRPC = new CreateTransactionRPC();
+export const CreateTxContext = React.createContext<
+  React.MutableRefObject<() => void | undefined> | undefined
+>(undefined);
+
+type ProviderProps = { children: React.ReactNode };
+export function CreateTxProvider({ children }: ProviderProps) {
+  const createTx = React.useRef(() => {});
+  const config = useConfig();
+  const accounts = useAccounts();
+  const idCounter = React.useRef<number>(0);
+  const targetSlotRef = useTargetSlotRef();
+  const programDataAccount = accounts?.programAccounts[0].toBase58();
+
+  // Reset counter when program data accounts are refreshed
+  React.useEffect(() => {
+    idCounter.current = 0;
+  }, [programDataAccount]);
+
+  const blockhash = useBlockhash();
+  const dispatch = useDispatch();
+  const socket = useSocket();
+  React.useEffect(() => {
+    createTx.current = () => {
+      if (
+        !blockhash ||
+        !socket ||
+        !config ||
+        !accounts ||
+        !targetSlotRef.current
+      )
+        return;
+      const id = idCounter.current;
+      if (id < accounts.accountCapacity * accounts.programAccounts.length) {
+        idCounter.current++;
+        createTransaction(
+          blockhash,
+          targetSlotRef.current,
+          config.programId,
+          accounts,
+          id,
+          dispatch,
+          socket
+        );
+      } else {
+        reportError(
+          new Error("Account capacity exceeded"),
+          "failed to create transaction"
+        );
+      }
+    };
+  }, [blockhash, socket, config, accounts, dispatch, targetSlotRef]);
+
+  return (
+    <CreateTxContext.Provider value={createTx}>
+      {children}
+    </CreateTxContext.Provider>
+  );
+}
 
 export function createTransaction(
   blockhash: Blockhash,
+  targetSlot: number,
   programId: PublicKey,
   accounts: AccountsConfig,
   trackingId: number,
@@ -48,9 +116,9 @@ export function createTransaction(
         socket.send(serializedTransaction);
         const sentAt = performance.now();
 
-        const pendingTransaction: PendingTransaction = { sentAt };
+        const pendingTransaction: PendingTransaction = { sentAt, targetSlot };
         pendingTransaction.timeoutId = window.setTimeout(() => {
-          dispatch({ type: ActionType.TimeoutTransaction, trackingId });
+          dispatch({ type: "timeout", trackingId });
         }, SEND_TIMEOUT_MS);
 
         const details: TransactionDetails = {
@@ -61,7 +129,7 @@ export function createTransaction(
         };
 
         dispatch({
-          type: ActionType.NewTransaction,
+          type: "new",
           details,
           trackingId,
           pendingTransaction,

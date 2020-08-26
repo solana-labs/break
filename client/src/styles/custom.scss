@@ -75,6 +75,10 @@
   background: $white;
 }
 
+.b-black {
+  background: $black !important;
+}
+
 .c-pointer {
   cursor: pointer;
 }
@@ -116,4 +120,11 @@
 
 .z-auto {
   z-index: auto !important;
+}
+
+.debug-row {
+  cursor: pointer;
+  &:hover {
+    background: #111;
+  }
 }

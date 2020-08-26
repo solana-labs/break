@@ -30,7 +30,11 @@ export default class TpuProxy {
           const tpuAddresses: string[] = [];
           nodes.forEach((node) => {
             const tpu = nodesService.nodes.get(node);
-            if (tpu) tpuAddresses.push(tpu);
+            if (tpu) {
+              tpuAddresses.push(tpu);
+            } else {
+              console.error("NO TPU FOUND", node);
+            }
           });
           proxy.tpuAddresses = tpuAddresses;
           proxy.connect();
@@ -74,11 +78,9 @@ export default class TpuProxy {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onTransaction = (data: any): void => {
     if (TPU_DISABLED) {
-      try {
-        this.connection.sendRawTransaction(data);
-      } catch (err) {
-        console.error("failed to send raw tx");
-      }
+      this.connection.sendRawTransaction(data).catch((err) => {
+        console.error(err, "failed to send raw tx");
+      });
       return;
     }
 

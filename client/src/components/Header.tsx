@@ -13,7 +13,7 @@ import { useBalance } from "providers/balance";
 import { useConfig, useRefreshAccounts } from "providers/api";
 
 export function Header() {
-  const [gameState] = useGameState();
+  const gameState = useGameState();
   const [countdown] = useCountdown();
   const [, setRefresh] = React.useState<boolean>(false);
   const resetGame = useResetGame();

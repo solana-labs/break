@@ -1,21 +1,19 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import { useThrottle } from "@react-hook/throttle";
 
 import { TransactionSquare } from "./TxSquare";
-import { useCreateTx, useTransactions } from "providers/transactions";
+import { useCreateTxRef, useTransactions } from "providers/transactions";
 import {
   useGameState,
   useResetGame,
   COUNTDOWN_SECS,
   useCountdown,
 } from "providers/game";
+import { TxTableRow } from "./TxTableRow";
+import { DEBUG_MODE } from "providers/transactions/confirmed";
 
 export function TransactionContainer({ enabled }: { enabled?: boolean }) {
-  const scrollEl = useRef<HTMLDivElement>(null);
-  const rawTransactions = useTransactions();
-  const [transactions, setTransactions] = useThrottle(rawTransactions, 10);
-  const createTx = useCreateTx();
-  const [gameState] = useGameState();
+  const createTxRef = useCreateTxRef();
+  const gameState = useGameState();
   const [countdown, setCountdown] = useCountdown();
   const resetGame = useResetGame();
   const [rapidFire, setRapidFire] = React.useState(false);
@@ -23,17 +21,19 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const makeTransaction = useCallback(() => {
     if (enabled) {
       if (countdown !== undefined) {
-        createTx();
+        createTxRef.current();
       } else if (gameState === "play") {
-        createTx();
+        createTxRef.current();
         setCountdown(performance.now());
       }
     }
-  }, [enabled, createTx, gameState, countdown, setCountdown]);
+  }, [enabled, createTxRef, gameState, countdown, setCountdown]);
 
   useEffect(() => {
-    if (!rapidFire || !enabled) {
+    if (rapidFire && !enabled) {
       setRapidFire(false);
+      return;
+    } else if (!rapidFire) {
       return;
     }
 
@@ -64,17 +64,6 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
     };
   }, [makeTransaction]);
 
-  useEffect(() => {
-    setTransactions(rawTransactions);
-  }, [rawTransactions, setTransactions]);
-
-  useEffect(() => {
-    const current = scrollEl.current;
-    if (current) {
-      current.scrollTop = current.scrollHeight;
-    }
-  }, [transactions.length]);
-
   return (
     <div className="card h-100 mb-0">
       <div className="card-header">
@@ -88,7 +77,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
       </div>
       <div className="card-body">
         <div className="tx-wrapper border-1 border-primary h-100 position-relative">
-          {!transactions.length && enabled ? (
+          {countdown === undefined && enabled ? (
             <div className="d-flex h-100 justify-content-center align-items-center p-3">
               <h2 className="text-center">
                 Try to break Solana's network by sending as many transactions as
@@ -96,11 +85,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
               </h2>
             </div>
           ) : null}
-          <div ref={scrollEl} className="square-container" tabIndex={0}>
-            {transactions.map((tx) => (
-              <TransactionSquare key={tx.details.signature} transaction={tx} />
-            ))}
-          </div>
+          <InnerContainer />
         </div>
       </div>
       <div className="card-footer">
@@ -117,6 +102,66 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
           {enabled ? "Send new transactions" : "Play again"}
         </span>
       </div>
+    </div>
+  );
+}
+
+function InnerContainer() {
+  const scrollEl = useRef<HTMLDivElement>(null);
+  const transactions = useTransactions();
+
+  useEffect(() => {
+    const current = scrollEl.current;
+    if (current) {
+      current.scrollTop = current.scrollHeight;
+    }
+  }, [transactions.length]);
+
+  const renderTransactions = DEBUG_MODE ? (
+    <div className="table-responsive mb-0">
+      <table className="table table-sm table-nowrap">
+        <thead>
+          <tr>
+            <th className="text-muted">Transaction</th>
+            <th className="text-muted">Target Slot</th>
+            <th className="text-muted">Landed Slot</th>
+            <th className="text-muted">Recent Conf Time</th>
+            <th className="text-muted">SingleGossip Conf Time</th>
+            <th className="text-muted">Single Conf Time</th>
+          </tr>
+        </thead>
+        <tbody className="list">
+          {transactions.map((tx) => (
+            <TxTableRow key={tx.details.signature} transaction={tx} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    transactions.map((tx) => (
+      <TransactionSquare key={tx.details.signature} transaction={tx} />
+    ))
+  );
+
+  return (
+    <div ref={scrollEl} className="square-container" tabIndex={0}>
+      {renderTransactions}
+    </div>
+  );
+}
+
+function HelpButton() {
+  const [show, setShow] = React.useState(false);
+
+  return (
+    <div
+      className="popover-container c-pointer mr-3"
+      onClick={() => setShow(true)}
+      onMouseOver={() => setShow(true)}
+      onMouseOut={() => setShow(false)}
+    >
+      <span className="fe fe-help-circle"></span>
+      <Legend show={show} />
     </div>
   );
 }
@@ -144,22 +189,6 @@ function Legend({ show }: { show: boolean }) {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function HelpButton() {
-  const [show, setShow] = React.useState(false);
-
-  return (
-    <div
-      className="popover-container c-pointer mr-3"
-      onClick={() => setShow(true)}
-      onMouseOver={() => setShow(true)}
-      onMouseOut={() => setShow(false)}
-    >
-      <span className="fe fe-help-circle"></span>
-      <Legend show={show} />
     </div>
   );
 }

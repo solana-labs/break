@@ -1,5 +1,5 @@
 import * as React from "react";
-import { TransactionState } from "providers/transactions";
+import { TransactionState, COMMITMENT_PARAM } from "providers/transactions";
 import {
   useSelectTransaction,
   useSelectedTransaction,
@@ -143,23 +143,21 @@ export function TransactionDetails({
   }
 
   function displayConfTime() {
-    switch (transaction.status) {
-      case "success":
-        return (
-          <span className="text-success">
-            {transaction.confirmationTime} sec
-          </span>
-        );
-      case "pending":
-        return (
-          <div>
-            <span className="spinner-grow spinner-grow-sm mr-2"></span>
-            Processing
-          </div>
-        );
-      case "timeout":
-        return <span className="text-warning">Timed out</span>;
+    if (transaction.status === "timeout") {
+      return <span className="text-warning">Timed out</span>;
     }
+    if (transaction.status === "success") {
+      const confTime = transaction.timing[COMMITMENT_PARAM];
+      if (confTime) {
+        return <span className="text-success">{confTime} sec</span>;
+      }
+    }
+    return (
+      <div>
+        <span className="spinner-grow spinner-grow-sm mr-2"></span>
+        Processing
+      </div>
+    );
   }
 
   return (
@@ -172,8 +170,8 @@ export function TransactionDetails({
       </div>
       {transaction.status === "success" && (
         <div className="d-flex justify-content-between mb-4">
-          <div className="">Block</div>
-          {transaction.slot}
+          <div className="">Estimated Block</div>
+          {transaction.slot.estimated}
         </div>
       )}
       <div className="d-flex justify-content-between">

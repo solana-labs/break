@@ -26,7 +26,7 @@ export function LoadingModal({
   });
 
   const renderContent = () => {
-    if (!show || showModal) return null;
+    if (!show) return null;
     const loadingText = wallet ? "Fetching wallet" : "Loading";
     return (
       <div className="modal-dialog modal-dialog-centered lift justify-content-center">

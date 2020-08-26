@@ -6,6 +6,7 @@ import {
   FeeCalculator,
   SystemProgram,
   sendAndConfirmTransaction,
+  BPF_LOADER_PROGRAM_ID,
 } from "@solana/web3.js";
 import path from "path";
 import _fs from "fs";
@@ -35,7 +36,9 @@ export default class ProgramLoader {
     while (true) {
       try {
         // If the program account already exists, don't try to load it again
-        const info = await connection.getAccountInfo(programAccount.publicKey);
+        const info = (
+          await connection.getParsedAccountInfo(programAccount.publicKey)
+        ).value;
         if (info?.executable) return programAccount.publicKey;
 
         const NUM_RETRIES = 100; /* allow some number of retries */
@@ -72,7 +75,8 @@ export default class ProgramLoader {
           connection,
           loaderAccount,
           programAccount,
-          elfData
+          elfData,
+          BPF_LOADER_PROGRAM_ID
         );
         console.log("Program Loaded");
         break;

@@ -13,15 +13,7 @@ export function reportError(err: Error, context: string) {
 }
 
 export function isLocalHost() {
-  const hostname = window.location.hostname;
-  switch (hostname) {
-    case "localhost":
-    case "127.0.0.1":
-    case "0.0.0.0":
-      return true;
-    default:
-      return false;
-  }
+  return window.location.hostname === "localhost";
 }
 
 export const PAYMENT_ACCOUNT = (() => {

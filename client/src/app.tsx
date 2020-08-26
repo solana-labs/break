@@ -15,7 +15,7 @@ import { useClusterModal } from "providers/server";
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
   const isSetupPage = !!useRouteMatch("/setup")?.isExact;
-  const [gameState] = useGameState();
+  const gameState = useGameState();
   const [showClusterModal] = useClusterModal();
   const showLoadingModal =
     !isHomePage && !isSetupPage && gameState === "loading";
