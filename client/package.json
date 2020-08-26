@@ -16,7 +16,7 @@
     "@bugsnag/plugin-react": "^7.3.1",
     "@react-hook/debounce": "^3.0.0",
     "@react-hook/throttle": "^2.2.0",
-    "@solana/web3.js": "^0.71.5",
+    "@solana/web3.js": "^0.71.7",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^10.4.9",
     "@testing-library/user-event": "^12.1.3",
