@@ -26,6 +26,7 @@ type Timing = {
   recent?: number;
   single?: number;
   singleGossip?: number;
+  recentSignature?: number;
 };
 
 type SuccessState = {
@@ -92,6 +93,13 @@ type UpdateIds = {
   estimatedSlot: number;
 };
 
+type SignatureConf = {
+  type: "signature";
+  trackingId: number;
+  estimatedSlot: number;
+  receivedAt: number;
+};
+
 type LandedTxs = {
   type: "landed";
   signatures: TransactionSignature[];
@@ -125,7 +133,8 @@ type Action =
   | TimeoutTransaction
   | ResetState
   | RecordRoot
-  | LandedTxs;
+  | LandedTxs
+  | SignatureConf;
 
 type State = TransactionState[];
 function reducer(state: State, action: Action): State {
@@ -140,6 +149,47 @@ function reducer(state: State, action: Action): State {
           pending: pendingTransaction,
         },
       ];
+    }
+
+    case "signature": {
+      const trackingId = action.trackingId;
+      if (trackingId >= state.length) return state;
+      const transaction = state[trackingId];
+
+      return state.map((tx) => {
+        if (tx.details.signature === transaction.details.signature) {
+          if (tx.status === "pending") {
+            return {
+              status: "success",
+              details: tx.details,
+              slot: {
+                target: tx.pending.targetSlot,
+                estimated: action.estimatedSlot,
+              },
+              timing: {
+                sentAt: tx.pending.sentAt,
+                recentSignature: timeElapsed(
+                  tx.pending.sentAt,
+                  action.receivedAt
+                ),
+              },
+              pending: tx.pending,
+            };
+          } else if (tx.status === "success") {
+            return {
+              ...tx,
+              timing: {
+                ...tx.timing,
+                recentSignature: timeElapsed(
+                  tx.timing.sentAt,
+                  action.receivedAt
+                ),
+              },
+            };
+          }
+        }
+        return tx;
+      });
     }
 
     case "timeout": {

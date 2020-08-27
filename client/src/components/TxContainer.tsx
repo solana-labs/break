@@ -126,6 +126,7 @@ function InnerContainer() {
             <th className="text-muted">Target Slot</th>
             <th className="text-muted">Landed Slot</th>
             <th className="text-muted">Recent Conf Time</th>
+            <th className="text-muted">(Signature) Recent Conf Time</th>
             <th className="text-muted">SingleGossip Conf Time</th>
             <th className="text-muted">Single Conf Time</th>
           </tr>

@@ -30,6 +30,7 @@ export function TxTableRow({ transaction }: Props) {
       <td>{targetSlot || "-"}</td>
       <td>{landedSlot || "-"}</td>
       <td>{timing?.recent?.toFixed(3) || "-"}</td>
+      <td>{timing?.recentSignature?.toFixed(3) || "-"}</td>
       <td>{timing?.singleGossip?.toFixed(3) || "-"}</td>
       <td>{timing?.single?.toFixed(3) || "-"}</td>
     </tr>

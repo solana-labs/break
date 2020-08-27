@@ -4,6 +4,7 @@ import {
   Transaction,
   TransactionInstruction,
   PublicKey,
+  Connection,
 } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as Bytes from "utils/bytes";
@@ -15,7 +16,7 @@ import {
   useDispatch,
 } from "./index";
 import { AccountsConfig } from "../api/config";
-import { useConfig, useAccounts } from "providers/api";
+import { useConfig, useAccounts, useConnection } from "providers/api";
 import { useBlockhash } from "providers/blockhash";
 import { useSocket } from "providers/socket";
 import { reportError } from "utils";
@@ -41,12 +42,14 @@ export function CreateTxProvider({ children }: ProviderProps) {
     idCounter.current = 0;
   }, [programDataAccount]);
 
+  const connection = useConnection();
   const blockhash = useBlockhash();
   const dispatch = useDispatch();
   const socket = useSocket();
   React.useEffect(() => {
     createTx.current = () => {
       if (
+        !connection ||
         !blockhash ||
         !socket ||
         !config ||
@@ -58,6 +61,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
       if (id < accounts.accountCapacity * accounts.programAccounts.length) {
         idCounter.current++;
         createTransaction(
+          connection,
           blockhash,
           targetSlotRef.current,
           config.programId,
@@ -73,7 +77,15 @@ export function CreateTxProvider({ children }: ProviderProps) {
         );
       }
     };
-  }, [blockhash, socket, config, accounts, dispatch, targetSlotRef]);
+  }, [
+    blockhash,
+    connection,
+    socket,
+    config,
+    accounts,
+    dispatch,
+    targetSlotRef,
+  ]);
 
   return (
     <CreateTxContext.Provider value={createTx}>
@@ -83,6 +95,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
 }
 
 export function createTransaction(
+  connection: Connection,
   blockhash: Blockhash,
   targetSlot: number,
   programId: PublicKey,
@@ -136,6 +149,19 @@ export function createTransaction(
       }
     }, RETRY_INTERVAL_MS);
   }
+
+  connection.onSignature(
+    signature,
+    (result, context) => {
+      dispatch({
+        type: "signature",
+        trackingId,
+        estimatedSlot: context.slot,
+        receivedAt: performance.now(),
+      });
+    },
+    "recent"
+  );
 
   dispatch({
     type: "new",
