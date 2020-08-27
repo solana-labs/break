@@ -21,7 +21,8 @@ export default class ProgramAccountSupply {
     feeCalculator: FeeCalculator,
     programId: PublicKey
   ): Promise<ProgramAccountSupply> {
-    const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
+    // const space = Math.ceil(TX_PER_ACCOUNT / TX_PER_BYTE);
+    const space = 1000 * 1000;
     const rent = await AccountSupply.calculateRent(connection, space);
     const supply = new AccountSupply(
       "Program Data Account Supply",
