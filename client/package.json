@@ -47,7 +47,8 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3",
     "tweetnacl": "^1.0.3",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "worker-loader": "^3.0.1"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -63,5 +64,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {}
 }

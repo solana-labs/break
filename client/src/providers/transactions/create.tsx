@@ -1,12 +1,6 @@
 import * as React from "react";
-import {
-  Blockhash,
-  Transaction,
-  TransactionInstruction,
-  PublicKey,
-} from "@solana/web3.js";
+import { Blockhash, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
-import * as Bytes from "utils/bytes";
 import {
   Dispatch,
   PendingTransaction,
@@ -15,6 +9,10 @@ import {
   useDispatch,
 } from "./index";
 import { AccountsConfig } from "../api/config";
+import {
+  CreateTransactionRPC,
+  CreateTransactionResponseMessage,
+} from "../../workers/create-transaction-rpc";
 import { useConfig, useAccounts } from "providers/api";
 import { useBlockhash } from "providers/blockhash";
 import { useSocket } from "providers/socket";
@@ -23,6 +21,7 @@ import { reportError } from "utils";
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
 
+const workerRPC = new CreateTransactionRPC();
 export const CreateTxContext = React.createContext<
   React.MutableRefObject<() => void | undefined> | undefined
 >(undefined);
@@ -97,50 +96,55 @@ export function createTransaction(
   const accountIndex = trackingId % feeAccounts.length;
   const programDataAccount = programAccounts[accountIndex];
   const feeAccount = feeAccounts[accountIndex];
-  const instruction = new TransactionInstruction({
-    keys: [{ pubkey: programDataAccount, isWritable: true, isSigner: false }],
-    programId,
-    data: Buffer.from(Bytes.instructionDataFromId(bitId)),
-  });
 
-  const transaction = new Transaction();
-  transaction.add(instruction);
-  transaction.recentBlockhash = blockhash;
-  transaction.sign(feeAccount);
-  const serializedTx = transaction.serialize();
-  socket.send(serializedTx);
-  const sentAt = performance.now();
+  workerRPC
+    .createTransaction({
+      trackingId: trackingId,
+      blockhash: blockhash,
+      programId: programId.toBase58(),
+      programDataAccount: programDataAccount.toBase58(),
+      bitId: bitId,
+      feeAccountSecretKey: feeAccount.secretKey,
+    })
+    .then(
+      (response: CreateTransactionResponseMessage) => {
+        const { signature, serializedTransaction } = response;
 
-  const pendingTransaction: PendingTransaction = { sentAt, targetSlot };
-  pendingTransaction.timeoutId = window.setTimeout(() => {
-    dispatch({ type: "timeout", trackingId });
-  }, SEND_TIMEOUT_MS);
+        socket.send(serializedTransaction);
+        const sentAt = performance.now();
 
-  const signatureBuffer = transaction.signature;
-  if (!signatureBuffer) throw new Error("Failed to sign transaction");
-  const signature = bs58.encode(signatureBuffer);
-  const details: TransactionDetails = {
-    id: bitId,
-    feeAccount: feeAccount.publicKey,
-    programAccount: programDataAccount,
-    signature,
-  };
+        const pendingTransaction: PendingTransaction = { sentAt, targetSlot };
+        pendingTransaction.timeoutId = window.setTimeout(() => {
+          dispatch({ type: "timeout", trackingId });
+        }, SEND_TIMEOUT_MS);
 
-  const retryUntil = new URLSearchParams(window.location.search).get(
-    "retry_until"
-  );
-  if (retryUntil === null || retryUntil !== "disabled") {
-    pendingTransaction.retryId = window.setInterval(() => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send(serializedTx);
+        const details: TransactionDetails = {
+          id: bitId,
+          feeAccount: feeAccount.publicKey,
+          programAccount: programDataAccount,
+          signature: bs58.encode(signature),
+        };
+
+        dispatch({
+          type: "new",
+          details,
+          trackingId,
+          pendingTransaction,
+        });
+
+        const retryUntil = new URLSearchParams(window.location.search).get(
+          "retry_until"
+        );
+        if (retryUntil === null || retryUntil !== "disabled") {
+          pendingTransaction.retryId = window.setInterval(() => {
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(serializedTransaction);
+            }
+          }, RETRY_INTERVAL_MS);
+        }
+      },
+      (error: any) => {
+        console.error(error);
       }
-    }, RETRY_INTERVAL_MS);
-  }
-
-  dispatch({
-    type: "new",
-    details,
-    trackingId,
-    pendingTransaction,
-  });
+    );
 }
