@@ -12,7 +12,7 @@
     "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\""
   },
   "dependencies": {
-    "@bugsnag/js": "^7.3.0",
+    "@bugsnag/js": "^7.3.3",
     "@bugsnag/plugin-react": "^7.3.1",
     "@react-hook/debounce": "^3.0.0",
     "@react-hook/throttle": "^2.2.0",
