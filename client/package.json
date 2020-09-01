@@ -12,10 +12,10 @@
     "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\""
   },
   "dependencies": {
-    "@bugsnag/js": "^7.3.3",
-    "@bugsnag/plugin-react": "^7.3.1",
     "@react-hook/debounce": "^3.0.0",
     "@react-hook/throttle": "^2.2.0",
+    "@sentry/react": "^5.22.3",
+    "@sentry/tracing": "^5.22.3",
     "@solana/web3.js": "^0.71.7",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^10.4.9",

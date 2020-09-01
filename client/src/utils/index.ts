@@ -1,5 +1,5 @@
 import { Account } from "@solana/web3.js";
-import Bugsnag from "@bugsnag/js";
+import * as Sentry from "@sentry/react";
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -7,8 +7,8 @@ export function sleep(ms: number): Promise<void> {
 
 export function reportError(err: Error, context: string) {
   console.error(context, err);
-  Bugsnag.notify(err, (e) => {
-    e.context = context;
+  Sentry.captureException(err, {
+    tags: { context },
   });
 }
 

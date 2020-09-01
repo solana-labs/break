@@ -1,8 +1,8 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
-import Bugsnag from "@bugsnag/js";
-import BugsnagPluginReact from "@bugsnag/plugin-react";
+import * as Sentry from "@sentry/react";
+import { Integrations } from "@sentry/tracing";
 
 import "styles/index.scss";
 
@@ -16,39 +16,32 @@ import { SocketProvider } from "providers/socket";
 import { GameStateProvider } from "providers/game";
 import { ServerProvider } from "providers/server";
 
-Bugsnag.start({
-  apiKey: "e1e5631e036a4288aa58e273e0a7afd5",
-  plugins: [new BugsnagPluginReact()],
+Sentry.init({
+  dsn:
+    "https://727cd3fff6f949449c1ce5030928e667@o434108.ingest.sentry.io/5411826",
+  integrations: [new Integrations.BrowserTracing()],
+  tracesSampleRate: 1.0,
 });
 
-function NoOpBoundary({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
-}
-
-const ErrorBoundary =
-  Bugsnag.getPlugin("react")?.createErrorBoundary(React) || NoOpBoundary;
-
 ReactDOM.render(
-  <ErrorBoundary>
-    <BrowserRouter>
-      <ServerProvider>
-        <AccountProvider>
-          <ApiProvider>
-            <SocketProvider>
-              <BlockhashProvider>
-                <BalanceProvider>
-                  <TransactionsProvider>
-                    <GameStateProvider>
-                      <App />
-                    </GameStateProvider>
-                  </TransactionsProvider>
-                </BalanceProvider>
-              </BlockhashProvider>
-            </SocketProvider>
-          </ApiProvider>
-        </AccountProvider>
-      </ServerProvider>
-    </BrowserRouter>
-  </ErrorBoundary>,
+  <BrowserRouter>
+    <ServerProvider>
+      <AccountProvider>
+        <ApiProvider>
+          <SocketProvider>
+            <BlockhashProvider>
+              <BalanceProvider>
+                <TransactionsProvider>
+                  <GameStateProvider>
+                    <App />
+                  </GameStateProvider>
+                </TransactionsProvider>
+              </BalanceProvider>
+            </BlockhashProvider>
+          </SocketProvider>
+        </ApiProvider>
+      </AccountProvider>
+    </ServerProvider>
+  </BrowserRouter>,
   document.getElementById("root")
 );
