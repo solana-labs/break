@@ -7,7 +7,10 @@ import ApiServer from "./api";
 const app = express();
 
 // Redirect to https on Heroku
-if (process.env.NODE_ENV === "production") {
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.FORCE_HTTPS !== undefined
+) {
   app.use((req, res, next) => {
     if (req.header("x-forwarded-proto") !== "https") {
       res.redirect(`https://${req.header("host")}${req.url}`);
