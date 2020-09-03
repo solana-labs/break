@@ -7,9 +7,11 @@ export function sleep(ms: number): Promise<void> {
 
 export function reportError(err: Error, context: string) {
   console.error(context, err);
-  Sentry.captureException(err, {
-    tags: { context },
-  });
+  if (process.env.NODE_ENV === "production") {
+    Sentry.captureException(err, {
+      tags: { context },
+    });
+  }
 }
 
 export function isLocalHost() {
