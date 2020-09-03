@@ -10,7 +10,7 @@ import {
   useCreatedCount,
   useAvgConfirmationTime,
 } from "providers/transactions";
-import { useAccountState } from "providers/account";
+import { usePayerState } from "providers/wallet";
 import { useActiveUsers } from "providers/socket";
 import { useGameState, useCountdown } from "providers/game";
 
@@ -20,11 +20,11 @@ export default function Game() {
   const showPayment = gameState === "payment";
   const loading = gameState === "loading";
   const showStats = gameState === "play" || countdown !== undefined;
-  const [account] = useAccountState();
+  const [payer] = usePayerState();
   const location = useLocation();
 
   if (showPayment) {
-    if (!account) {
+    if (!payer) {
       return <Redirect to={{ ...location, pathname: "/setup" }} />;
     } else {
       return <Redirect to={{ ...location, pathname: "/wallet" }} />;
@@ -41,8 +41,8 @@ export default function Game() {
         <div className="col">
           {loading && countdown === undefined ? (
             <EmptyCard />
-          ) : showPayment && account ? (
-            <PaymentCard account={account} />
+          ) : showPayment && payer ? (
+            <PaymentCard account={payer} />
           ) : (
             <TransactionContainer enabled />
           )}

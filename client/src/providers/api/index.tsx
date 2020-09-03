@@ -4,7 +4,7 @@ import { useServer } from "providers/server";
 import { useBalance } from "providers/balance";
 import { fetchWithRetry } from "./request";
 import { Account, Connection } from "@solana/web3.js";
-import { useAccountState } from "providers/account";
+import { usePayerState } from "providers/wallet";
 
 export enum ConfigStatus {
   Initialized,
@@ -184,21 +184,21 @@ export function useRefreshAccounts() {
     throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
   }
   const config = useConfig();
-  const [paymentAccount] = useAccountState();
+  const [payer] = usePayerState();
   const paymentRequired = config?.paymentRequired;
   const balance = useBalance();
   const cost = config?.gameCost;
   return React.useCallback(() => {
     if (paymentRequired === undefined || cost === undefined) return;
     if (paymentRequired) {
-      if (!paymentAccount || balance === "loading" || balance < cost) {
+      if (!payer || balance === "loading" || balance < cost) {
         dispatch({ status: ConfigStatus.Fetching });
         dispatch({ status: ConfigStatus.Failure });
         return;
       }
-      refreshAccounts(dispatch, httpUrlRef, paymentAccount);
+      refreshAccounts(dispatch, httpUrlRef, payer);
     } else {
       refreshAccounts(dispatch, httpUrlRef, undefined);
     }
-  }, [httpUrlRef, dispatch, paymentAccount, paymentRequired, balance, cost]);
+  }, [httpUrlRef, dispatch, payer, paymentRequired, balance, cost]);
 }

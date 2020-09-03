@@ -9,7 +9,7 @@ import "styles/index.scss";
 import App from "./app";
 import { ApiProvider } from "providers/api";
 import { BlockhashProvider } from "providers/blockhash";
-import { AccountProvider } from "providers/account";
+import { WalletProvider } from "providers/wallet";
 import { BalanceProvider } from "providers/balance";
 import { TransactionsProvider } from "providers/transactions";
 import { SocketProvider } from "providers/socket";
@@ -26,7 +26,7 @@ Sentry.init({
 ReactDOM.render(
   <BrowserRouter>
     <ServerProvider>
-      <AccountProvider>
+      <WalletProvider>
         <ApiProvider>
           <SocketProvider>
             <BlockhashProvider>
@@ -40,7 +40,7 @@ ReactDOM.render(
             </BlockhashProvider>
           </SocketProvider>
         </ApiProvider>
-      </AccountProvider>
+      </WalletProvider>
     </ServerProvider>
   </BrowserRouter>,
   document.getElementById("root")

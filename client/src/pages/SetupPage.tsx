@@ -7,7 +7,7 @@ import { Account } from "@solana/web3.js";
 
 import { Header } from "components/Header";
 import { LoadingModal } from "components/LoadingModal";
-import { useAccountState } from "providers/account";
+import { usePayerState } from "providers/wallet";
 import {
   useGoogleLogin,
   GoogleLoginResponse,
@@ -46,7 +46,7 @@ const NODE_DETAILS = USE_TORUS_TESTNET
 
 type GoogleStatus = "cached" | "fresh";
 export default function Setup() {
-  const [account, setAccount] = useAccountState();
+  const [payer, setPayer] = usePayerState();
   const gameState = useGameState();
   const [googleStatus, setGoogleStatus] = React.useState<GoogleStatus>();
   const [googleResponse, setGoogleResponse] = React.useState<
@@ -146,7 +146,7 @@ export default function Setup() {
         if (unmounted) return;
         const torusKey = Buffer.from(privKey.toString(), "hex");
         const keyPair = nacl.sign.keyPair.fromSeed(torusKey);
-        setAccount(new Account(keyPair.secretKey));
+        setPayer(new Account(keyPair.secretKey));
       } catch (err) {
         reportError(err, "failed to fetch torus key");
         setGoogleStatus(undefined);
@@ -157,13 +157,13 @@ export default function Setup() {
     return () => {
       unmounted = true;
     };
-  }, [nodeDetails, googleResponse, googleStatus, setAccount]);
+  }, [nodeDetails, googleResponse, googleStatus, setPayer]);
 
   React.useEffect(() => {
-    if (gameState !== "payment" || account) {
+    if (gameState !== "payment" || payer) {
       history.push({ ...location, pathname: "/game" });
     }
-  }, [gameState, account, history, location]);
+  }, [gameState, payer, history, location]);
 
   const loadingWallet = !!googleResponse;
   const showWalletSetup = loaded && !googleStatus;
@@ -249,7 +249,7 @@ export default function Setup() {
                           className="btn btn-white"
                           onClick={() => {
                             disconnectGoogle();
-                            setAccount(PAYMENT_ACCOUNT);
+                            setPayer(PAYMENT_ACCOUNT);
                           }}
                         >
                           Select
