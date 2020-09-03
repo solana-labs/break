@@ -29,7 +29,13 @@ export function RpcProvider({ children }: ProviderProps) {
 
   const connection: ConnectionState = React.useMemo(() => {
     if (rpcUrl === undefined) return {};
-    return { connection: new Connection(rpcUrl) };
+    try {
+      const url = new URL(rpcUrl).toString();
+      return { connection: new Connection(url) };
+    } catch (err) {
+      console.error(err);
+      return {};
+    }
   }, [rpcUrl]);
 
   return (
