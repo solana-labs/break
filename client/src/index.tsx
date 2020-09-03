@@ -7,12 +7,10 @@ import { Integrations } from "@sentry/tracing";
 import "styles/index.scss";
 
 import App from "./app";
-import { ApiProvider } from "providers/api";
 import { BlockhashProvider } from "providers/blockhash";
 import { WalletProvider } from "providers/wallet";
 import { BalanceProvider } from "providers/balance";
 import { TransactionsProvider } from "providers/transactions";
-import { SocketProvider } from "providers/socket";
 import { GameStateProvider } from "providers/game";
 import { ServerProvider } from "providers/server";
 
@@ -25,23 +23,19 @@ Sentry.init({
 
 ReactDOM.render(
   <BrowserRouter>
-    <ServerProvider>
-      <WalletProvider>
-        <ApiProvider>
-          <SocketProvider>
-            <BlockhashProvider>
-              <BalanceProvider>
-                <TransactionsProvider>
-                  <GameStateProvider>
-                    <App />
-                  </GameStateProvider>
-                </TransactionsProvider>
-              </BalanceProvider>
-            </BlockhashProvider>
-          </SocketProvider>
-        </ApiProvider>
-      </WalletProvider>
-    </ServerProvider>
+    <WalletProvider>
+      <ServerProvider>
+        <BlockhashProvider>
+          <BalanceProvider>
+            <TransactionsProvider>
+              <GameStateProvider>
+                <App />
+              </GameStateProvider>
+            </TransactionsProvider>
+          </BalanceProvider>
+        </BlockhashProvider>
+      </ServerProvider>
+    </WalletProvider>
   </BrowserRouter>,
   document.getElementById("root")
 );

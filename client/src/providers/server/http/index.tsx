@@ -73,7 +73,7 @@ const RefContext = React.createContext<
 const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
 type ApiProviderProps = { children: React.ReactNode };
-export function ApiProvider({ children }: ApiProviderProps) {
+export function HttpProvider({ children }: ApiProviderProps) {
   const [state, dispatch] = React.useReducer(configReducer, {
     status: ConfigStatus.Fetching,
   });

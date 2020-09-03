@@ -8,14 +8,14 @@ import {
   useTargetSlotRef,
   useDispatch,
 } from "./index";
-import { AccountsConfig } from "../api/config";
+import { AccountsConfig } from "../server/http/config";
 import {
   CreateTransactionRPC,
   CreateTransactionResponseMessage,
 } from "../../workers/create-transaction-rpc";
-import { useConfig, useAccounts } from "providers/api";
+import { useConfig, useAccounts } from "providers/server/http";
 import { useBlockhash } from "providers/blockhash";
-import { useSocket } from "providers/socket";
+import { useSocket } from "providers/server/socket";
 import { reportError } from "utils";
 
 const SEND_TIMEOUT_MS = 45000;

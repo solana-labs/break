@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useServer } from "./server";
+import { useServer } from ".";
 
 type SetSocket = React.Dispatch<React.SetStateAction<ServerSocket | undefined>>;
 const SocketContext = React.createContext<WebSocket | undefined>(undefined);

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { AccountInfo } from "@solana/web3.js";
-import { useConfig } from "./api";
+import { useConfig } from "./server/http";
 import { usePayerState } from "./wallet";
 import { reportError } from "utils";
 

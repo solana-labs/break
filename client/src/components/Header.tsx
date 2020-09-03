@@ -10,7 +10,7 @@ import {
 } from "providers/game";
 import ClusterStatusButton from "./ClusterStatusButton";
 import { useBalance } from "providers/balance";
-import { useConfig, useRefreshAccounts } from "providers/api";
+import { useConfig, useRefreshAccounts } from "providers/server/http";
 
 export function Header() {
   const gameState = useGameState();

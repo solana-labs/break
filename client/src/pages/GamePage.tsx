@@ -11,7 +11,7 @@ import {
   useAvgConfirmationTime,
 } from "providers/transactions";
 import { usePayerState } from "providers/wallet";
-import { useActiveUsers } from "providers/socket";
+import { useActiveUsers } from "providers/server/socket";
 import { useGameState, useCountdown } from "providers/game";
 
 export default function Game() {

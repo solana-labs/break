@@ -4,7 +4,7 @@ import {
   useSelectTransaction,
   useSelectedTransaction,
 } from "providers/transactions/selected";
-import { useClusterParam } from "providers/api";
+import { useClusterParam } from "providers/server/http";
 
 export function TransactionModal() {
   const selectedTx = useSelectedTransaction();
