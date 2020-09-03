@@ -1,5 +1,5 @@
 import React from "react";
-import { clusterApiUrl, Cluster } from "@solana/web3.js";
+import { Cluster } from "@solana/web3.js";
 import { useLocation } from "react-router-dom";
 import { isLocalHost } from "../../utils";
 import { HttpProvider } from "./http";
@@ -26,10 +26,6 @@ export function serverName(server: Server): string {
     case "custom":
       return "Custom";
   }
-}
-
-export function serverInfo(server: Server): string {
-  return server === "custom" ? "Use custom server" : clusterApiUrl(server);
 }
 
 function parseQuery(query: URLSearchParams): Server {
@@ -122,7 +118,6 @@ export function useServer() {
     server,
     httpUrl,
     webSocketUrl,
-    info: serverInfo(server),
     name: serverName(server),
   };
 }
