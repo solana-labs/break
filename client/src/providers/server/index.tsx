@@ -1,7 +1,9 @@
 import React from "react";
 import { clusterApiUrl, Cluster } from "@solana/web3.js";
 import { useLocation } from "react-router-dom";
-import { isLocalHost } from "../utils";
+import { isLocalHost } from "../../utils";
+import { HttpProvider } from "./http";
+import { SocketProvider } from "./socket";
 
 type Server = Cluster | "custom";
 export const DEFAULT_SERVER = isLocalHost() ? "custom" : "mainnet-beta";
@@ -81,7 +83,9 @@ export function ServerProvider({ children }: ProviderProps) {
       value={{ server, setServer, customUrl, setCustomUrl }}
     >
       <ModalContext.Provider value={modalState}>
-        {children}
+        <HttpProvider>
+          <SocketProvider>{children}</SocketProvider>
+        </HttpProvider>
       </ModalContext.Provider>
     </ServerContext.Provider>
   );

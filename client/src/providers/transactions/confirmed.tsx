@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { AccountInfo } from "@solana/web3.js";
-import { useAccounts, useConnection } from "../api";
+import { useAccounts, useConnection } from "../server/http";
 import { useDispatch, TrackedCommitment, COMMITMENT_PARAM } from "./index";
 import * as Bytes from "utils/bytes";
 

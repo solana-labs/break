@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Blockhash, Connection } from "@solana/web3.js";
-import { useConnection } from "./api";
+import { useConnection } from "./server/http";
 import { sleep, reportError } from "utils";
 
 const POLL_INTERVAL_MS = 20000;

@@ -7,8 +7,8 @@ import {
   useIsFetching,
   useClearAccounts,
   useConnection,
-} from "providers/api";
-import { useSocket } from "providers/socket";
+} from "providers/server/http";
+import { useSocket } from "providers/server/socket";
 import { useBlockhash } from "providers/blockhash";
 import { useDispatch } from "providers/transactions";
 

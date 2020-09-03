@@ -2,7 +2,7 @@ import React from "react";
 import QRCode from "qrcode.react";
 import { Account, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { useConfig, useRefreshAccounts } from "providers/api";
+import { useConfig, useRefreshAccounts } from "providers/server/http";
 import { useBalance } from "providers/balance";
 import { usePayerState } from "providers/wallet";
 
