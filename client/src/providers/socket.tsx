@@ -77,7 +77,9 @@ function newSocket(
       if (!serverSocket || serverSocket.id === id) {
         // Reconnect if close was not explicit
         if (event.code !== SWITCH_URL_CODE) {
-          reportError(new Error("Socket was closed"), "Socket closed");
+          console.error("Socket closed, reconnecting...");
+          // TODO: Re-enable
+          // reportError(new Error("Socket was closed"), "Socket closed");
           setTimeout(() => {
             newSocket(webSocketUrl, setSocket, setActiveUsers);
           }, 5000);
