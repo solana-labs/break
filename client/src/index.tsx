@@ -7,12 +7,11 @@ import { Integrations } from "@sentry/tracing";
 import "styles/index.scss";
 
 import App from "./app";
-import { BlockhashProvider } from "providers/blockhash";
 import { WalletProvider } from "providers/wallet";
-import { BalanceProvider } from "providers/balance";
 import { TransactionsProvider } from "providers/transactions";
 import { GameStateProvider } from "providers/game";
 import { ServerProvider } from "providers/server";
+import { RpcProvider } from "providers/rpc";
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
@@ -27,15 +26,13 @@ ReactDOM.render(
   <BrowserRouter>
     <WalletProvider>
       <ServerProvider>
-        <BlockhashProvider>
-          <BalanceProvider>
-            <TransactionsProvider>
-              <GameStateProvider>
-                <App />
-              </GameStateProvider>
-            </TransactionsProvider>
-          </BalanceProvider>
-        </BlockhashProvider>
+        <RpcProvider>
+          <TransactionsProvider>
+            <GameStateProvider>
+              <App />
+            </GameStateProvider>
+          </TransactionsProvider>
+        </RpcProvider>
       </ServerProvider>
     </WalletProvider>
   </BrowserRouter>,

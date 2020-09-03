@@ -1,9 +1,10 @@
 import * as React from "react";
 
 import { AccountInfo } from "@solana/web3.js";
-import { useAccounts, useConnection } from "../server/http";
+import { useAccounts } from "../server/http";
 import { useDispatch, TrackedCommitment, COMMITMENT_PARAM } from "./index";
 import * as Bytes from "utils/bytes";
+import { useConnection } from "providers/rpc";
 
 export const DEBUG_MODE = new URLSearchParams(window.location.search).has(
   "debug"

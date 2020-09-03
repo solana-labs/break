@@ -6,11 +6,11 @@ import {
   useAccounts,
   useIsFetching,
   useClearAccounts,
-  useConnection,
 } from "providers/server/http";
 import { useSocket } from "providers/server/socket";
-import { useBlockhash } from "providers/blockhash";
+import { useBlockhash } from "providers/rpc/blockhash";
 import { useDispatch } from "providers/transactions";
+import { useConnection } from "./rpc";
 
 export const COUNTDOWN_SECS = 15;
 

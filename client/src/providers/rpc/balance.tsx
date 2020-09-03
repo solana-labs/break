@@ -1,8 +1,9 @@
 import * as React from "react";
 import { AccountInfo } from "@solana/web3.js";
-import { useConfig } from "./server/http";
-import { usePayerState } from "./wallet";
+import { useConfig } from "../server/http";
+import { usePayerState } from "../wallet";
 import { reportError } from "utils";
+import { useConnection } from ".";
 
 type Balance = number | "loading";
 const StateContext = React.createContext<Balance | undefined>(undefined);
@@ -12,7 +13,7 @@ export function BalanceProvider({ children }: Props) {
   const [balance, setBalance] = React.useState<Balance>("loading");
   const [payer] = usePayerState();
   const config = useConfig();
-  const connection = config?.connection;
+  const connection = useConnection();
   const paymentRequired = config?.paymentRequired;
 
   const refreshBalance = React.useCallback(() => {

@@ -1,8 +1,8 @@
-import { Account, PublicKey, Cluster, Connection } from "@solana/web3.js";
+import { Account, PublicKey, Cluster } from "@solana/web3.js";
 
 export interface Config {
   cluster: Cluster | undefined;
-  connection: Connection;
+  rpcUrl: string;
   programId: PublicKey;
   gameCost: number;
   paymentRequired: boolean;
@@ -30,7 +30,7 @@ export function configFromInit(response: any): Config {
   const cluster = stringToCluster(response.cluster);
   return {
     cluster,
-    connection: new Connection(response.clusterUrl),
+    rpcUrl: response.clusterUrl,
     programId: new PublicKey(response.programId),
     // Add 1 lamport because if the account is left with 0 lamports,
     // we won't get a notification for it

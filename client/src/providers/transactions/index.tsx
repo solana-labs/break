@@ -1,11 +1,11 @@
 import * as React from "react";
 import { useThrottle } from "@react-hook/throttle";
 import { TransactionSignature, PublicKey } from "@solana/web3.js";
-import { useConnection } from "../server/http";
-import { ConfirmedHelper } from "./confirmed";
+import { ConfirmedHelper, DEBUG_MODE } from "./confirmed";
 import { TpsProvider, TpsContext } from "./tps";
 import { CreateTxContext, CreateTxProvider } from "./create";
 import { SelectedTxProvider } from "./selected";
+import { useConnection } from "providers/rpc";
 
 export type PendingTransaction = {
   sentAt: number;
@@ -345,35 +345,38 @@ export function TransactionsProvider({ children }: ProviderProps) {
     });
 
     // Poll for signature statuses to determine which slot a tx landed in
-    const intervalId = setInterval(async () => {
-      const fetchStatuses: string[] = [];
-      stateRef.current.forEach((tx) => {
-        if (tx.status === "success" && tx.slot.landed === undefined) {
-          fetchStatuses.push(tx.details.signature);
-        }
-      });
+    const intervalId = DEBUG_MODE
+      ? setInterval(async () => {
+          const fetchStatuses: string[] = [];
+          stateRef.current.forEach((tx) => {
+            if (tx.status === "success" && tx.slot.landed === undefined) {
+              fetchStatuses.push(tx.details.signature);
+            }
+          });
 
-      if (fetchStatuses.length === 0) return;
+          if (fetchStatuses.length === 0) return;
 
-      const slots: number[] = [];
-      const signatures: TransactionSignature[] = [];
-      const statuses = (await connection.getSignatureStatuses(fetchStatuses))
-        .value;
-      for (var i = 0; i < statuses.length; i++) {
-        const status = statuses[i];
-        if (status !== null) {
-          slots.push(status.slot);
-          signatures.push(fetchStatuses[i]);
-        }
-      }
-      if (slots.length === 0) return;
-      dispatch({ type: "landed", slots, signatures });
-    }, 2000);
+          const slots: number[] = [];
+          const signatures: TransactionSignature[] = [];
+          const statuses = (
+            await connection.getSignatureStatuses(fetchStatuses)
+          ).value;
+          for (var i = 0; i < statuses.length; i++) {
+            const status = statuses[i];
+            if (status !== null) {
+              slots.push(status.slot);
+              signatures.push(fetchStatuses[i]);
+            }
+          }
+          if (slots.length === 0) return;
+          dispatch({ type: "landed", slots, signatures });
+        }, 2000)
+      : undefined;
 
     return () => {
       connection.removeSlotChangeListener(slotSubscription);
       connection.removeRootChangeListener(rootSubscription);
-      clearInterval(intervalId);
+      intervalId !== undefined && clearInterval(intervalId);
     };
   }, [connection]);
 
