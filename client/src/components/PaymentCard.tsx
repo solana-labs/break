@@ -4,7 +4,7 @@ import { Account, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { useConfig, useRefreshAccounts } from "providers/api";
 import { useBalance } from "providers/balance";
-import { useAccountState } from "providers/account";
+import { usePayerState } from "providers/wallet";
 
 export function lamportsToSolString(
   lamports: number,
@@ -36,7 +36,7 @@ export function getTrustWalletLink(
 
 export function PaymentCard({ account }: { account: Account }) {
   const balance = useBalance();
-  const [, setAccount] = useAccountState();
+  const [, setPayer] = usePayerState();
   const gameCostLamports = useConfig()?.gameCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
   const address = account.publicKey.toBase58();
@@ -131,7 +131,7 @@ export function PaymentCard({ account }: { account: Account }) {
           <div className="font-weight-bold">Change Wallet</div>
           <span
             className="btn btn-sm btn-white"
-            onClick={() => setAccount(undefined)}
+            onClick={() => setPayer(undefined)}
           >
             <span className="fe fe-list mr-2"></span>
             List

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { AccountInfo } from "@solana/web3.js";
 import { useConfig } from "./api";
-import { useAccountState } from "./account";
+import { usePayerState } from "./wallet";
 import { reportError } from "utils";
 
 type Balance = number | "loading";
@@ -10,14 +10,14 @@ const StateContext = React.createContext<Balance | undefined>(undefined);
 type Props = { children: React.ReactNode };
 export function BalanceProvider({ children }: Props) {
   const [balance, setBalance] = React.useState<Balance>("loading");
-  const [account] = useAccountState();
+  const [payer] = usePayerState();
   const config = useConfig();
   const connection = config?.connection;
   const paymentRequired = config?.paymentRequired;
 
   const refreshBalance = React.useCallback(() => {
     if (
-      account === undefined ||
+      payer === undefined ||
       connection === undefined ||
       paymentRequired !== true
     ) {
@@ -28,7 +28,7 @@ export function BalanceProvider({ children }: Props) {
     (async () => {
       try {
         const balance = await connection.getBalance(
-          account.publicKey,
+          payer.publicKey,
           "singleGossip"
         );
         setBalance(balance);
@@ -36,7 +36,7 @@ export function BalanceProvider({ children }: Props) {
         reportError(err, "Failed to refresh balance");
       }
     })();
-  }, [account, connection, paymentRequired]);
+  }, [payer, connection, paymentRequired]);
 
   React.useEffect(() => {
     refreshBalance();
@@ -51,13 +51,13 @@ export function BalanceProvider({ children }: Props) {
 
   React.useEffect(() => {
     if (
-      account === undefined ||
+      payer === undefined ||
       connection === undefined ||
       paymentRequired !== true
     )
       return;
     const subscription = connection.onAccountChange(
-      account.publicKey,
+      payer.publicKey,
       (accountInfo: AccountInfo<Buffer>) => setBalance(accountInfo.lamports),
       "singleGossip"
     );
@@ -65,7 +65,7 @@ export function BalanceProvider({ children }: Props) {
     return () => {
       connection.removeAccountChangeListener(subscription);
     };
-  }, [account, connection, paymentRequired]);
+  }, [payer, connection, paymentRequired]);
 
   return (
     <StateContext.Provider value={balance}>{children}</StateContext.Provider>
