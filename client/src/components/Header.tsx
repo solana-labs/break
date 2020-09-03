@@ -9,7 +9,7 @@ import {
   useCountdown,
 } from "providers/game";
 import ClusterStatusButton from "./ClusterStatusButton";
-import { useBalance } from "providers/balance";
+import { useBalance } from "providers/rpc/balance";
 import { useConfig, useRefreshAccounts } from "providers/server/http";
 
 export function Header() {

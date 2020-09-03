@@ -8,7 +8,7 @@ const StateContext = React.createContext<State | undefined>(undefined);
 
 type Props = { children: React.ReactNode };
 export function WalletProvider({ children }: Props) {
-  const state = React.useState<Account | undefined>(undefined);
+  const state = React.useState<Account>();
   return (
     <StateContext.Provider value={state}>{children}</StateContext.Provider>
   );

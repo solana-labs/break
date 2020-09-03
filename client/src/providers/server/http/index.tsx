@@ -1,7 +1,7 @@
 import React from "react";
 import { Config, AccountsConfig } from "./config";
 import { useServer } from "providers/server";
-import { useBalance } from "providers/balance";
+import { useBalance } from "providers/rpc/balance";
 import { fetchWithRetry } from "./request";
 import { Account, Connection } from "@solana/web3.js";
 import { usePayerState } from "providers/wallet";
@@ -134,11 +134,6 @@ export function useConfig() {
     throw new Error(`useConfig must be used within a ApiProvider`);
   }
   return context.config;
-}
-
-export function useConnection() {
-  const config = useConfig();
-  return config?.connection;
 }
 
 export function useIsFetching() {

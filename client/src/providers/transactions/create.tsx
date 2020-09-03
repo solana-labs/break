@@ -14,7 +14,7 @@ import {
   CreateTransactionResponseMessage,
 } from "../../workers/create-transaction-rpc";
 import { useConfig, useAccounts } from "providers/server/http";
-import { useBlockhash } from "providers/blockhash";
+import { useBlockhash } from "providers/rpc/blockhash";
 import { useSocket } from "providers/server/socket";
 import { reportError } from "utils";
 
