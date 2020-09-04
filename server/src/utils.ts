@@ -45,6 +45,6 @@ export async function confirmTransaction(
     timeout = setTimeout(() => {
       connection.removeSignatureListener(id);
       reject("timeout");
-    }, 5000);
+    }, 10000);
   });
 }
