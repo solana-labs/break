@@ -84,7 +84,6 @@ export default class ApiServer {
           ));
         } catch (err) {
           res.status(400).send("Payment failed: " + err);
-          supply.unreserveAccounts(split);
           return;
         }
 
