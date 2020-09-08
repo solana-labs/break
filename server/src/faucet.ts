@@ -82,7 +82,7 @@ export default class Faucet {
 
     // Intentionally lax to speed up loading time
     await sendAndConfirmTransaction(this.connection, transfer, [fromAccount], {
-      confirmations: 0,
+      commitment: "recent",
       skipPreflight: true,
     });
   }

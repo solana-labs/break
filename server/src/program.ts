@@ -68,7 +68,7 @@ export default class ProgramLoader {
             lamports: fees,
           }),
           [faucet.feeAccount],
-          { confirmations: 1, skipPreflight: true }
+          { commitment: "single", skipPreflight: true }
         );
 
         await BpfLoader.load(
