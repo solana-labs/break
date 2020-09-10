@@ -48,14 +48,15 @@ export function BlockhashProvider({ children }: BlockhashProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, {});
   const connection = useConnection();
   const connectionRef = React.useRef(connection);
+  const refreshingRef = React.useRef(false);
 
   React.useEffect(() => {
     if (connection === undefined) return;
 
     connectionRef.current = connection;
-    refresh(dispatch, connectionRef);
+    refresh(dispatch, connectionRef, refreshingRef);
     const timerId = window.setInterval(
-      () => refresh(dispatch, connectionRef),
+      () => refresh(dispatch, connectionRef, refreshingRef),
       POLL_INTERVAL_MS
     );
 
@@ -85,18 +86,27 @@ export function useBlockhash() {
 
 async function refresh(
   dispatch: Dispatch,
-  connectionRef: React.MutableRefObject<Connection | undefined>
+  connectionRef: React.MutableRefObject<Connection | undefined>,
+  refreshingRef: React.MutableRefObject<boolean>
 ) {
   let blockhash = undefined;
   const connection = connectionRef.current;
   if (connection === undefined) return;
+
+  if (refreshingRef.current) return;
+  refreshingRef.current = true;
+
+  let reported = false;
   while (blockhash === undefined && connection === connectionRef.current) {
     try {
       blockhash = (await connection.getRecentBlockhash("max")).blockhash;
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
-      reportError(err, "Failed to refresh blockhash");
+      if (!reported) reportError(err, "Failed to refresh blockhash");
+      reported = true;
       await sleep(1000);
     }
   }
+
+  refreshingRef.current = false;
 }
