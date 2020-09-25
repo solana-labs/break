@@ -8,6 +8,8 @@ export function sleep(ms: number): Promise<void> {
 export function reportError(err: Error, context: string) {
   console.error(context, err);
   if (process.env.NODE_ENV === "production") {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("cluster") === "custom") return;
     Sentry.captureException(err, {
       tags: { context },
     });
