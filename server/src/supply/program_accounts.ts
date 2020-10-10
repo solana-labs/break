@@ -4,6 +4,7 @@ import {
   FeeCalculator,
   PublicKey,
   SystemProgram,
+  Transaction,
 } from "@solana/web3.js";
 import AccountSupply, { TX_PER_ACCOUNT } from "./accounts";
 import Faucet from "../faucet";
@@ -29,13 +30,15 @@ export default class ProgramAccountSupply {
       async (fromAccount: Account) => {
         const programDataAccount = new Account();
         const signature = await connection.sendTransaction(
-          SystemProgram.createAccount({
-            fromPubkey: fromAccount.publicKey,
-            newAccountPubkey: programDataAccount.publicKey,
-            lamports: rent,
-            space,
-            programId,
-          }),
+          new Transaction().add(
+            SystemProgram.createAccount({
+              fromPubkey: fromAccount.publicKey,
+              newAccountPubkey: programDataAccount.publicKey,
+              lamports: rent,
+              space,
+              programId,
+            })
+          ),
           [fromAccount, programDataAccount],
           { skipPreflight: true }
         );

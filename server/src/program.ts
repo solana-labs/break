@@ -3,10 +3,11 @@ import {
   Connection,
   PublicKey,
   BpfLoader,
+  Transaction,
   FeeCalculator,
   SystemProgram,
   sendAndConfirmTransaction,
-  BPF_LOADER_PROGRAM_ID,
+  BPF_LOADER_DEPRECATED_PROGRAM_ID,
 } from "@solana/web3.js";
 import path from "path";
 import _fs from "fs";
@@ -62,11 +63,13 @@ export default class ProgramLoader {
         const loaderAccount = new Account();
         await sendAndConfirmTransaction(
           connection,
-          SystemProgram.transfer({
-            fromPubkey: faucet.feeAccount.publicKey,
-            toPubkey: loaderAccount.publicKey,
-            lamports: fees,
-          }),
+          new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: faucet.feeAccount.publicKey,
+              toPubkey: loaderAccount.publicKey,
+              lamports: fees,
+            })
+          ),
           [faucet.feeAccount],
           { commitment: "single", skipPreflight: true }
         );
@@ -76,7 +79,7 @@ export default class ProgramLoader {
           loaderAccount,
           programAccount,
           elfData,
-          BPF_LOADER_PROGRAM_ID
+          BPF_LOADER_DEPRECATED_PROGRAM_ID
         );
         console.log("Program Loaded");
         break;

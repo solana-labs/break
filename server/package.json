@@ -17,10 +17,15 @@
     "format": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "lint": "set -ex; eslint --ext .js,.ts,.tsx .",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "localnet:down": "solana-localnet down",
+    "localnet:logs": "solana-localnet logs -f",
+    "localnet:up": "solana-localnet up",
+    "localnet:update": "solana-localnet update"
   },
+  "testnetDefaultChannel": "edge",
   "dependencies": {
-    "@solana/web3.js": "^0.74.0",
+    "@solana/web3.js": "^0.78.4",
     "@types/cors": "^2.8.7",
     "@types/express": "^4.17.8",
     "@types/node": "^14.11.8",

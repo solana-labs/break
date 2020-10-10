@@ -3,6 +3,7 @@ import {
   Connection,
   PublicKey,
   SystemProgram,
+  Transaction,
   sendAndConfirmTransaction,
   LAMPORTS_PER_SOL,
   FeeCalculator,
@@ -65,11 +66,13 @@ export default class Faucet {
     const fromAccount = new Account(Buffer.from(paymentKey, "base64"));
     const fromPubkey = fromAccount.publicKey;
     const toPubkey = this.address();
-    const transfer = SystemProgram.transfer({
-      fromPubkey,
-      toPubkey,
-      lamports,
-    });
+    const transfer = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports,
+      })
+    );
 
     const latestBalance = await this.connection.getBalance(
       fromAccount.publicKey,
