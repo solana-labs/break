@@ -132,10 +132,8 @@ export function createTransaction(
           pendingTransaction,
         });
 
-        const retryUntil = new URLSearchParams(window.location.search).get(
-          "retry_until"
-        );
-        if (retryUntil === null || retryUntil !== "disabled") {
+        const retry = new URLSearchParams(window.location.search).get("retry");
+        if (retry === null || retry !== "disabled") {
           pendingTransaction.retryId = window.setInterval(() => {
             if (socket.readyState === WebSocket.OPEN) {
               socket.send(serializedTransaction);

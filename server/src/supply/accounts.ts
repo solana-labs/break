@@ -4,7 +4,9 @@ import { promisify } from "util";
 import Redis from "redis";
 
 const SUPPLY_SIZE = 50;
-const BATCH_SIZE = parseInt(process.env.CREATE_ACCOUNT_BATCH_SIZE || "") || 10;
+const DEFAULT_BATCH_SIZE = process.env.LIVE ? 2 : 10;
+const BATCH_SIZE =
+  parseInt(process.env.CREATE_ACCOUNT_BATCH_SIZE || "") || DEFAULT_BATCH_SIZE;
 
 export const TX_PER_ACCOUNT =
   parseInt(process.env.TX_PER_ACCOUNT || "") || 1000;

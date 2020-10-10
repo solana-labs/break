@@ -16,6 +16,7 @@ import { sleep } from "./utils";
 const fs = _fs.promises;
 
 const ENCODED_PROGRAM_KEY = process.env.ENCODED_PROGRAM_KEY;
+const DEPLOYED_PROGRAM_ADDRESS = process.env.DEPLOYED_PROGRAM_ADDRESS;
 
 export default class ProgramLoader {
   private static programAccount(): Account {
@@ -26,21 +27,29 @@ export default class ProgramLoader {
     }
   }
 
+  private static programAddress(): PublicKey {
+    if (DEPLOYED_PROGRAM_ADDRESS) {
+      return new PublicKey(DEPLOYED_PROGRAM_ADDRESS);
+    } else {
+      return ProgramLoader.programAccount().publicKey;
+    }
+  }
+
   static async load(
     connection: Connection,
     faucet: Faucet,
     feeCalculator: FeeCalculator
   ): Promise<PublicKey> {
+    const programAddress = ProgramLoader.programAddress();
     const programAccount = ProgramLoader.programAccount();
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         // If the program account already exists, don't try to load it again
-        const info = (
-          await connection.getParsedAccountInfo(programAccount.publicKey)
-        ).value;
-        if (info?.executable) return programAccount.publicKey;
+        const info = (await connection.getParsedAccountInfo(programAddress))
+          .value;
+        if (info?.executable) return programAddress;
 
         const NUM_RETRIES = 100; /* allow some number of retries */
         const elfFile = path.join(

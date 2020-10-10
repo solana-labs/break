@@ -9,6 +9,8 @@ import WebSocketServer from "./websocket";
 import { Express } from "express";
 import http from "http";
 
+const PAYMENT_REQUIRED = process.env.REQUIRE_PAYMENT === "true";
+
 export default class ApiServer {
   private static async getFeeCalculator(
     connection: Connection
@@ -55,7 +57,7 @@ export default class ApiServer {
         ? 4
         : Math.max(1, Math.min(10, splitParam));
 
-      if (!faucet.free && !paymentKey) {
+      if (PAYMENT_REQUIRED && !paymentKey) {
         res.status(400).send("Payment required");
         return;
       }
@@ -64,7 +66,7 @@ export default class ApiServer {
       let programAccounts, feeAccounts;
       if (reserved) {
         // Collect payment for reserved accounts
-        if (!faucet.free) {
+        if (PAYMENT_REQUIRED) {
           try {
             const lamports = supply.calculateCost(split, false);
             await faucet.collectPayment(paymentKey, lamports);
@@ -76,7 +78,7 @@ export default class ApiServer {
         }
 
         ({ programAccounts, feeAccounts } = supply.popAccounts(split));
-      } else if (!faucet.free) {
+      } else if (PAYMENT_REQUIRED) {
         try {
           ({ programAccounts, feeAccounts } = await supply.createAccounts(
             paymentKey,
@@ -122,7 +124,7 @@ export default class ApiServer {
             clusterUrl: urlTls,
             cluster,
             gameCost: supply.calculateCost(split, true),
-            paymentRequired: !faucet.free,
+            paymentRequired: PAYMENT_REQUIRED,
           })
         )
         .end();
