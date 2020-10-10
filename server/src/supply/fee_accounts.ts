@@ -2,6 +2,7 @@ import {
   Account,
   Connection,
   FeeCalculator,
+  Transaction,
   SystemProgram,
 } from "@solana/web3.js";
 import AccountSupply, { TX_PER_ACCOUNT } from "./accounts";
@@ -26,11 +27,13 @@ export default class FeeAccountSupply {
       async (fromAccount: Account) => {
         const account = new Account();
         const signature = await connection.sendTransaction(
-          SystemProgram.transfer({
-            fromPubkey: fromAccount.publicKey,
-            toPubkey: account.publicKey,
-            lamports: fundAmount,
-          }),
+          new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: fromAccount.publicKey,
+              toPubkey: account.publicKey,
+              lamports: fundAmount,
+            })
+          ),
           [fromAccount],
           { skipPreflight: true }
         );
