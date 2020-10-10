@@ -76,15 +76,6 @@ function Summary() {
           .
         </h3>
       </div>
-      <div className="col-12 text-center py-3">
-        <a
-          className="text-center"
-          href="https://leaderboard.break.solana.com"
-          rel="noreferrer noopener"
-        >
-          <button className="btn btn-warning">Leaderboard</button>
-        </a>
-      </div>
     </div>
   );
 }
