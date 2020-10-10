@@ -158,6 +158,23 @@ Set this parameter to pick a remote cluster. This parameter is automatically set
 https://break.solana.com/game?cluster=devnet
 ```
 
+##### `commitment`
+
+Set this parameter to set the commitment level used for confirming transactions. Default is `'singleGossip'` but `'single'`
+and `'recent'` are also supported.
+
+```
+https://break.solana.com/game?commitment=recent
+```
+
+##### `debug`
+
+Set this parameter to enable "debug mode" which will display a table of confirmation times instead of the colored grid.
+
+```
+https://break.solana.com/game?debug
+```
+
 ##### `retry`
 
 Set this parameter to disable retrying transactions which have not yet been confirmed. Retry behavior is enabled by default because
@@ -167,12 +184,12 @@ some transactions will be forwarded to a leader who skips their block slot.
 https://break.solana.com/game?retry=disabled
 ```
 
-##### `debug`
+##### `split`
 
-Set this parameter to enable "debug mode" which will display a table of confirmation times instead of the colored grid.
+Set this parameter to split transactions across multiple payer and program accounts to increase transaction parallelization. Default is 4.
 
 ```
-https://break.solana.com/game?debug
+https://break.solana.com/game?split=1
 ```
 
 ##### `test`
