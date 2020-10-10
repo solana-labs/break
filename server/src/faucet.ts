@@ -11,10 +11,9 @@ import {
 import { sleep } from "./utils";
 
 const ENCODED_PAYER_KEY = process.env.ENCODED_PAYER_KEY;
-const AIRDROP_AMOUNT = 10 * LAMPORTS_PER_SOL; // TODO should be determined by cluster
+const AIRDROP_AMOUNT = 10 * LAMPORTS_PER_SOL;
 
 export default class Faucet {
-  public free = process.env.FREE_TO_PLAY === "true";
   private checkBalanceCounter = 0;
 
   constructor(

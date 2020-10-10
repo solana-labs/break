@@ -4,7 +4,7 @@ import { sleep } from "./utils";
 import AvailableNodesService from "./available_nodes";
 import LeaderScheduleService from "./leader_schedule";
 
-const TPU_DISABLED = !!process.env.TPU_DISABLED;
+const PROXY_DISABLED = process.env.SEND_TO_RPC === "true";
 
 type TpuAddress = string;
 
@@ -20,7 +20,7 @@ export default class TpuProxy {
 
   static async create(connection: Connection): Promise<TpuProxy> {
     const proxy = new TpuProxy(connection);
-    if (!TPU_DISABLED) {
+    if (!PROXY_DISABLED) {
       const leaderService = await LeaderScheduleService.start(connection);
       const nodesService = await AvailableNodesService.start(connection);
       connection.onSlotChange(({ slot }) => {
@@ -45,7 +45,7 @@ export default class TpuProxy {
   }
 
   connected = (): boolean => {
-    return this.activeProxies() > 0 || TPU_DISABLED;
+    return this.activeProxies() > 0 || PROXY_DISABLED;
   };
 
   activeProxies = (): number => {
@@ -53,7 +53,7 @@ export default class TpuProxy {
   };
 
   connect = async (): Promise<void> => {
-    if (TPU_DISABLED) {
+    if (PROXY_DISABLED) {
       console.log("TPU Proxy disabled");
       return;
     }
@@ -77,7 +77,7 @@ export default class TpuProxy {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onTransaction = (data: any): void => {
-    if (TPU_DISABLED) {
+    if (PROXY_DISABLED) {
       this.connection.sendRawTransaction(data).catch((err) => {
         console.error(err, "failed to send raw tx");
       });
