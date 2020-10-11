@@ -40,7 +40,12 @@ export default function Results() {
 
 function Summary() {
   const confirmedCount = useConfirmedCount();
-  const capacityUsed = (100 * confirmedCount) / (COUNTDOWN_SECS * 50000);
+  const capacityUsed = {
+    solana: (100 * confirmedCount) / (COUNTDOWN_SECS * 50000),
+    bitcoin: (100 * confirmedCount) / (COUNTDOWN_SECS * 4.6),
+    ethereum: (100 * confirmedCount) / (COUNTDOWN_SECS * 15),
+  };
+
   return (
     <div className="row justify-content-center mb-5 results-summary px-4">
       <div className="col-12">
@@ -51,29 +56,20 @@ function Summary() {
           </span>{" "}
           transactions in {COUNTDOWN_SECS} seconds you took up{" "}
           <span className="text-primary font-weight-bold">
-            {capacityUsed.toFixed(3)}%
+            {capacityUsed.solana.toFixed(3)}%
           </span>{" "}
           of Solana’s capacity.
         </h3>
-        {/* <h3 className="text-center">
-        Today, players around the world have submitted{" "}
-        <span className="text-primary font-weight-bold">{confirmedCount}</span>{" "}
-        transactions, which is{" "}
-        <span className="text-primary font-weight-bold">
-          {capacityUsed.toFixed(3)}%
-        </span>{" "}
-        of Solana’s capacity.
-      </h3> */}
         <h3 className="text-center">
-          To process the same amount of transactions, Bitcoin would have taken{" "}
+          Processing the same amount of transactions would have taken up{" "}
           <span className="text-primary font-weight-bold">
-            {new Date((confirmedCount / 4) * 1000).toISOString().substr(11, 8)}
-          </span>
-          . Ethereum would have taken{" "}
+            {capacityUsed.ethereum.toFixed(1)}%
+          </span>{" "}
+          of Ethereum’s capacity and{" "}
           <span className="text-primary font-weight-bold">
-            {new Date((confirmedCount / 15) * 1000).toISOString().substr(11, 8)}
-          </span>
-          .
+            {capacityUsed.bitcoin.toFixed(1)}%
+          </span>{" "}
+          of Bitcoin’s capacity.
         </h3>
       </div>
     </div>
