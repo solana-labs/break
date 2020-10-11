@@ -1,8 +1,9 @@
 use solana_sdk::{
-    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, pubkey::Pubkey,
+    account_info::AccountInfo, entrypoint_deprecated, entrypoint_deprecated::ProgramResult,
+    pubkey::Pubkey,
 };
 
-entrypoint!(process_instruction);
+entrypoint_deprecated!(process_instruction);
 
 fn process_instruction<'a>(
     _program_id: &Pubkey,
@@ -107,7 +108,3 @@ mod test {
         process_instruction(&program_id, &accounts, &[0, 1, 2, 4]).unwrap();
     }
 }
-
-// Required to support info! in tests
-#[cfg(not(target_arch = "bpf"))]
-solana_sdk_bpf_test::stubs!();
