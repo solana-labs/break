@@ -19,7 +19,7 @@
   "dependencies": {
     "@react-hook/debounce": "^3.0.0",
     "@react-hook/throttle": "^2.2.0",
-    "@sentry/react": "^5.25.0",
+    "@sentry/react": "^5.26.0",
     "@sentry/tracing": "^5.25.0",
     "@solana/web3.js": "^0.80.0",
     "@testing-library/jest-dom": "^5.11.4",
