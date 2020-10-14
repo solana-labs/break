@@ -25,7 +25,7 @@
   },
   "testnetDefaultChannel": "edge",
   "dependencies": {
-    "@solana/web3.js": "^0.80.1",
+    "@solana/web3.js": "^0.80.2",
     "@types/cors": "^2.8.8",
     "@types/express": "^4.17.8",
     "@types/node": "^14.11.8",
