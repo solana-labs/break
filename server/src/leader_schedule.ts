@@ -4,7 +4,7 @@ import { endlessRetry } from "./utils";
 type NodeAddress = string;
 
 // Number of upcoming slots to include when building upcoming node set
-const UPCOMING_SLOT_SEARCH = 2000;
+const UPCOMING_SLOT_SEARCH = parseInt(process.env.LEADER_SLOT_FANOUT || "40");
 
 // Number of slots before end of epoch used to start refreshing leader schedule
 const END_OF_EPOCH_BUFFER = 20;
