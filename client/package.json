@@ -53,7 +53,7 @@
     "react-scripts": "3.4.3",
     "tweetnacl": "^1.0.3",
     "typescript": "^3.9.7",
-    "worker-loader": "^3.0.4"
+    "worker-loader": "^3.0.5"
   },
   "eslintConfig": {
     "extends": "react-app"
