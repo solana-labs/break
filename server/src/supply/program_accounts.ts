@@ -3,12 +3,12 @@ import {
   Connection,
   FeeCalculator,
   PublicKey,
+  sendAndConfirmTransaction,
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
 import AccountSupply, { TX_PER_ACCOUNT } from "./accounts";
 import Faucet from "../faucet";
-import { confirmTransaction } from "../utils";
 
 const TX_PER_BYTE = 8;
 
@@ -29,7 +29,8 @@ export default class ProgramAccountSupply {
       faucet.feeAccount,
       async (fromAccount: Account) => {
         const programDataAccount = new Account();
-        const signature = await connection.sendTransaction(
+        await sendAndConfirmTransaction(
+          connection,
           new Transaction().add(
             SystemProgram.createAccount({
               fromPubkey: fromAccount.publicKey,
@@ -40,9 +41,8 @@ export default class ProgramAccountSupply {
             })
           ),
           [fromAccount, programDataAccount],
-          { skipPreflight: true }
+          { commitment: "singleGossip", preflightCommitment: "singleGossip" }
         );
-        await confirmTransaction(connection, signature);
         return programDataAccount;
       }
     );

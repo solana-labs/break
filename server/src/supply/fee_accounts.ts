@@ -4,10 +4,10 @@ import {
   FeeCalculator,
   Transaction,
   SystemProgram,
+  sendAndConfirmTransaction,
 } from "@solana/web3.js";
 import AccountSupply, { TX_PER_ACCOUNT } from "./accounts";
 import Faucet from "../faucet";
-import { confirmTransaction } from "../utils";
 
 // Provides pre-funded accounts for break game clients
 export default class FeeAccountSupply {
@@ -26,7 +26,8 @@ export default class FeeAccountSupply {
       faucet.feeAccount,
       async (fromAccount: Account) => {
         const account = new Account();
-        const signature = await connection.sendTransaction(
+        await sendAndConfirmTransaction(
+          connection,
           new Transaction().add(
             SystemProgram.transfer({
               fromPubkey: fromAccount.publicKey,
@@ -35,9 +36,8 @@ export default class FeeAccountSupply {
             })
           ),
           [fromAccount],
-          { skipPreflight: true }
+          { commitment: "singleGossip", preflightCommitment: "singleGossip" }
         );
-        await confirmTransaction(connection, signature);
         return account;
       }
     );
