@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "webpack --mode production",
+    "test": "echo 'no test specified'",
     "start": "node ./dist/server.js",
     "start:dev": "ts-node src/index.ts",
     "build:dev": "webpack --mode development",
