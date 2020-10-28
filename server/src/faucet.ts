@@ -6,7 +6,6 @@ import {
   Transaction,
   sendAndConfirmTransaction,
   LAMPORTS_PER_SOL,
-  FeeCalculator,
 } from "@solana/web3.js";
 import { sleep } from "./utils";
 
@@ -14,11 +13,10 @@ const ENCODED_PAYER_KEY = process.env.ENCODED_PAYER_KEY;
 const AIRDROP_AMOUNT = 10 * LAMPORTS_PER_SOL;
 
 export default class Faucet {
-  private checkBalanceCounter = 0;
+  private checkingBalance = false;
 
   constructor(
     private connection: Connection,
-    private feeCalculator: FeeCalculator,
     public feeAccount: Account,
     public airdropEnabled: boolean
   ) {}
@@ -27,10 +25,7 @@ export default class Faucet {
     return this.feeAccount.publicKey;
   }
 
-  static async init(
-    connection: Connection,
-    feeCalculator: FeeCalculator
-  ): Promise<Faucet> {
+  static async init(connection: Connection): Promise<Faucet> {
     let feeAccount = new Account(),
       airdropEnabled = true;
     if (ENCODED_PAYER_KEY) {
@@ -51,12 +46,7 @@ export default class Faucet {
       }
     }
 
-    const faucet = new Faucet(
-      connection,
-      feeCalculator,
-      feeAccount,
-      airdropEnabled
-    );
+    const faucet = new Faucet(connection, feeAccount, airdropEnabled);
     faucet.checkBalance();
     return faucet;
   }
@@ -73,31 +63,21 @@ export default class Faucet {
       })
     );
 
-    const latestBalance = await this.connection.getBalance(
-      fromAccount.publicKey,
-      "single"
-    );
-
-    if (this.feeCalculator.lamportsPerSignature + lamports > latestBalance) {
-      throw new Error("Insufficient funds");
-    }
-
-    // Intentionally lax to speed up loading time
     await sendAndConfirmTransaction(this.connection, transfer, [fromAccount], {
-      commitment: "recent",
-      skipPreflight: true,
+      commitment: "singleGossip",
+      preflightCommitment: "singleGossip",
     });
+
+    this.checkBalance();
   }
 
   async checkBalance(): Promise<void> {
-    this.checkBalanceCounter++;
-    if (this.checkBalanceCounter % 50 != 1) {
-      return;
-    }
-
+    if (this.checkingBalance) return;
+    this.checkingBalance = true;
     try {
       const balance = await this.connection.getBalance(
-        this.feeAccount.publicKey
+        this.feeAccount.publicKey,
+        "singleGossip"
       );
       console.log(`Faucet balance: ${balance}`);
       if (this.airdropEnabled && balance <= LAMPORTS_PER_SOL) {
@@ -108,6 +88,8 @@ export default class Faucet {
       }
     } catch (err) {
       console.error("failed to check faucet balance", err);
+    } finally {
+      this.checkingBalance = false;
     }
   }
 }

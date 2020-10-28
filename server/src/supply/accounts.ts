@@ -97,7 +97,9 @@ export default class AccountSupply {
     this.replenishing = true;
 
     let size = await this.size();
-    while (size < SUPPLY_SIZE) {
+    let retriesRemaining = 3;
+    while (size < SUPPLY_SIZE && retriesRemaining > 0) {
+      retriesRemaining--;
       const batchSize = Math.min(SUPPLY_SIZE - size, BATCH_SIZE);
       const batch = await this.createBatch(this.faucetAccount, batchSize);
 
