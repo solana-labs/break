@@ -57,5 +57,3 @@ self.onmessage = (event: any) => {
     });
   }
 };
-
-export default {};
