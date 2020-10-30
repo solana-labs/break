@@ -29,7 +29,7 @@
     "@solana/web3.js": "^0.84.1",
     "@types/cors": "^2.8.8",
     "@types/express": "^4.17.8",
-    "@types/node": "^14.14.5",
+    "@types/node": "^14.14.6",
     "@types/redis": "^2.8.28",
     "@types/ws": "^7.2.9",
     "@typescript-eslint/eslint-plugin": "^4.6.0",
