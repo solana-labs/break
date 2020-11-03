@@ -21,7 +21,7 @@
     "@react-hook/throttle": "^2.2.0",
     "@sentry/react": "^5.26.0",
     "@sentry/tracing": "^5.26.0",
-    "@solana/web3.js": "^0.81.0",
+    "@solana/web3.js": "^0.86.3",
     "@testing-library/jest-dom": "^5.11.5",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
