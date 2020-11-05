@@ -20,7 +20,7 @@
     "@react-hook/debounce": "^3.0.0",
     "@react-hook/throttle": "^2.2.0",
     "@sentry/react": "^5.26.0",
-    "@sentry/tracing": "^5.26.0",
+    "@sentry/tracing": "^5.27.3",
     "@solana/web3.js": "^0.86.3",
     "@testing-library/jest-dom": "^5.11.5",
     "@testing-library/react": "^11.1.1",
