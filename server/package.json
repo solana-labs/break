@@ -39,7 +39,7 @@
     "express": "^4.17.1",
     "prettier": "^2.1.2",
     "redis": "^3.0.2",
-    "ts-loader": "^8.0.10",
+    "ts-loader": "^8.0.11",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5",
     "webpack": "^5.4.0",
