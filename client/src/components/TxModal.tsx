@@ -127,16 +127,15 @@ export function TransactionDetails({
 
   function displayFinalized() {
     if (transaction.status === "success") {
-      if (transaction.pending) {
-        return (
-          <div>
-            <span className="spinner-grow spinner-grow-sm mr-2"></span>
-            Pending
-          </div>
-        );
-      } else {
-        return <span className="text-success">Finalized</span>;
-      }
+      return <span className="text-success">Finalized</span>;
+    }
+    else if (transaction.status === "pending") {
+      return (
+        <div>
+          <span className="spinner-grow spinner-grow-sm mr-2"></span>
+          Pending
+        </div>
+      );
     } else {
       return "N/A";
     }
