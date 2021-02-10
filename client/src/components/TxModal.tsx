@@ -131,7 +131,7 @@ export function TransactionDetails({
         return (
           <div>
             <span className="spinner-grow spinner-grow-sm mr-2"></span>
-            Pending
+            Finalizing
           </div>
         );
       } else {
@@ -170,7 +170,7 @@ export function TransactionDetails({
       </div>
       {transaction.status === "success" && (
         <div className="d-flex justify-content-between mb-4">
-          <div className="">Estimated Block</div>
+          <div className="">Confirmed Block</div>
           {transaction.slot.estimated}
         </div>
       )}

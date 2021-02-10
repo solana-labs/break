@@ -265,29 +265,30 @@ function reducer(state: State, action: Action): State {
 
     case "root": {
       const foundRooted = state.find((tx) => {
-        return (
-          tx.status === "success" &&
-          tx.pending &&
-          tx.slot.landed === action.root
-        );
+        if (tx.status === "success" && tx.pending) {
+          const landedSlot = !DEBUG_MODE ? tx.slot.estimated : tx.slot.landed;
+          return landedSlot === action.root;
+        } else {
+          return false;
+        }
       });
+
+      // Avoid re-allocating state map
       if (!foundRooted) return state;
 
       return state.map((tx) => {
-        if (
-          tx.status === "success" &&
-          tx.pending &&
-          tx.slot.landed === action.root
-        ) {
-          clearInterval(tx.pending.retryId);
-          clearTimeout(tx.pending.timeoutId);
-          return {
-            ...tx,
-            pending: undefined,
-          };
-        } else {
-          return tx;
+        if (tx.status === "success" && tx.pending) {
+          const landedSlot = !DEBUG_MODE ? tx.slot.estimated : tx.slot.landed;
+          if (landedSlot === action.root) {
+            clearInterval(tx.pending.retryId);
+            clearTimeout(tx.pending.timeoutId);
+            return {
+              ...tx,
+              pending: undefined,
+            };
+          }
         }
+        return tx;
       });
     }
 
