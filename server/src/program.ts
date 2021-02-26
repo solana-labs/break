@@ -12,7 +12,7 @@ import {
 import path from "path";
 import _fs from "fs";
 import Faucet from "./faucet";
-import { sleep } from "./utils";
+import { reportError, sleep } from "./utils";
 const fs = _fs.promises;
 
 const ENCODED_PROGRAM_KEY = process.env.ENCODED_PROGRAM_KEY;
@@ -93,7 +93,7 @@ export default class ProgramLoader {
         console.log("Program Loaded");
         break;
       } catch (err) {
-        console.error("Failed to load program", err);
+        reportError(err, "Failed to load program");
         await sleep(1000);
       }
     }

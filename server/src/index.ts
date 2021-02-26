@@ -3,6 +3,16 @@ import http from "http";
 import cors from "cors";
 import path from "path";
 import ApiServer from "./api";
+import * as Sentry from "@sentry/node";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as Tracing from "@sentry/tracing";
+
+Sentry.init({
+  dsn:
+    "https://f74dafc67c914776b018c3be136bca19@o434108.ingest.sentry.io/5411826",
+  // send 10% of all errors to Sentry
+  tracesSampleRate: 0.1,
+});
 
 const app = express();
 

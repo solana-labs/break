@@ -11,8 +11,9 @@ import { useSocket } from "providers/server/socket";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useDispatch } from "providers/transactions";
 import { useConnection } from "./rpc";
+import { DEBUG_MODE } from "./transactions/confirmed";
 
-export const COUNTDOWN_SECS = 15;
+export const COUNTDOWN_SECS = DEBUG_MODE ? 1500 : 15;
 
 type GameState = "loading" | "payment" | "play" | "reset";
 const GameStateContext = React.createContext<GameState | undefined>(undefined);

@@ -1,5 +1,5 @@
 import { Connection, FeeCalculator, Account, PublicKey } from "@solana/web3.js";
-import { sleep } from "../utils";
+import { reportError, sleep } from "../utils";
 import Faucet from "../faucet";
 import FeeAccountSupply from "./fee_accounts";
 import ProgramAccountSupply from "./program_accounts";
@@ -116,7 +116,7 @@ export default class Supply {
           programAccountSupply
         );
       } catch (err) {
-        console.error("Failed to initialize server", err);
+        reportError(err, "Failed to initialize server");
         await sleep(1000);
         console.log("Retrying initialization");
       }

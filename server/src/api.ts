@@ -4,7 +4,7 @@ import ProgramLoader from "./program";
 import Faucet from "./faucet";
 import TpuProxy from "./tpu_proxy";
 import Supply from "./supply";
-import { sleep } from "./utils";
+import { reportError, sleep } from "./utils";
 import WebSocketServer from "./websocket";
 import { Express } from "express";
 import http from "http";
@@ -24,7 +24,7 @@ export default class ApiServer {
         console.log(`Connected to cluster: ${url}`);
         return feeCalculator;
       } catch (err) {
-        console.log(`Failed to connect to cluster: ${url}`);
+        reportError(err, `Failed to connect to cluster: ${url}`);
         await sleep(1000);
       }
     }
@@ -71,6 +71,7 @@ export default class ApiServer {
             const lamports = supply.calculateCost(split, false);
             await faucet.collectPayment(paymentKey, lamports);
           } catch (err) {
+            reportError(err, "Payment failed");
             res.status(400).send("Payment failed: " + err);
             supply.unreserveAccounts(split);
             return;
@@ -85,6 +86,7 @@ export default class ApiServer {
             split
           ));
         } catch (err) {
+          reportError(err, "Payment for account creation failed");
           res.status(400).send("Payment failed: " + err);
           return;
         }

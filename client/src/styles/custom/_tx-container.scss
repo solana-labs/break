@@ -1,3 +1,37 @@
+.main {
+  flex: 1;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.debug-wrapper {
+  overflow-y: auto;
+  flex-grow: 1;
+  height: 100px;
+
+  outline: none;
+  outline-color: transparent;
+
+  scrollbar-color: rgba(0, 255, 173, 0.4) transparent;
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 0.5rem;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 173, 0.4);
+  }
+}
+
 .tx-wrapper {
   min-height: 200px;
 
