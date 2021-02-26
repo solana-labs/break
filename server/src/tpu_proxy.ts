@@ -1,8 +1,12 @@
 import { Connection } from "@solana/web3.js";
 import dgram from "dgram";
-import { sleep } from "./utils";
+import { endlessRetry, reportError, sleep } from "./utils";
 import AvailableNodesService from "./available_nodes";
-import LeaderScheduleService from "./leader_schedule";
+import LeaderScheduleService, {
+  PAST_SLOT_SEARCH,
+  UPCOMING_SLOT_SEARCH,
+} from "./leader_schedule";
+import LeaderTrackerService from "./leader_tracker";
 
 const PROXY_DISABLED = process.env.SEND_TO_RPC === "true";
 
@@ -13,7 +17,7 @@ type TpuAddress = string;
 export default class TpuProxy {
   connecting = false;
   lastSlot = 0;
-  tpuAddresses: string[] = [];
+  tpuAddresses = new Array<string>();
   sockets: Map<TpuAddress, dgram.Socket> = new Map();
 
   constructor(private connection: Connection) {}
@@ -21,25 +25,21 @@ export default class TpuProxy {
   static async create(connection: Connection): Promise<TpuProxy> {
     const proxy = new TpuProxy(connection);
     if (!PROXY_DISABLED) {
-      const leaderService = await LeaderScheduleService.start(connection);
+      const currentSlot = (
+        await endlessRetry("getEpochInfo", () => connection.getEpochInfo())
+      ).absoluteSlot;
       const nodesService = await AvailableNodesService.start(connection);
-      connection.onSlotChange(({ slot }) => {
-        if (slot > proxy.lastSlot + 10) {
-          proxy.lastSlot = slot;
-          const nodes = leaderService.getUpcomingNodes(slot);
-          const tpuAddresses: string[] = [];
-          nodes.forEach((node) => {
-            const tpu = nodesService.nodes.get(node);
-            if (tpu) {
-              tpuAddresses.push(tpu);
-            } else {
-              console.error("NO TPU FOUND", node);
-            }
-          });
-          proxy.tpuAddresses = tpuAddresses;
-          proxy.connect();
+      const leaderService = await LeaderScheduleService.start(
+        connection,
+        currentSlot
+      );
+      new LeaderTrackerService(connection, currentSlot, (currentSlot) => {
+        if (leaderService.shouldRefresh(currentSlot)) {
+          leaderService.refresh(currentSlot);
         }
+        proxy.refreshAddresses(leaderService, nodesService, currentSlot);
       });
+      await proxy.refreshAddresses(leaderService, nodesService, currentSlot);
     }
     return proxy;
   }
@@ -65,7 +65,7 @@ export default class TpuProxy {
         console.log("TPU Proxy refreshing...");
         await this.reconnect();
       } catch (err) {
-        console.error("TPU Proxy failed to connect, reconnecting", err);
+        reportError(err, "TPU Proxy failed to connect, reconnecting");
         await sleep(1000);
       }
     } while (!this.connected());
@@ -78,7 +78,7 @@ export default class TpuProxy {
   onTransaction = (data: string | Uint8Array | Buffer): void => {
     if (PROXY_DISABLED && typeof data !== "string") {
       this.connection.sendRawTransaction(data).catch((err) => {
-        console.error(err, "failed to send raw tx");
+        reportError(err, "Failed to send transaction over HTTP");
       });
       return;
     }
@@ -95,6 +95,32 @@ export default class TpuProxy {
         this.onTpuResult(address, err);
       }
     });
+  };
+
+  private refreshAddresses = async (
+    leaderService: LeaderScheduleService,
+    nodesService: AvailableNodesService,
+    currentSlot: number
+  ) => {
+    const startSlot = currentSlot - PAST_SLOT_SEARCH;
+    const endSlot = currentSlot + UPCOMING_SLOT_SEARCH;
+    const tpuAddresses = [];
+    const leaderAddresses = new Set<string>();
+    for (let leaderSlot = startSlot; leaderSlot < endSlot; leaderSlot++) {
+      const leader = leaderService.getSlotLeader(leaderSlot);
+      if (leader !== null && !leaderAddresses.has(leader)) {
+        leaderAddresses.add(leader);
+        const tpu = nodesService.nodes.get(leader);
+        if (tpu) {
+          tpuAddresses.push(tpu);
+        } else {
+          console.error("NO TPU FOUND", leader);
+        }
+      }
+    }
+
+    this.tpuAddresses = tpuAddresses;
+    await this.connect();
   };
 
   private reconnect = async (): Promise<void> => {
@@ -122,7 +148,7 @@ export default class TpuProxy {
 
   private onTpuResult = (address: string, err: Error | null): void => {
     if (err) {
-      console.error("Error proxying transaction", err);
+      reportError(err, "Error proxying transaction to TPU");
       this.sockets.delete(address);
     }
   };

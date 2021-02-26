@@ -1,5 +1,5 @@
 import { Account } from "@solana/web3.js";
-import * as Sentry from "@sentry/react";
+// import * as Sentry from "@sentry/react";
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -7,13 +7,13 @@ export function sleep(ms: number): Promise<void> {
 
 export function reportError(err: Error, context: string) {
   console.error(context, err);
-  if (process.env.NODE_ENV === "production") {
-    const query = new URLSearchParams(window.location.search);
-    if (query.get("cluster") === "custom") return;
-    Sentry.captureException(err, {
-      tags: { context },
-    });
-  }
+  // if (process.env.NODE_ENV === "production") {
+  //   const query = new URLSearchParams(window.location.search);
+  //   if (query.get("cluster") === "custom") return;
+  //   Sentry.captureException(err, {
+  //     tags: { context },
+  //   });
+  // }
 }
 
 export function isLocalHost() {

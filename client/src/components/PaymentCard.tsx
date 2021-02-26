@@ -118,6 +118,14 @@ export function PaymentCard({ account }: { account: Account }) {
     return () => clearTimeout(timeoutId);
   }, [copied]);
 
+  const keypairUrl = React.useMemo(() => {
+    const keypair = JSON.stringify(
+      Array.prototype.slice.call(account.secretKey)
+    );
+    const blob = new Blob([keypair], { type: "text/plain" });
+    return URL.createObjectURL(blob);
+  }, [account]);
+
   return (
     <div className="card mb-0">
       <div className="card-header">
@@ -197,6 +205,22 @@ export function PaymentCard({ account }: { account: Account }) {
           >
             {showWithdraw ? "Hide" : "Withdraw"}
           </span>
+        </div>
+
+        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
+          <div className="font-weight-bold">Keypair File</div>
+          <a
+            className="btn btn-sm btn-white"
+            href={keypairUrl}
+            download={`break-keypair-${account.publicKey.toBase58()}.json`}
+            onClick={() => {
+              return window.confirm(
+                "Are you sure you want to download this wallet? It must be used with the Solana CLI tooling."
+              );
+            }}
+          >
+            {"Download"}
+          </a>
         </div>
 
         {showWithdraw && (

@@ -6,9 +6,14 @@ import { TpsProvider, TpsContext } from "./tps";
 import { CreateTxContext, CreateTxProvider } from "./create";
 import { SelectedTxProvider } from "./selected";
 import { useConnection } from "providers/rpc";
+import { useSlotTiming } from "providers/slot";
+
+export type ReceivedRecord = {
+  timestamp: number;
+  slot: number;
+};
 
 export type PendingTransaction = {
-  sentAt: number;
   targetSlot: number;
   retryId?: number;
   timeoutId?: number;
@@ -22,19 +27,31 @@ export type TransactionDetails = {
 };
 
 type Timing = {
-  sentAt: number;
-  recent?: number;
-  single?: number;
-  singleGossip?: number;
+  subscribed?: number;
+  processed?: number;
+  confirmed?: number;
+};
+
+type TimeoutState = {
+  status: "timeout";
+  details: TransactionDetails;
+};
+
+type PendingState = {
+  status: "pending";
+  details: TransactionDetails;
+  received: Array<ReceivedRecord>;
+  pending: PendingTransaction;
+  timing: Timing;
 };
 
 type SuccessState = {
   status: "success";
   details: TransactionDetails;
+  received: Array<ReceivedRecord>;
   slot: {
     target: number;
     landed?: number;
-    estimated: number;
   };
   timing: Timing;
   pending?: PendingTransaction;
@@ -45,8 +62,7 @@ export const COMMITMENT_PARAM = ((): TrackedCommitment => {
     "commitment"
   );
   switch (commitment) {
-    case "recent":
-    case "single": {
+    case "recent": {
       return commitment;
     }
     default: {
@@ -55,30 +71,30 @@ export const COMMITMENT_PARAM = ((): TrackedCommitment => {
   }
 })();
 
-export type TrackedCommitment = "single" | "singleGossip" | "recent";
-
-type TimeoutState = {
-  status: "timeout";
-  details: TransactionDetails;
+export const getCommitmentName = (
+  commitment: TrackedCommitment
+): CommitmentName => {
+  if (commitment === "singleGossip") {
+    return "confirmed";
+  } else {
+    return "processed";
+  }
 };
 
-type PendingState = {
-  status: "pending";
-  pending: PendingTransaction;
-  details: TransactionDetails;
-};
+export type CommitmentName = "processed" | "confirmed";
+
+export type TrackedCommitment = "singleGossip" | "recent";
 
 export type TransactionStatus = "success" | "timeout" | "pending";
 
 export type TransactionState = SuccessState | TimeoutState | PendingState;
 
-export type ActionType =
-  | "new"
-  | "update"
-  | "timeout"
-  | "reset"
-  | "root"
-  | "landed";
+type NewTransaction = {
+  type: "new";
+  trackingId: number;
+  details: TransactionDetails;
+  pendingTransaction: PendingTransaction;
+};
 
 type UpdateIds = {
   type: "update";
@@ -92,17 +108,12 @@ type UpdateIds = {
   estimatedSlot: number;
 };
 
-type LandedTxs = {
-  type: "landed";
-  signatures: TransactionSignature[];
-  slots: number[];
-};
-
-type NewTransaction = {
-  type: "new";
+type TrackTransaction = {
+  type: "track";
+  commitmentName: CommitmentName;
   trackingId: number;
-  details: TransactionDetails;
-  pendingTransaction: PendingTransaction;
+  slot: number;
+  timestamp: number;
 };
 
 type TimeoutTransaction = {
@@ -119,27 +130,155 @@ type RecordRoot = {
   root: number;
 };
 
+type SignatureReceived = {
+  type: "received";
+  timestamp: number;
+  trackingId: number;
+  slot: number;
+};
+
+type SignatureSubscribed = {
+  type: "subscribed";
+  timestamp: number;
+  trackingId: number;
+};
+
+type SignatureLanded = {
+  type: "landed";
+  signatures: TransactionSignature[];
+  slots: number[];
+};
+
 type Action =
   | NewTransaction
   | UpdateIds
   | TimeoutTransaction
   | ResetState
   | RecordRoot
-  | LandedTxs;
+  | TrackTransaction
+  | SignatureReceived
+  | SignatureSubscribed
+  | SignatureLanded;
 
 type State = TransactionState[];
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "new": {
       const { details, pendingTransaction } = action;
+      let subscribed: number | undefined;
+      if (!DEBUG_MODE) {
+        subscribed = performance.now();
+      }
       return [
         ...state,
         {
           details,
           status: "pending",
+          received: [],
           pending: pendingTransaction,
+          timing: {
+            subscribed,
+          },
         },
       ];
+    }
+
+    case "subscribed": {
+      const trackingId = action.trackingId;
+      if (trackingId >= state.length) return state;
+      const transaction = state[trackingId];
+      return state.map((tx) => {
+        if (tx.details.signature === transaction.details.signature) {
+          if (tx.status !== "timeout") {
+            return {
+              ...tx,
+              timing: {
+                ...tx.timing,
+                subscribed: action.timestamp,
+              },
+            };
+          }
+        }
+        return tx;
+      });
+    }
+
+    case "received": {
+      const trackingId = action.trackingId;
+      if (trackingId >= state.length) return state;
+      const transaction = state[trackingId];
+      return state.map((tx) => {
+        if (tx.details.signature === transaction.details.signature) {
+          if (tx.status !== "timeout") {
+            return {
+              ...tx,
+              received: [
+                ...tx.received,
+                {
+                  slot: action.slot,
+                  timestamp: action.timestamp,
+                },
+              ],
+            };
+          }
+        }
+        return tx;
+      });
+    }
+
+    case "landed": {
+      return state.map((tx) => {
+        if (tx.status === "success") {
+          const index = action.signatures.findIndex(
+            (val) => val === tx.details.signature
+          );
+          if (index >= 0) {
+            return {
+              ...tx,
+              slot: {
+                ...tx.slot,
+                landed: action.slots[index],
+              },
+            };
+          }
+        }
+        return tx;
+      });
+    }
+
+    case "track": {
+      const trackingId = action.trackingId;
+      if (trackingId >= state.length) return state;
+      const transaction = state[trackingId];
+
+      return state.map((tx) => {
+        if (tx.details.signature === transaction.details.signature) {
+          if (tx.status === "pending") {
+            return {
+              status: "success",
+              details: tx.details,
+              received: tx.received,
+              slot: {
+                target: tx.pending.targetSlot,
+              },
+              timing: {
+                ...tx.timing,
+                [action.commitmentName]: action.timestamp,
+              },
+              pending: tx.pending,
+            };
+          } else if (tx.status === "success") {
+            return {
+              ...tx,
+              timing: {
+                ...tx.timing,
+                [action.commitmentName]: action.timestamp,
+              },
+            };
+          }
+        }
+        return tx;
+      });
     }
 
     case "timeout": {
@@ -168,25 +307,24 @@ function reducer(state: State, action: Action): State {
         const id = Math.floor(trackingId / partitionCount);
         if (tx.status === "pending" && ids.has(id)) {
           // Optimistically confirmed, no need to continue retry
-          if (
-            action.commitment === "singleGossip" ||
-            action.commitment === "single"
-          ) {
+          if (action.commitment === "singleGossip") {
             clearInterval(tx.pending.retryId);
             clearTimeout(tx.pending.timeoutId);
           }
 
+          const commitmentName = getCommitmentName(action.commitment);
           return {
             status: "success",
             details: tx.details,
+            received: tx.received,
             slot: {
               target: tx.pending.targetSlot,
-              estimated: action.estimatedSlot,
+              landed: action.estimatedSlot,
             },
             timing: {
-              sentAt: tx.pending.sentAt,
-              [action.commitment]: timeElapsed(
-                tx.pending.sentAt,
+              ...tx.timing,
+              [commitmentName]: timeElapsed(
+                tx.timing.subscribed,
                 action.receivedAt
               ),
             },
@@ -194,17 +332,14 @@ function reducer(state: State, action: Action): State {
           };
         } else if (tx.status === "success") {
           if (ids.has(id)) {
+            const commitmentName = getCommitmentName(action.commitment);
             // Already recorded conf time
-            if (tx.timing[action.commitment] !== undefined) {
+            if (tx.timing[commitmentName] !== undefined) {
               return tx;
             }
 
             // Optimistically confirmed, no need to continue retry
-            if (
-              tx.pending &&
-              (action.commitment === "singleGossip" ||
-                action.commitment === "single")
-            ) {
+            if (tx.pending && action.commitment === "singleGossip") {
               clearInterval(tx.pending.retryId);
               clearTimeout(tx.pending.timeoutId);
             }
@@ -213,8 +348,8 @@ function reducer(state: State, action: Action): State {
               ...tx,
               timing: {
                 ...tx.timing,
-                [action.commitment]: timeElapsed(
-                  tx.timing.sentAt,
+                [commitmentName]: timeElapsed(
+                  tx.timing.subscribed,
                   action.receivedAt
                 ),
               },
@@ -225,15 +360,12 @@ function reducer(state: State, action: Action): State {
             !ids.has(id)
           ) {
             // Don't revert to pending state if we already received timing info for other commitments
-            if (
-              tx.timing["single"] !== undefined ||
-              tx.timing["singleGossip"] !== undefined
-            ) {
+            if (tx.timing["confirmed"] !== undefined) {
               return {
                 ...tx,
                 timing: {
                   ...tx.timing,
-                  recent: undefined,
+                  processed: undefined,
                 },
               };
             }
@@ -242,7 +374,9 @@ function reducer(state: State, action: Action): State {
             return {
               status: "pending",
               details: tx.details,
+              received: tx.received,
               pending: { ...tx.pending },
+              timing: tx.timing,
             };
           }
         }
@@ -266,8 +400,7 @@ function reducer(state: State, action: Action): State {
     case "root": {
       const foundRooted = state.find((tx) => {
         if (tx.status === "success" && tx.pending) {
-          const landedSlot = !DEBUG_MODE ? tx.slot.estimated : tx.slot.landed;
-          return landedSlot === action.root;
+          return tx.slot.landed === action.root;
         } else {
           return false;
         }
@@ -278,8 +411,7 @@ function reducer(state: State, action: Action): State {
 
       return state.map((tx) => {
         if (tx.status === "success" && tx.pending) {
-          const landedSlot = !DEBUG_MODE ? tx.slot.estimated : tx.slot.landed;
-          if (landedSlot === action.root) {
+          if (tx.slot.landed === action.root) {
             clearInterval(tx.pending.retryId);
             clearTimeout(tx.pending.timeoutId);
             return {
@@ -291,33 +423,10 @@ function reducer(state: State, action: Action): State {
         return tx;
       });
     }
-
-    case "landed": {
-      return state.map((tx) => {
-        if (tx.status === "success") {
-          const index = action.signatures.findIndex(
-            (val) => val === tx.details.signature
-          );
-          if (index >= 0) {
-            return {
-              ...tx,
-              slot: {
-                ...tx.slot,
-                landed: action.slots[index],
-              },
-            };
-          }
-        }
-        return tx;
-      });
-    }
   }
 }
 
 export type Dispatch = (action: Action) => void;
-const SlotContext = React.createContext<
-  React.MutableRefObject<number | undefined> | undefined
->(undefined);
 const StateContext = React.createContext<State | undefined>(undefined);
 const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
 
@@ -325,7 +434,6 @@ type ProviderProps = { children: React.ReactNode };
 export function TransactionsProvider({ children }: ProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, []);
   const connection = useConnection();
-  const targetSlot = React.useRef<number>();
   const stateRef = React.useRef(state);
 
   React.useEffect(() => {
@@ -338,9 +446,6 @@ export function TransactionsProvider({ children }: ProviderProps) {
     });
 
     if (connection === undefined) return;
-    const slotSubscription = connection.onSlotChange(({ slot }) => {
-      targetSlot.current = slot;
-    });
     const rootSubscription = connection.onRootChange((root) => {
       dispatch({ type: "root", root });
     });
@@ -375,7 +480,6 @@ export function TransactionsProvider({ children }: ProviderProps) {
       : undefined;
 
     return () => {
-      connection.removeSlotChangeListener(slotSubscription);
       connection.removeRootChangeListener(rootSubscription);
       intervalId !== undefined && clearInterval(intervalId);
     };
@@ -389,24 +493,23 @@ export function TransactionsProvider({ children }: ProviderProps) {
   return (
     <StateContext.Provider value={throttledState}>
       <DispatchContext.Provider value={dispatch}>
-        <SlotContext.Provider value={targetSlot}>
-          <SelectedTxProvider>
-            <CreateTxProvider>
-              <ConfirmedHelper>
-                <TpsProvider>{children}</TpsProvider>
-              </ConfirmedHelper>
-            </CreateTxProvider>
-          </SelectedTxProvider>
-        </SlotContext.Provider>
+        <SelectedTxProvider>
+          <CreateTxProvider>
+            <ConfirmedHelper>
+              <TpsProvider>{children}</TpsProvider>
+            </ConfirmedHelper>
+          </CreateTxProvider>
+        </SelectedTxProvider>
       </DispatchContext.Provider>
     </StateContext.Provider>
   );
 }
 
 function timeElapsed(
-  sentAt: number,
-  receivedAt: number = performance.now()
-): number {
+  sentAt: number | undefined,
+  receivedAt: number | undefined
+): number | undefined {
+  if (sentAt === undefined || receivedAt === undefined) return;
   return parseFloat(((receivedAt - sentAt) / 1000).toFixed(3));
 }
 
@@ -414,17 +517,6 @@ export function useDispatch() {
   const dispatch = React.useContext(DispatchContext);
   if (!dispatch) {
     throw new Error(`useDispatch must be used within a TransactionsProvider`);
-  }
-
-  return dispatch;
-}
-
-export function useTargetSlotRef() {
-  const dispatch = React.useContext(SlotContext);
-  if (!dispatch) {
-    throw new Error(
-      `useTargetSlotRef must be used within a TransactionsProvider`
-    );
   }
 
   return dispatch;
@@ -462,6 +554,7 @@ export function useDroppedCount() {
 }
 
 export function useAvgConfirmationTime() {
+  const slotMetrics = useSlotTiming();
   const state = React.useContext(StateContext);
   if (!state) {
     throw new Error(
@@ -469,17 +562,27 @@ export function useAvgConfirmationTime() {
     );
   }
 
-  const confirmed = state.reduce((confirmed: number[], tx) => {
+  const confirmedTimes = state.reduce((confirmedTimes: number[], tx) => {
     if (tx.status === "success") {
-      const confTime = tx.timing[COMMITMENT_PARAM];
-      if (confTime !== undefined) confirmed.push(confTime);
+      const subscribed = tx.timing.subscribed;
+      if (subscribed !== undefined) {
+        let confTime: number | undefined;
+        if (!DEBUG_MODE && tx.timing.confirmed !== undefined) {
+          confTime = tx.timing.confirmed;
+        } else if (tx.slot.landed !== undefined) {
+          const slotTiming = slotMetrics.current.get(tx.slot.landed);
+          const confirmed = slotTiming?.confirmed;
+          confTime = timeElapsed(subscribed, confirmed);
+        }
+        if (confTime) confirmedTimes.push(confTime);
+      }
     }
-    return confirmed;
+    return confirmedTimes;
   }, []);
 
-  const count = confirmed.length;
+  const count = confirmedTimes.length;
   if (count === 0) return 0;
-  const sum = confirmed.reduce((sum, time) => sum + time, 0);
+  const sum = confirmedTimes.reduce((sum, time) => sum + time, 0);
   return sum / count;
 }
 

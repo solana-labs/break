@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Blockhash, PublicKey } from "@solana/web3.js";
+import { Blockhash, PublicKey, Connection } from "@solana/web3.js";
 import bs58 from "bs58";
 import {
   Dispatch,
+  getCommitmentName,
   PendingTransaction,
   TransactionDetails,
-  useTargetSlotRef,
   useDispatch,
 } from "./index";
 import { AccountsConfig } from "../server/http/config";
@@ -17,6 +17,9 @@ import { useConfig, useAccounts } from "providers/server/http";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useSocket } from "providers/server/socket";
 import { reportError } from "utils";
+import { useConnection } from "providers/rpc";
+import { DEBUG_MODE, subscribedCommitments } from "./confirmed";
+import { useLatestTimestamp, useTargetSlotRef } from "providers/slot";
 
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
@@ -34,18 +37,21 @@ export function CreateTxProvider({ children }: ProviderProps) {
   const idCounter = React.useRef<number>(0);
   const targetSlotRef = useTargetSlotRef();
   const programDataAccount = accounts?.programAccounts[0].toBase58();
+  const latestTimestamp = useLatestTimestamp();
 
   // Reset counter when program data accounts are refreshed
   React.useEffect(() => {
     idCounter.current = 0;
   }, [programDataAccount]);
 
+  const connection = useConnection();
   const blockhash = useBlockhash();
   const dispatch = useDispatch();
   const socket = useSocket();
   React.useEffect(() => {
     createTx.current = () => {
       if (
+        !connection ||
         !blockhash ||
         !socket ||
         !config ||
@@ -57,13 +63,15 @@ export function CreateTxProvider({ children }: ProviderProps) {
       if (id < accounts.accountCapacity * accounts.programAccounts.length) {
         idCounter.current++;
         createTransaction(
+          connection,
           blockhash,
           targetSlotRef.current,
           config.programId,
           accounts,
           id,
           dispatch,
-          socket
+          socket,
+          latestTimestamp
         );
       } else {
         reportError(
@@ -72,7 +80,16 @@ export function CreateTxProvider({ children }: ProviderProps) {
         );
       }
     };
-  }, [blockhash, socket, config, accounts, dispatch, targetSlotRef]);
+  }, [
+    blockhash,
+    connection,
+    socket,
+    config,
+    accounts,
+    dispatch,
+    targetSlotRef,
+    latestTimestamp,
+  ]);
 
   return (
     <CreateTxContext.Provider value={createTx}>
@@ -82,13 +99,15 @@ export function CreateTxProvider({ children }: ProviderProps) {
 }
 
 export function createTransaction(
+  connection: Connection,
   blockhash: Blockhash,
   targetSlot: number,
   programId: PublicKey,
   accounts: AccountsConfig,
   trackingId: number,
   dispatch: Dispatch,
-  socket: WebSocket
+  socket: WebSocket,
+  latestTimestamp: React.MutableRefObject<number | undefined>
 ) {
   const { feeAccounts, programAccounts } = accounts;
 
@@ -111,18 +130,18 @@ export function createTransaction(
         const { signature, serializedTransaction } = response;
 
         socket.send(serializedTransaction);
-        const sentAt = performance.now();
 
-        const pendingTransaction: PendingTransaction = { sentAt, targetSlot };
+        const pendingTransaction: PendingTransaction = { targetSlot };
         pendingTransaction.timeoutId = window.setTimeout(() => {
           dispatch({ type: "timeout", trackingId });
         }, SEND_TIMEOUT_MS);
 
+        const encodedSignature = bs58.encode(signature);
         const details: TransactionDetails = {
           id: bitId,
           feeAccount: feeAccount.publicKey,
           programAccount: programDataAccount,
-          signature: bs58.encode(signature),
+          signature: encodedSignature,
         };
 
         dispatch({
@@ -131,6 +150,57 @@ export function createTransaction(
           trackingId,
           pendingTransaction,
         });
+
+        if (DEBUG_MODE) {
+          const timestamp = latestTimestamp.current;
+          if (timestamp) {
+            dispatch({
+              type: "subscribed",
+              timestamp,
+              trackingId,
+            });
+          }
+
+          connection.onSignatureWithOptions(
+            encodedSignature,
+            (notification, context) => {
+              const timestamp = latestTimestamp.current;
+              if (timestamp && notification.type === "received") {
+                dispatch({
+                  type: "received",
+                  timestamp,
+                  trackingId,
+                  slot: context.slot,
+                });
+              }
+            },
+            {
+              commitment: "max",
+              enableReceivedNotification: true,
+            }
+          );
+
+          const commitments = subscribedCommitments();
+          commitments.forEach((commitment) => {
+            connection.onSignatureWithOptions(
+              encodedSignature,
+              (notification, context) => {
+                const timestamp = latestTimestamp.current;
+                if (timestamp && notification.type === "status") {
+                  const commitmentName = getCommitmentName(commitment);
+                  dispatch({
+                    type: "track",
+                    commitmentName,
+                    trackingId,
+                    slot: context.slot,
+                    timestamp,
+                  });
+                }
+              },
+              { commitment }
+            );
+          });
+        }
 
         const retry = new URLSearchParams(window.location.search).get("retry");
         if (retry === null || retry !== "disabled") {
