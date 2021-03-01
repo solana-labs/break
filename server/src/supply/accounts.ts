@@ -96,28 +96,36 @@ export default class AccountSupply {
     if (this.replenishing) return;
     this.replenishing = true;
 
-    let size = await this.size();
-    let retriesRemaining = 3;
-    while (size < SUPPLY_SIZE && retriesRemaining > 0) {
-      retriesRemaining--;
-      const batchSize = Math.min(SUPPLY_SIZE - size, BATCH_SIZE);
-      const batch = await this.createBatch(this.faucetAccount, batchSize);
+    try {
+      let size = await this.size();
+      let retriesRemaining = 3;
+      while (size < SUPPLY_SIZE && retriesRemaining > 0) {
+        retriesRemaining--;
+        const batchSize = Math.min(SUPPLY_SIZE - size, BATCH_SIZE);
+        const batch = await this.createBatch(this.faucetAccount, batchSize);
 
-      const incomplete = batch.length < batchSize;
-      for (const account of batch) {
-        const expiration = new Date();
-        expiration.setDate(expiration.getDate() + 7);
-        await this.pushAccount([account, expiration]);
+        const incomplete = batch.length < batchSize;
+        for (const account of batch) {
+          const expiration = new Date();
+          expiration.setDate(expiration.getDate() + 7);
+          await this.pushAccount([account, expiration]);
+        }
+
+        size = await this.size();
+        console.log(`${this.name}: ${size}`);
+
+        // If incomplete, probably getting rate-limited
+        if (incomplete) {
+          await sleep(5000);
+        } else {
+          retriesRemaining = 3;
+        }
       }
-
-      size = await this.size();
-      console.log(`${this.name}: ${size}`);
-
-      // If incomplete, probably getting rate-limited
-      if (incomplete) await sleep(5000);
+    } catch (err) {
+      console.error("Error replenishing supply", err);
+    } finally {
+      this.replenishing = false;
     }
-
-    this.replenishing = false;
   }
 
   async createBatch(
@@ -173,7 +181,10 @@ export default class AccountSupply {
   }
 
   pop(count: number): Account[] {
-    if (this.reserved.length < count) throw new Error("reserve depleted");
+    if (this.reserved.length < count) {
+      this.replenish();
+      throw new Error("reserve depleted");
+    }
     const popped = this.reserved.splice(0, count);
     this.replenish();
     return popped.map(([account]) => account);
