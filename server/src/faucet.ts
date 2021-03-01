@@ -37,7 +37,11 @@ export default class Faucet {
       // eslint-disable-next-line no-constant-condition
       while (true) {
         try {
-          await connection.requestAirdrop(feeAccount.publicKey, AIRDROP_AMOUNT);
+          const signature = await connection.requestAirdrop(
+            feeAccount.publicKey,
+            AIRDROP_AMOUNT
+          );
+          await connection.confirmTransaction(signature, "singleGossip");
           break;
         } catch (err) {
           console.error("Failed to airdrop to faucet", err);
@@ -81,10 +85,11 @@ export default class Faucet {
       );
       console.log(`Faucet balance: ${balance}`);
       if (this.airdropEnabled && balance <= LAMPORTS_PER_SOL) {
-        await this.connection.requestAirdrop(
+        const signature = await this.connection.requestAirdrop(
           this.feeAccount.publicKey,
           AIRDROP_AMOUNT
         );
+        await this.connection.confirmTransaction(signature, "singleGossip");
       }
     } catch (err) {
       console.error("failed to check faucet balance", err);
