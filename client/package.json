@@ -36,7 +36,7 @@
     "@types/react": "^17.0.2",
     "@types/react-dom": "^16.9.9",
     "@types/react-router-dom": "^5.1.6",
-    "bootstrap": "^4.5.3",
+    "bootstrap": "^4.6.0",
     "bs58": "^4.0.1",
     "buffer": "^5.7.0",
     "chai": "^4.3.0",
