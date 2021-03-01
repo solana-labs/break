@@ -23,7 +23,7 @@
     "@sentry/tracing": "^5.26.0",
     "@solana/web3.js": "^0.93.0",
     "@testing-library/jest-dom": "^5.11.5",
-    "@testing-library/react": "^11.1.1",
+    "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.8.0",
     "@toruslabs/fetch-node-details": "^2.4.0",
     "@toruslabs/torus.js": "^2.3.0",
