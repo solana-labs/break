@@ -105,7 +105,7 @@ export default class TpuProxy {
       const socket = dgram.createSocket("udp4");
       await new Promise((resolve) => {
         socket.on("error", (err) => this.onTpuResult(tpu, err));
-        socket.connect(port, host, resolve);
+        socket.connect(port, host, () => resolve(undefined));
       });
       sockets.set(tpu, socket);
     }
