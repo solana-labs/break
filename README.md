@@ -40,6 +40,12 @@ npm run localnet:up
 npm run start:dev
 ```
 
+_Note: It may be necessary to pull the required docker image if `npm run localnet:up` fails with the message `Unable to find image 'solanalabs/solana:edge' locally`. Run the below command if that is the case, then try again._ 
+```
+# Pull the docker image
+docker pull solanalabs/solana:edge
+```
+
 #### Configuration
 
 By default, the Break server will connect to a local node for RPC and will use a faucet to fund game play. To configure this behavior, set the following environment variables when running the server:
