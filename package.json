@@ -18,10 +18,6 @@
     "lint:fix": "./package.sh both run lint:fix",
     "format": "./package.sh both run format",
     "format:fix": "./package.sh both run format:fix",
-    "localnet:down": "./package.sh client run localnet:down",
-    "localnet:logs": "./package.sh client run localnet:logs",
-    "localnet:up": "./package.sh client run localnet:up",
-    "localnet:update": "./package.sh client run localnet:update",
     "postinstall": "./package.sh both install"
   }
 }

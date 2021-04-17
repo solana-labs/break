@@ -16,6 +16,7 @@ within a Break program account, so each transaction can be uniquely identified b
 
 ### Prerequisites
 
+Solana CLI Tooling: https://docs.solana.com/cli/install-solana-cli-tools
 For running this application you need to have [NodeJs](https://nodejs.org/en/) and [NPM](https://www.npmjs.com/).
 We recommend to use [NVM](https://github.com/creationix/nvm) for managing NodeJs versions
 For NVM installation please refer to [manual](https://github.com/creationix/nvm#install--update-script)
@@ -34,16 +35,10 @@ _Note: If the cluster you connect to doesn't provide a faucet, you will need to 
 cd server
 
 # Start local node
-npm run localnet:up
+solana-test-validator
 
 # Connect to local node
 npm run start:dev
-```
-
-_Note: It may be necessary to pull the required docker image if `npm run localnet:up` fails with the message `Unable to find image 'solanalabs/solana:edge' locally`. Run the below command if that is the case, then try again._ 
-```
-# Pull the docker image
-docker pull solanalabs/solana:edge
 ```
 
 #### Configuration

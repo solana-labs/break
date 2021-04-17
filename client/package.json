@@ -9,11 +9,7 @@
     "eject": "react-scripts eject",
     "lint": "echo \"lint is run during build\"",
     "format": "prettier -c \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\"",
-    "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\"",
-    "localnet:down": "solana-localnet down",
-    "localnet:logs": "solana-localnet logs -f",
-    "localnet:up": "solana-localnet up",
-    "localnet:update": "solana-localnet update"
+    "format:fix": "prettier --write \"**/*.+(js|jsx|ts|tsx|json|css|scss|md)\""
   },
   "testnetDefaultChannel": "edge",
   "dependencies": {
