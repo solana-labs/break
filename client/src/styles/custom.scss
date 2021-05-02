@@ -29,6 +29,12 @@
   padding: 1rem 0;
 }
 
+.sticky {
+  position: sticky;
+  top: 0px;
+  border-top: 0px solid black !important;
+}
+
 .btn {
   letter-spacing: 0.1em;
 }

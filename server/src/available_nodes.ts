@@ -10,8 +10,8 @@ export default class AvailableNodesService {
   refreshing = false;
 
   constructor(private connection: Connection, public nodes: AvailableNodes) {
-    // Refresh every 30s in case nodes leave the cluster or change port configuration
-    setInterval(() => this.refresh(), 30000);
+    // Refresh every 5min in case nodes leave the cluster or change port configuration
+    setInterval(() => this.refresh(), 5 * 60 * 1000);
   }
 
   static start = async (
@@ -25,7 +25,7 @@ export default class AvailableNodesService {
     connection: Connection
   ): Promise<AvailableNodes> => {
     const availableNodes = new Map();
-    const nodes = await endlessRetry("getClusterNodes", () =>
+    const nodes = await endlessRetry("getClusterNodes", async () =>
       connection.getClusterNodes()
     );
     for (const node of nodes) {

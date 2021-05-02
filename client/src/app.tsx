@@ -3,6 +3,7 @@ import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 
 import Home from "pages/HomePage";
 import Game from "pages/GamePage";
+import Slots from "pages/SlotsPage";
 import Setup from "pages/SetupPage";
 import Results from "pages/ResultsPage";
 import Wallet from "pages/WalletPage";
@@ -15,16 +16,18 @@ import { useClusterModal } from "providers/server";
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
   const isSetupPage = !!useRouteMatch("/setup")?.isExact;
+  const isSlotsPage = !!useRouteMatch("/slots")?.isExact;
   const gameState = useGameState();
   const [showClusterModal] = useClusterModal();
   const showLoadingModal =
-    !isHomePage && !isSetupPage && gameState === "loading";
+    !isHomePage && !isSetupPage && !isSlotsPage && gameState === "loading";
 
   return (
     <div className="main-content">
       <Switch>
         <Route path="/" exact component={Home} />
         <Route path="/game" exact component={Game} />
+        <Route path="/slots" exact component={Slots} />
         <Route path="/setup" exact component={Setup} />
         <Route path="/results" exact component={Results} />
         <Route path="/wallet" exact component={Wallet} />

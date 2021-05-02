@@ -1,5 +1,5 @@
 import { Account, Connection } from "@solana/web3.js";
-import { sleep } from "../utils";
+import { reportError, sleep } from "../utils";
 import { promisify } from "util";
 import Redis from "redis";
 
@@ -122,7 +122,7 @@ export default class AccountSupply {
         }
       }
     } catch (err) {
-      console.error("Error replenishing supply", err);
+      reportError(err, "Error replenishing supply");
     } finally {
       this.replenishing = false;
     }
@@ -140,7 +140,7 @@ export default class AccountSupply {
           try {
             return await this.createAccount(fromAccount);
           } catch (err) {
-            console.error("Failed to replenish account supply", err);
+            reportError(err, "Failed to replenish account supply");
             return undefined;
           }
         })

@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { AccountInfo } from "@solana/web3.js";
 import { useAccounts } from "../server/http";
 import { useDispatch, TrackedCommitment, COMMITMENT_PARAM } from "./index";
-import * as Bytes from "utils/bytes";
 import { useConnection } from "providers/rpc";
+import * as Bytes from "utils/bytes";
+import { AccountInfo } from "@solana/web3.js";
 
 export const DEBUG_MODE = new URLSearchParams(window.location.search).has(
   "debug"
@@ -12,11 +12,10 @@ export const DEBUG_MODE = new URLSearchParams(window.location.search).has(
 
 // Determine commitment levels to subscribe to. "singleGossip" is used
 // to stop tx send retries so it must be returned
-const subscribedCommitments = (): TrackedCommitment[] => {
-  if (DEBUG_MODE) return ["recent", "single", "singleGossip"];
+export const subscribedCommitments = (): TrackedCommitment[] => {
+  if (DEBUG_MODE) return ["singleGossip"];
   switch (COMMITMENT_PARAM) {
-    case "recent":
-    case "single": {
+    case "recent": {
       return [COMMITMENT_PARAM, "singleGossip"];
     }
     default: {
@@ -33,6 +32,7 @@ export function ConfirmedHelper({ children }: Props) {
 
   React.useEffect(() => {
     if (connection === undefined || accounts === undefined) return;
+    if (DEBUG_MODE) return;
 
     const commitments = subscribedCommitments();
     const partitionCount = accounts.programAccounts.length;
@@ -64,7 +64,7 @@ export function ConfirmedHelper({ children }: Props) {
 
     return () => {
       accountSubscriptions.forEach((listeners) => {
-        listeners.forEach((listener) => {
+        listeners.forEach((listener: any) => {
           connection.removeAccountChangeListener(listener);
         });
       });

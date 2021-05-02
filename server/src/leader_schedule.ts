@@ -1,13 +1,13 @@
-import { Connection, LeaderSchedule } from "@solana/web3.js";
-import { endlessRetry } from "./utils";
-
-type NodeAddress = string;
+import { Connection } from "@solana/web3.js";
+import { endlessRetry, reportError } from "./utils";
 
 // Number of upcoming slots to include when building upcoming node set
-const UPCOMING_SLOT_SEARCH = parseInt(process.env.LEADER_SLOT_FANOUT || "40");
+export const UPCOMING_SLOT_SEARCH = parseInt(
+  process.env.LEADER_SLOT_FANOUT || "40"
+);
 
-// Number of slots before end of epoch used to start refreshing leader schedule
-const END_OF_EPOCH_BUFFER = 20;
+// Number of past slots to include when building upcoming node set
+export const PAST_SLOT_SEARCH = 4;
 
 // Updates the leader schedule every epoch and provides a set of the
 // upcoming nodes in the schedule
@@ -16,76 +16,67 @@ export default class LeaderScheduleService {
 
   constructor(
     private connection: Connection,
-    private schedule: LeaderSchedule,
-    private currentEpochFirstSlot: number,
-    private slotsInEpoch: number
+    private leaderAddresses: Array<string>,
+    private scheduleFirstSlot: number
   ) {}
 
   static start = async (
-    connection: Connection
+    connection: Connection,
+    currentSlot: number
   ): Promise<LeaderScheduleService> => {
-    const epochInfo = await endlessRetry("getEpochInfo", () =>
-      connection.getEpochInfo()
-    );
-    const leaderSchedule = await endlessRetry("getLeaderSchedule", () =>
-      connection.getLeaderSchedule()
-    );
-    const currentEpochFirstSlot = epochInfo.absoluteSlot - epochInfo.slotIndex;
-    const service = new LeaderScheduleService(
+    const leaderService = new LeaderScheduleService(
       connection,
-      leaderSchedule,
-      currentEpochFirstSlot,
-      epochInfo.slotsInEpoch
+      [],
+      currentSlot
     );
 
-    connection.onSlotChange((slotInfo) => {
-      if (service.shouldRefresh(slotInfo.slot)) {
-        service.refresh();
-      }
-    });
+    leaderService.leaderAddresses = await endlessRetry("getSlotLeaders", () =>
+      leaderService.fetchLeaders(currentSlot)
+    );
 
-    return service;
+    return leaderService;
   };
 
-  getUpcomingNodes(slot: number): Set<NodeAddress> {
-    const currentSlotIndex = Math.max(0, slot - this.currentEpochFirstSlot);
-
-    const addresses = new Set<NodeAddress>();
-    for (const address in this.schedule) {
-      const upcomingIndex = this.schedule[address].findIndex((slotIndex) => {
-        return slotIndex >= currentSlotIndex;
-      });
-
-      if (upcomingIndex < 0) {
-        this.schedule[address] = [];
-      } else {
-        this.schedule[address] = this.schedule[address].slice(upcomingIndex);
-        if (
-          this.schedule[address][0] <
-          currentSlotIndex + UPCOMING_SLOT_SEARCH
-        ) {
-          addresses.add(address);
-        }
-      }
-    }
-    return addresses;
+  private async fetchLeaders(startSlot: number): Promise<Array<string>> {
+    const leaders = await this.connection.getSlotLeaders(
+      startSlot,
+      2 * UPCOMING_SLOT_SEARCH
+    );
+    return leaders.map((l) => l.toBase58());
   }
 
-  private shouldRefresh(slot: number): boolean {
-    const slotIndex = slot - this.currentEpochFirstSlot;
-    if (slotIndex >= this.slotsInEpoch - END_OF_EPOCH_BUFFER) {
-      this.currentEpochFirstSlot += this.slotsInEpoch;
-      return true;
-    }
-    return false;
-  }
+  getFirstSlot = (): number => {
+    return this.scheduleFirstSlot;
+  };
 
-  private refresh = async (): Promise<void> => {
+  getSlotLeader = (slot: number): string | null => {
+    if (slot >= this.scheduleFirstSlot && slot <= this.lastSlot()) {
+      return this.leaderAddresses[slot - this.scheduleFirstSlot];
+    } else {
+      return null;
+    }
+  };
+
+  private lastSlot = (): number => {
+    return this.scheduleFirstSlot + this.leaderAddresses.length - 1;
+  };
+
+  shouldRefresh = (currentSlot: number): boolean => {
+    const shouldRefreshAt = this.lastSlot() - UPCOMING_SLOT_SEARCH;
+    return currentSlot >= shouldRefreshAt;
+  };
+
+  refresh = async (currentSlot: number): Promise<void> => {
     if (this.refreshing) return;
     this.refreshing = true;
-    this.schedule = await endlessRetry("getLeaderSchedule", () =>
-      this.connection.getLeaderSchedule()
-    );
-    this.refreshing = false;
+    try {
+      const leaderAddresses = await this.fetchLeaders(currentSlot);
+      this.scheduleFirstSlot = currentSlot;
+      this.leaderAddresses = leaderAddresses;
+    } catch (err) {
+      reportError(err, "failed to refresh slot leaders");
+    } finally {
+      this.refreshing = false;
+    }
   };
 }
