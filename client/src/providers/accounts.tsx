@@ -259,7 +259,8 @@ const calculateMinimalRent = async (
   const rentExemptBalance = await connection.getMinimumBalanceForRentExemption(
     space
   );
-  const { slotsPerEpoch } = await connection.getEpochSchedule();
+  const slotsPerEpoch = 432_000;
+  // const { slotsPerEpoch } = await connection.getEpochSchedule();
   const slotsPerSecond = 2.5;
   const slotsPerYear = 365.25 * 24.0 * 60.0 * 60.0 * slotsPerSecond;
   const epochsPerYear = slotsPerYear / slotsPerEpoch;

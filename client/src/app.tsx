@@ -18,8 +18,8 @@ export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
   const isWalletPage = !!useRouteMatch("/wallet")?.isExact;
   const isSlotsPage = !!useRouteMatch("/slots")?.isExact;
-  const loadingPhase = useGameState().loadingPhase;
   const [showClusterModal] = useClusterModal();
+  const gameState = useGameState();
 
   if (isHomePage) {
     return (
@@ -29,13 +29,15 @@ export default function App() {
     );
   }
 
+  const isLoading = gameState.status === "loading";
+  const isInitializing = gameState.loadingPhase === "config";
   const showLoadingModal =
-    !isWalletPage && !isSlotsPage && loadingPhase !== "complete";
+    isInitializing || (isLoading && !isWalletPage && !isSlotsPage);
   return (
     <div className="main-content">
       <div className="min-vh-100 d-flex flex-column">
         <Header />
-        {loadingPhase !== "config" && (
+        {!isInitializing && (
           <Switch>
             <Route path="/game" exact component={GamePage} />
             <Route path="/slots" exact component={SlotsPage} />
@@ -46,7 +48,7 @@ export default function App() {
           </Switch>
         )}
       </div>
-      <LoadingModal show={showLoadingModal} phase={loadingPhase} />
+      <LoadingModal show={showLoadingModal} phase={gameState.loadingPhase} />
       <ClusterModal />
       <Overlay show={showLoadingModal || showClusterModal} />
     </div>

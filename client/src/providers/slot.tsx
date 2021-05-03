@@ -89,20 +89,24 @@ export function SlotProvider({ children }: ProviderProps) {
   const latestTimestamp = React.useRef<number>();
   const isSlotsPage = !!useRouteMatch("/slots")?.isExact;
 
+  const leaderScheduleCounter = React.useRef(0);
   React.useEffect(() => {
-    if (connection) {
-      (async () => {
-        try {
-          const epochInfo = await connection.getEpochInfo();
-          const slotOffset = epochInfo.absoluteSlot - epochInfo.slotIndex;
-          const schedule = await connection.getLeaderSchedule();
+    if (!connection || !isSlotsPage) return;
+    leaderScheduleCounter.current++;
+    const currentCounter = leaderScheduleCounter.current;
+    (async () => {
+      try {
+        const epochInfo = await connection.getEpochInfo();
+        const slotOffset = epochInfo.absoluteSlot - epochInfo.slotIndex;
+        const schedule = await connection.getLeaderSchedule();
+        if (currentCounter === leaderScheduleCounter.current) {
           leaderSchedule.current = [slotOffset, schedule];
-        } catch (err) {
-          console.error("failed to get leader schedule", err);
         }
-      })();
-    }
-  }, [connection]);
+      } catch (err) {
+        console.error("failed to get leader schedule", err);
+      }
+    })();
+  }, [connection, isSlotsPage]);
 
   React.useEffect(() => {
     if (connection === undefined) {
