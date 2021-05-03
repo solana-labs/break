@@ -317,7 +317,7 @@ export function PaymentCard({ account }: { account: Account }) {
                 "Are you sure you want to download this wallet? It must be used with the Solana CLI tooling."
               );
               if (!confirmed) {
-                e.stopPropagation();
+                e.preventDefault();
               }
             }}
           >
