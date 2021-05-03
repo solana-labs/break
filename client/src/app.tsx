@@ -30,9 +30,9 @@ export default function App() {
   }
 
   const isLoading = gameState.status === "loading";
-  const isInitializing = gameState.loadingPhase === "config";
-  const showLoadingModal =
-    isInitializing || (isLoading && !isWalletPage && !isSlotsPage);
+  const isInitializing =
+    gameState.loadingPhase === "config" && !isWalletPage && !isSlotsPage;
+  const showLoadingModal = isLoading && !isWalletPage && !isSlotsPage;
   return (
     <div className="main-content">
       <div className="min-vh-100 d-flex flex-column">
