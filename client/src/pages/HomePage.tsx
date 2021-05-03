@@ -5,11 +5,11 @@ import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
 import { Link } from "react-router-dom";
 
-export default class Home extends React.Component {
+export class HomePage extends React.Component {
   render() {
     return (
       <div className="container home-page">
-        <div className="d-flex min-vh-100 align-items-center px-5">
+        <div className="d-flex align-items-center px-5">
           <div className="row">
             <div className="col-12 mt-4">
               <img

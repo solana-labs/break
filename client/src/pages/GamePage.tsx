@@ -1,8 +1,6 @@
 import * as React from "react";
 import { Redirect, useLocation } from "react-router-dom";
 
-import { Header } from "components/Header";
-import { PaymentCard } from "components/PaymentCard";
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
 import {
@@ -10,42 +8,33 @@ import {
   useCreatedCount,
   useAvgConfirmationTime,
 } from "providers/transactions";
-import { usePayerState } from "providers/wallet";
+import { useWalletState } from "providers/wallet";
 import { useActiveUsers } from "providers/server/socket";
-import { useGameState, useCountdown } from "providers/game";
+import { useGameState } from "providers/game";
 
-export default function Game() {
+export function GamePage() {
   const gameState = useGameState();
-  const [countdown] = useCountdown();
-  const showPayment = gameState === "payment";
-  const loading = gameState === "loading";
-  const showStats = gameState === "play" || countdown !== undefined;
-  const [payer] = usePayerState();
+  const gameStatus = gameState.status;
+  const countdownStart = gameState.countdownStartTime;
+  const showSetup = gameStatus === "setup";
+  const showStats = gameStatus === "play" || countdownStart !== undefined;
+  const payer = useWalletState().wallet;
   const location = useLocation();
 
-  if (showPayment) {
+  if (showSetup) {
     if (!payer) {
-      return <Redirect to={{ ...location, pathname: "/setup" }} />;
-    } else {
       return <Redirect to={{ ...location, pathname: "/wallet" }} />;
+    } else {
+      return <Redirect to={{ ...location, pathname: "/start" }} />;
     }
   }
 
   return (
-    <div className="container min-vh-100 d-flex flex-column">
-      <div>
-        <Header />
-        {showStats && <Stats />}
-      </div>
+    <div className="container d-flex flex-grow-1 flex-column px-3">
+      {showStats && <Stats />}
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          {loading && countdown === undefined ? (
-            <EmptyCard />
-          ) : showPayment && payer ? (
-            <PaymentCard account={payer} />
-          ) : (
-            <TransactionContainer enabled />
-          )}
+          <TransactionContainer enabled />
         </div>
       </div>
       <TransactionModal />

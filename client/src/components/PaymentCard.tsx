@@ -9,11 +9,13 @@ import {
   Transaction,
 } from "@solana/web3.js";
 
-import { useConfig, useRefreshAccounts } from "providers/server/http";
-import { useBalance } from "providers/rpc/balance";
-import { usePayerState } from "providers/wallet";
+import { useBalanceState } from "providers/rpc/balance";
+import { useWalletState } from "providers/wallet";
 import { useConnection } from "providers/rpc";
 import { useBlockhash } from "providers/rpc/blockhash";
+import { useAccountsState } from "providers/accounts";
+import { useConfig } from "providers/server/http";
+import { useGameState } from "providers/game";
 
 export function lamportsToSolString(
   lamports: number,
@@ -44,21 +46,59 @@ export function getTrustWalletLink(
 }
 
 export function PaymentCard({ account }: { account: Account }) {
-  const balance = useBalance();
+  const config = useConfig();
   const connection = useConnection();
   const recentBlockhash = useBlockhash();
-  const [, setPayer] = usePayerState();
-  const gameCostLamports = useConfig()?.gameCost || 0;
+  const walletState = useWalletState();
+  const accountsState = useAccountsState();
+  const closingAccounts = accountsState.status === "closing";
+  const gameCostLamports = accountsState.creationCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
   const address = account.publicKey.toBase58();
+
+  const balanceState = useBalanceState();
+  const balance = balanceState.payer;
   const balanceSufficient =
     balance !== "loading" && balance >= gameCostLamports;
+  const unsettledTotal = balanceState.feePayers.reduce(
+    (sum, next) => next + sum,
+    0
+  );
+
   const trustWalletDeepLink = getTrustWalletLink(address, gameCostSol);
   const [copied, setCopied] = React.useState(false);
-  const [showQR, setShowQR] = React.useState(!trustWalletDeepLink);
+  const [showQR, setShowQR] = React.useState(false);
   const [showWithdraw, setShowWithdraw] = React.useState(false);
   const [toPubkey, setToPubkey] = React.useState<PublicKey>();
   const [withdrawMessage, setWithdrawMessage] = React.useState("");
+
+  const airdropLock = React.useRef(false);
+  React.useEffect(() => {
+    if (!config || !connection) return;
+
+    if (
+      config.airdropEnabled &&
+      !airdropLock.current &&
+      balance < gameCostLamports
+    ) {
+      airdropLock.current = true;
+      (async () => {
+        try {
+          await connection.requestAirdrop(account.publicKey, LAMPORTS_PER_SOL);
+        } finally {
+          airdropLock.current = false;
+        }
+      })();
+    }
+  }, [
+    connection,
+    config,
+    walletState,
+    balance,
+    trustWalletDeepLink,
+    account,
+    gameCostLamports,
+  ]);
 
   const copyAddress = () => {
     navigator.clipboard.writeText(address);
@@ -181,23 +221,10 @@ export function PaymentCard({ account }: { account: Account }) {
           </div>
         )}
 
-        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
+        <div className="d-flex align-items-center justify-content-between mb-4">
           <div className="font-weight-bold">Live Balance</div>
-          <span className="badge badge-dark">
-            <h4 className="mb-0">
-              {balance === "loading" ? (
-                <span className="spinner-grow spinner-grow-sm mr-2"></span>
-              ) : (
-                lamportsToSolString(balance)
-              )}
-            </h4>
-          </span>
-        </div>
-
-        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
-          <div className="font-weight-bold">Withdraw Funds</div>
           <span
-            className="btn btn-sm btn-white"
+            className="btn btn-sm btn-white ml-3"
             onClick={() => {
               setShowWithdraw((show) => !show);
               setWithdrawMessage("");
@@ -207,20 +234,16 @@ export function PaymentCard({ account }: { account: Account }) {
           </span>
         </div>
 
-        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
-          <div className="font-weight-bold">Keypair File</div>
-          <a
-            className="btn btn-sm btn-white"
-            href={keypairUrl}
-            download={`break-keypair-${account.publicKey.toBase58()}.json`}
-            onClick={() => {
-              return window.confirm(
-                "Are you sure you want to download this wallet? It must be used with the Solana CLI tooling."
-              );
-            }}
-          >
-            {"Download"}
-          </a>
+        <div className="d-flex mb-4 pb-4 border-bottom">
+          <span className="badge badge-dark">
+            <h4 className="mb-0">
+              {balance === "loading" ? (
+                <span className="spinner-grow spinner-grow-sm mr-2"></span>
+              ) : (
+                lamportsToSolString(balance)
+              )}
+            </h4>
+          </span>
         </div>
 
         {showWithdraw && (
@@ -245,11 +268,54 @@ export function PaymentCard({ account }: { account: Account }) {
           </div>
         )}
 
+        {unsettledTotal > 0 && (
+          <>
+            <div className="d-flex align-items-center justify-content-between mb-4">
+              <div className="font-weight-bold">Unsettled Balance</div>
+              <span
+                className="btn btn-sm btn-white ml-3"
+                onClick={() => accountsState.closeAccounts()}
+              >
+                {closingAccounts ? (
+                  <span className="spinner-grow spinner-grow-sm mr-2"></span>
+                ) : (
+                  "Settle Funds"
+                )}
+              </span>
+            </div>
+
+            <div className="d-flex mb-4 pb-4 border-bottom">
+              <span className="badge badge-dark">
+                <h4 className="mb-0">{lamportsToSolString(unsettledTotal)}</h4>
+              </span>
+            </div>
+          </>
+        )}
+
+        <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom">
+          <div className="font-weight-bold">Keypair File</div>
+          <a
+            className="btn btn-sm btn-white"
+            href={keypairUrl}
+            download={`break-keypair-${account.publicKey.toBase58()}.json`}
+            onClick={(e) => {
+              const confirmed = window.confirm(
+                "Are you sure you want to download this wallet? It must be used with the Solana CLI tooling."
+              );
+              if (!confirmed) {
+                e.stopPropagation();
+              }
+            }}
+          >
+            {"Download"}
+          </a>
+        </div>
+
         <div className="d-flex align-items-center justify-content-between">
           <div className="font-weight-bold">Change Wallet</div>
           <span
             className="btn btn-sm btn-white"
-            onClick={() => setPayer(undefined)}
+            onClick={() => walletState.selectWallet(undefined)}
           >
             <span className="fe fe-list mr-2"></span>
             List
@@ -277,11 +343,12 @@ export function PaymentCard({ account }: { account: Account }) {
 }
 
 function Footer() {
-  const balance = useBalance();
-  const gameCostLamports = useConfig()?.gameCost || 0;
-  const refreshAccounts = useRefreshAccounts();
-
+  const balance = useBalanceState().payer;
+  const gameState = useGameState();
+  const accountsState = useAccountsState();
+  const gameCostLamports = accountsState.creationCost || 0;
   const sufficient = balance >= gameCostLamports;
+
   return (
     <div className="card-footer d-flex flex-column align-items-center">
       <input
@@ -289,7 +356,7 @@ function Footer() {
         value="Play"
         disabled={!sufficient}
         className="btn btn-pink w-100 text-uppercase"
-        onClick={refreshAccounts}
+        onClick={() => gameState.prepareGame()}
       />
       <span className="text-muted small mt-2">
         One play costs {lamportsToSolString(gameCostLamports)}

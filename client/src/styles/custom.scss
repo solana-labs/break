@@ -25,7 +25,7 @@
   margin-bottom: 1rem;
 }
 
-.header-body {
+.header .header-body {
   padding: 1rem 0;
 }
 
@@ -67,6 +67,10 @@
   @include hover-focus {
     background-color: darken($pink, 10%);
   }
+}
+
+.header {
+  z-index: $zindex-modal;
 }
 
 .modal-backdrop {

@@ -2,32 +2,27 @@ import React, { useRef, useEffect, useCallback } from "react";
 
 import { TransactionSquare } from "./TxSquare";
 import { useCreateTxRef, useTransactions } from "providers/transactions";
-import {
-  useGameState,
-  useResetGame,
-  COUNTDOWN_SECS,
-  useCountdown,
-} from "providers/game";
+import { useGameState, COUNTDOWN_SECS } from "providers/game";
 import { TxTableRow } from "./TxTableRow";
 import { DEBUG_MODE } from "providers/transactions/confirmed";
 
 export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const createTxRef = useCreateTxRef();
   const gameState = useGameState();
-  const [countdown, setCountdown] = useCountdown();
-  const resetGame = useResetGame();
   const [rapidFire, setRapidFire] = React.useState(false);
+  const countdownStart = gameState.countdownStartTime;
 
   const makeTransaction = useCallback(() => {
     if (enabled) {
-      if (countdown !== undefined) {
+      console.log("make tx", JSON.stringify(gameState));
+      if (gameState.countdownStartTime !== undefined) {
         createTxRef.current();
-      } else if (gameState === "play") {
+      } else if (gameState.status === "play") {
         createTxRef.current();
-        setCountdown(performance.now());
+        gameState.startGame();
       }
     }
-  }, [enabled, createTxRef, gameState, countdown, setCountdown]);
+  }, [enabled, createTxRef, gameState]);
 
   useEffect(() => {
     if (rapidFire && !enabled) {
@@ -81,7 +76,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
       ) : (
         <div className="card-body">
           <div className="tx-wrapper border-1 border-primary h-100 position-relative">
-            {countdown === undefined && enabled ? (
+            {countdownStart === undefined && enabled ? (
               <div className="d-flex h-100 justify-content-center align-items-center p-3">
                 <h2 className="text-center">
                   Try to break Solana's network by sending as many transactions
@@ -94,18 +89,19 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
         </div>
       )}
       <div className="card-footer">
-        <span
+        <button
           className="btn btn-pink w-100 text-uppercase text-truncate touch-action-none"
           onContextMenu={(e) => e.preventDefault()}
           onPointerDown={() => setRapidFire(true)}
           onPointerUp={() => setRapidFire(false)}
           onPointerLeave={() => setRapidFire(false)}
           onPointerCancel={() => setRapidFire(false)}
-          onClick={enabled ? makeTransaction : resetGame}
+          disabled={!enabled}
+          onClick={makeTransaction}
         >
-          <span className={`fe fe-${enabled ? "zap" : "repeat"} mr-2`}></span>
-          {enabled ? "Send new transactions" : "Play again"}
-        </span>
+          {enabled && <span className="fe fe-zap mr-2"></span>}
+          {enabled ? "Send new transactions" : "Game finished"}
+        </button>
       </div>
     </div>
   );

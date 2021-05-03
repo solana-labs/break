@@ -2,12 +2,10 @@ import * as React from "react";
 
 import { useSlotTiming } from "providers/slot";
 import { SlotTableRow } from "components/SlotTableRow";
-import { Header } from "components/Header";
 
-export default function Slots() {
+export function SlotsPage() {
   return (
-    <div className="container-fluid mw-2 min-vh-100 d-flex flex-column">
-      <Header />
+    <div className="container-fluid mw-2 d-flex flex-grow-1 flex-column">
       <div className="row flex-grow-1 my-5">
         <div className="col">
           <div className="card h-100 mb-0">

@@ -20,16 +20,34 @@ export function isLocalHost() {
   return window.location.hostname === "localhost";
 }
 
-export const PAYMENT_ACCOUNT = (() => {
-  const paymentKey = window.localStorage.getItem("paymentKey");
-  if (paymentKey) {
-    return new Account(Buffer.from(paymentKey, "base64"));
+export const getLocalStorageKeypair = (key: string): Account => {
+  const base64Keypair = window.localStorage.getItem(key);
+  if (base64Keypair) {
+    return new Account(Buffer.from(base64Keypair, "base64"));
   } else {
-    const paymentAccount = new Account();
+    const account = new Account();
     window.localStorage.setItem(
-      "paymentKey",
-      Buffer.from(paymentAccount.secretKey).toString("base64")
+      key,
+      Buffer.from(account.secretKey).toString("base64")
     );
-    return paymentAccount;
+    return account;
   }
+};
+
+const SPLIT = ((): number => {
+  const split = parseInt(
+    new URLSearchParams(window.location.search).get("split") || ""
+  );
+  if (!isNaN(split)) {
+    return Math.min(split, 12);
+  }
+  return 4;
+})();
+
+export const FEE_PAYERS = (() => {
+  const accounts = [];
+  for (let i = 0; i < SPLIT; i++) {
+    accounts.push(getLocalStorageKeypair(`feePayerKey${i + 1}`));
+  }
+  return accounts;
 })();

@@ -8,18 +8,18 @@ import {
   TransactionDetails,
   useDispatch,
 } from "./index";
-import { AccountsConfig } from "../server/http/config";
 import {
   CreateTransactionRPC,
   CreateTransactionResponseMessage,
 } from "../../workers/create-transaction-rpc";
-import { useConfig, useAccounts } from "providers/server/http";
+import { useConfig } from "providers/server/http";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useSocket } from "providers/server/socket";
 import { reportError } from "utils";
 import { useConnection } from "providers/rpc";
 import { DEBUG_MODE, subscribedCommitments } from "./confirmed";
 import { useLatestTimestamp, useTargetSlotRef } from "providers/slot";
+import { useAccountsState, AccountsConfig } from "providers/accounts";
 
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
@@ -33,7 +33,7 @@ type ProviderProps = { children: React.ReactNode };
 export function CreateTxProvider({ children }: ProviderProps) {
   const createTx = React.useRef(() => {});
   const config = useConfig();
-  const accounts = useAccounts();
+  const accounts = useAccountsState().accounts;
   const idCounter = React.useRef<number>(0);
   const targetSlotRef = useTargetSlotRef();
   const programDataAccount = accounts?.programAccounts[0].toBase58();
