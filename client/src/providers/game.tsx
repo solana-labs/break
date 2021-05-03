@@ -1,13 +1,13 @@
 import React from "react";
-import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 import { useConfig } from "providers/server/http";
 import { useSocket } from "providers/server/socket";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useDispatch as useTransactionsDispatch } from "providers/transactions";
-import { useConnection } from "providers/rpc";
 import { DEBUG_MODE } from "providers/transactions/confirmed";
 import { useAccountsState } from "./accounts";
+import { useConnection } from "./rpc";
 
 export const COUNTDOWN_SECS = DEBUG_MODE ? 1500 : 15;
 
@@ -33,19 +33,8 @@ const GameStateContext = React.createContext<GameState | undefined>(undefined);
 
 type Props = { children: React.ReactNode };
 export function GameStateProvider({ children }: Props) {
-  const [countdownStartTime, setCountdownStart] = React.useState<number>();
   const [status, setGameStatus] = React.useState<GameStatus>("loading");
-  const resultsTimerRef = React.useRef<NodeJS.Timer>();
-
   const connection = useConnection();
-  const history = useHistory();
-  const location = useLocation();
-  const isGameRoute = !!useRouteMatch("/game");
-
-  React.useEffect(() => {
-    setCountdownStart(undefined);
-  }, [isGameRoute, connection]);
-
   const blockhash = useBlockhash();
   const config = useConfig();
   const socket = useSocket();
@@ -60,11 +49,19 @@ export function GameStateProvider({ children }: Props) {
   }, [blockhash, config, socket, accountsState]);
 
   React.useEffect(() => {
-    if (status === "loading" && isGameRoute && loadingPhase === "complete") {
-      setGameStatus("play");
-    }
-  }, [status, isGameRoute, loadingPhase]);
+    setGameStatus("loading");
+  }, [connection]);
 
+  React.useEffect(() => {
+    if (status === "loading" && loadingPhase === "complete") {
+      setGameStatus("setup");
+    }
+  }, [status, loadingPhase]);
+
+  const history = useHistory();
+  const location = useLocation();
+  const resultsTimerRef = React.useRef<NodeJS.Timer>();
+  const [countdownStartTime, setCountdownStart] = React.useState<number>();
   React.useEffect(() => {
     if (countdownStartTime !== undefined) {
       if (!resultsTimerRef.current) {
