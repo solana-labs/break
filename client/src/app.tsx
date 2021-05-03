@@ -29,7 +29,7 @@ export default function App() {
     );
   }
 
-  const isLoading = gameState.status === "loading";
+  const isLoading = gameState.loadingPhase !== "complete";
   const isInitializing =
     gameState.loadingPhase === "config" && !isWalletPage && !isSlotsPage;
   const showLoadingModal = isLoading && !isWalletPage && !isSlotsPage;
