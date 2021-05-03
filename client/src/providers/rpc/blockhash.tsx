@@ -3,7 +3,7 @@ import { Blockhash, Connection } from "@solana/web3.js";
 import { sleep, reportError } from "utils";
 import { useConnection } from ".";
 
-const POLL_INTERVAL_MS = 20000;
+const POLL_INTERVAL_MS = 5000;
 
 export enum ActionType {
   Start,
@@ -99,7 +99,7 @@ async function refresh(
   let reported = false;
   while (blockhash === undefined && connection === connectionRef.current) {
     try {
-      blockhash = (await connection.getRecentBlockhash("max")).blockhash;
+      blockhash = (await connection.getRecentBlockhash()).blockhash;
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
       if (!reported) reportError(err, "Failed to refresh blockhash");

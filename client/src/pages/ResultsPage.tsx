@@ -2,7 +2,6 @@ import * as React from "react";
 import { Doughnut, ChartData } from "react-chartjs-2";
 import { Redirect, useLocation } from "react-router-dom";
 
-import { Header } from "components/Header";
 import { TransactionContainer } from "components/TxContainer";
 import { TransactionModal } from "components/TxModal";
 import {
@@ -13,7 +12,7 @@ import {
 } from "providers/transactions";
 import { COUNTDOWN_SECS } from "providers/game";
 
-export default function Results() {
+export function ResultsPage() {
   const createdCount = useCreatedCount();
   const location = useLocation();
 
@@ -22,9 +21,8 @@ export default function Results() {
   }
 
   return (
-    <div className="container min-vh-100 d-flex flex-column">
+    <div className="container d-flex flex-grow-1 flex-column">
       <div>
-        <Header />
         <Stats />
         <Summary />
       </div>

@@ -1,10 +1,8 @@
 import React from "react";
-import { Config, AccountsConfig } from "./config";
+import { Config } from "./config";
 import { useServer } from "providers/server";
-import { useBalance } from "providers/rpc/balance";
 import { fetchWithRetry } from "./request";
-import { Account, Connection } from "@solana/web3.js";
-import { usePayerState } from "providers/wallet";
+import { Connection } from "@solana/web3.js";
 
 export enum ConfigStatus {
   Initialized,
@@ -17,7 +15,6 @@ interface State {
   status: ConfigStatus;
   config?: Config;
   connection?: Connection;
-  accounts?: AccountsConfig;
 }
 
 interface Initialized {
@@ -31,13 +28,11 @@ interface Fetching {
 
 interface Ready {
   status: ConfigStatus.Ready;
-  accounts: AccountsConfig;
 }
 
 interface Failure {
   status: ConfigStatus.Failure;
   config?: undefined;
-  accounts?: undefined;
 }
 
 export type Action = Initialized | Fetching | Ready | Failure;
@@ -60,7 +55,6 @@ function configReducer(state: State, action: Action): State {
       return {
         ...state,
         ...action,
-        accounts: undefined,
       };
     }
   }
@@ -85,13 +79,9 @@ export function HttpProvider({ children }: ApiProviderProps) {
     initConfig(dispatch, httpUrlRef);
   }, [httpUrl]);
 
-  const config = state.config;
-  const paymentRequired = config?.paymentRequired;
   React.useEffect(() => {
     httpUrlRef.current = httpUrl;
-    if (paymentRequired !== false) return;
-    refreshAccounts(dispatch, httpUrlRef, undefined);
-  }, [httpUrl, paymentRequired]);
+  }, [httpUrl]);
 
   return (
     <StateContext.Provider value={state}>
@@ -106,26 +96,7 @@ async function initConfig(
   dispatch: Dispatch,
   httpUrlRef: React.MutableRefObject<string>
 ): Promise<void> {
-  return fetchWithRetry(dispatch, httpUrlRef, { route: "init" });
-}
-
-async function refreshAccounts(
-  dispatch: Dispatch,
-  httpUrlRef: React.MutableRefObject<string>,
-  paymentAccount: Account | undefined
-): Promise<void> {
-  return fetchWithRetry(dispatch, httpUrlRef, {
-    route: "accounts",
-    paymentAccount,
-  });
-}
-
-export function useAccounts() {
-  const context = React.useContext(StateContext);
-  if (!context) {
-    throw new Error(`useAccounts must be used within a ApiProvider`);
-  }
-  return context.accounts;
+  return fetchWithRetry(dispatch, httpUrlRef);
 }
 
 export function useConfig() {
@@ -155,45 +126,4 @@ export function useClusterParam(): string {
   } else {
     return "";
   }
-}
-
-export function useClearAccounts() {
-  const dispatch = React.useContext(DispatchContext);
-  if (!dispatch) {
-    throw new Error(`useClearAccounts must be used within a ApiProvider`);
-  }
-
-  return React.useCallback(() => {
-    dispatch({ status: ConfigStatus.Fetching });
-    dispatch({ status: ConfigStatus.Failure });
-  }, [dispatch]);
-}
-
-export function useRefreshAccounts() {
-  const dispatch = React.useContext(DispatchContext);
-  if (!dispatch) {
-    throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
-  }
-  const httpUrlRef = React.useContext(RefContext);
-  if (!httpUrlRef) {
-    throw new Error(`useRefreshAccounts must be used within a ApiProvider`);
-  }
-  const config = useConfig();
-  const [payer] = usePayerState();
-  const paymentRequired = config?.paymentRequired;
-  const balance = useBalance();
-  const cost = config?.gameCost;
-  return React.useCallback(() => {
-    if (paymentRequired === undefined || cost === undefined) return;
-    if (paymentRequired) {
-      if (!payer || balance === "loading" || balance < cost) {
-        dispatch({ status: ConfigStatus.Fetching });
-        dispatch({ status: ConfigStatus.Failure });
-        return;
-      }
-      refreshAccounts(dispatch, httpUrlRef, payer);
-    } else {
-      refreshAccounts(dispatch, httpUrlRef, undefined);
-    }
-  }, [httpUrlRef, dispatch, payer, paymentRequired, balance, cost]);
 }

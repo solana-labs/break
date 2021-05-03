@@ -13,7 +13,7 @@ import {
 import { useRpcUrlState } from "providers/rpc";
 import { useConfig } from "providers/server/http";
 
-function ClusterModal() {
+export function ClusterModal() {
   const [show, setShow] = useClusterModal();
   const onClose = () => setShow(false);
   const { server } = useServer();
@@ -145,5 +145,3 @@ function ClusterToggle() {
     </>
   );
 }
-
-export default ClusterModal;

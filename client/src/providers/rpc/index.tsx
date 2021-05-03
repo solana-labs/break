@@ -31,7 +31,7 @@ export function RpcProvider({ children }: ProviderProps) {
     if (rpcUrl === undefined) return {};
     try {
       const url = new URL(rpcUrl).toString();
-      return { connection: new Connection(url) };
+      return { connection: new Connection(url, "confirmed") };
     } catch (err) {
       console.error(err);
       return {};

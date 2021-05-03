@@ -1,10 +1,10 @@
 import * as React from "react";
 
-import { useAccounts } from "../server/http";
 import { useDispatch, TrackedCommitment, COMMITMENT_PARAM } from "./index";
 import { useConnection } from "providers/rpc";
 import * as Bytes from "utils/bytes";
 import { AccountInfo } from "@solana/web3.js";
+import { useAccountsState } from "providers/accounts";
 
 export const DEBUG_MODE = new URLSearchParams(window.location.search).has(
   "debug"
@@ -28,7 +28,7 @@ type Props = { children: React.ReactNode };
 export function ConfirmedHelper({ children }: Props) {
   const dispatch = useDispatch();
   const connection = useConnection();
-  const accounts = useAccounts();
+  const accounts = useAccountsState().accounts;
 
   React.useEffect(() => {
     if (connection === undefined || accounts === undefined) return;
