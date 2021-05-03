@@ -14,7 +14,6 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
 
   const makeTransaction = useCallback(() => {
     if (enabled) {
-      console.log("make tx", JSON.stringify(gameState));
       if (gameState.countdownStartTime !== undefined) {
         createTxRef.current();
       } else if (gameState.status === "play") {
