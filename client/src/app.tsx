@@ -20,8 +20,6 @@ export default function App() {
   const isSlotsPage = !!useRouteMatch("/slots")?.isExact;
   const loadingPhase = useGameState().loadingPhase;
   const [showClusterModal] = useClusterModal();
-  const showLoadingModal =
-    !isWalletPage && !isSlotsPage && loadingPhase !== "complete";
 
   if (isHomePage) {
     return (
@@ -31,6 +29,8 @@ export default function App() {
     );
   }
 
+  const showLoadingModal =
+    !isWalletPage && !isSlotsPage && loadingPhase !== "complete";
   return (
     <div className="main-content">
       <div className="min-vh-100 d-flex flex-column">
