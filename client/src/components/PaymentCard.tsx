@@ -72,6 +72,7 @@ export function PaymentCard({ account }: { account: Account }) {
   const [toPubkey, setToPubkey] = React.useState<PublicKey>();
   const [withdrawMessage, setWithdrawMessage] = React.useState("");
 
+  const [airdropping, setAirdropping] = React.useState(false);
   const airdropLock = React.useRef(false);
   React.useEffect(() => {
     if (!config || !connection) return;
@@ -82,11 +83,15 @@ export function PaymentCard({ account }: { account: Account }) {
       balance < gameCostLamports
     ) {
       airdropLock.current = true;
+      setAirdropping(true);
       (async () => {
         try {
           await connection.requestAirdrop(account.publicKey, LAMPORTS_PER_SOL);
         } finally {
           airdropLock.current = false;
+          // intentionally not called so that "Airdropping" message
+          // is displayed until balance is updated
+          // setAirdropping(false);
         }
       })();
     }
@@ -171,11 +176,17 @@ export function PaymentCard({ account }: { account: Account }) {
       <div className="card-header">
         <h3 className="card-header-title font-weight-bold">Wallet</h3>
         {balance !== "loading" && (
-          <span className={`text-${balanceSufficient ? "primary" : "warning"}`}>
+          <span
+            className={`text-${
+              balanceSufficient ? "primary" : airdropping ? "info" : "warning"
+            }`}
+          >
             {balanceSufficient
               ? "Press Play to Start"
               : trustWalletDeepLink
               ? "Add Funds to Play"
+              : airdropping
+              ? "Airdropping funds"
               : "Transfer SOL to Play"}
           </span>
         )}
