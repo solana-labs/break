@@ -69,8 +69,12 @@
   }
 }
 
+.cluster-modal {
+  z-index: 3000;
+}
+
 .header {
-  z-index: $zindex-modal;
+  z-index: 2000;
 }
 
 .modal-backdrop {

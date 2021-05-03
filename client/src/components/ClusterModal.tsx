@@ -20,7 +20,7 @@ export function ClusterModal() {
   return (
     <>
       <div
-        className={`modal fade fixed-right${show ? " show" : ""}`}
+        className={`cluster-modal modal fade fixed-right${show ? " show" : ""}`}
         onClick={onClose}
       >
         <div className="modal-dialog modal-dialog-vertical">
