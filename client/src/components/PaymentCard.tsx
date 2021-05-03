@@ -288,7 +288,10 @@ export function PaymentCard({ account }: { account: Account }) {
                 onClick={() => accountsState.closeAccounts()}
               >
                 {closingAccounts ? (
-                  <span className="spinner-grow spinner-grow-sm mr-2"></span>
+                  <span>
+                    <span className="spinner-grow spinner-grow-sm mr-2"></span>
+                    Settling
+                  </span>
                 ) : (
                   "Settle Funds"
                 )}
