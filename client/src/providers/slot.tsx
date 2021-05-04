@@ -108,6 +108,7 @@ export function SlotProvider({ children }: ProviderProps) {
     })();
   }, [connection, isSlotsPage]);
 
+  const singleNodeMode = React.useRef(true);
   React.useEffect(() => {
     if (connection === undefined) {
       return;
@@ -119,7 +120,7 @@ export function SlotProvider({ children }: ProviderProps) {
     let slotUpdateSubscription: number | undefined;
 
     slotSubscription = connection.onSlotChange(({ slot }) => {
-      if (!DEBUG_MODE && !isSlotsPage) {
+      if (!isSlotsPage) {
         targetSlot.current = slot;
       }
     });
@@ -139,11 +140,19 @@ export function SlotProvider({ children }: ProviderProps) {
         const { slot, timestamp } = notification;
         latestTimestamp.current = timestamp;
         if (notification.type === "firstShredReceived") {
+          singleNodeMode.current = false;
           targetSlot.current = Math.max(slot, targetSlot.current || 0);
           slotMetrics.current.set(slot, {
             firstShred: timestamp,
           });
           return;
+        } else if (notification.type === "createdBank") {
+          if (singleNodeMode.current) {
+            slotMetrics.current.set(slot, {
+              firstShred: timestamp,
+            });
+            targetSlot.current = slot;
+          }
         }
 
         const slotTiming = slotMetrics.current.get(slot);

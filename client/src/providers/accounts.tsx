@@ -121,7 +121,6 @@ export function AccountsProvider({ children }: Props) {
       creationLock.current = true;
       setStatus("creating");
       try {
-        console.log("create accounts", wallet.publicKey.toBase58());
         const newAccounts = await _createAccounts(
           connection,
           breakProgramId,
