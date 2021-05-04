@@ -14,11 +14,16 @@ export default class ApiServer {
 
     await tpuProxy.connect();
 
+    const programId = PROGRAM_ID?.toBase58();
+    if (!programId) {
+      throw new Error("Internal error: program id is missing");
+    }
+
     app.post("/init", async (req, res) => {
       res
         .send(
           JSON.stringify({
-            programId: PROGRAM_ID.toString(),
+            programId,
             clusterUrl: urlTls,
             cluster,
             paymentRequired: process.env.REQUIRE_PAYMENT === "true",

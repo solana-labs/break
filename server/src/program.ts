@@ -15,7 +15,7 @@ const PROGRAM_KEYPAIR_PATH = path.resolve(
 export const PROGRAM_ID = (() => {
   if (DEPLOYED_PROGRAM_ADDRESS) {
     return new PublicKey(DEPLOYED_PROGRAM_ADDRESS);
-  } else {
+  } else if (!process.env.DISABLE_API) {
     return readAccountFromFile(PROGRAM_KEYPAIR_PATH).publicKey;
   }
 })();
