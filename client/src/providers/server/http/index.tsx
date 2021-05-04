@@ -120,8 +120,11 @@ export function useClusterParam(): string {
   if (!context) {
     throw new Error(`useClusterParam must be used within a ApiProvider`);
   }
-  const cluster = context?.config?.cluster;
-  if (cluster && cluster !== "mainnet-beta") {
+  const cluster = context.config?.cluster;
+  const rpcUrl = context.config?.rpcUrl;
+  if (!cluster && rpcUrl) {
+    return `cluster=custom&customUrl=${rpcUrl}`;
+  } else if (cluster && cluster !== "mainnet-beta") {
     return `cluster=${cluster}`;
   } else {
     return "";

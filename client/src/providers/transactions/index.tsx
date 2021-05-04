@@ -63,27 +63,18 @@ export const COMMITMENT_PARAM = ((): TrackedCommitment => {
   );
   switch (commitment) {
     case "recent": {
+      return "processed";
+    }
+    case "processed": {
       return commitment;
     }
     default: {
-      return "singleGossip";
+      return "confirmed";
     }
   }
 })();
 
-export const getCommitmentName = (
-  commitment: TrackedCommitment
-): CommitmentName => {
-  if (commitment === "singleGossip") {
-    return "confirmed";
-  } else {
-    return "processed";
-  }
-};
-
-export type CommitmentName = "processed" | "confirmed";
-
-export type TrackedCommitment = "singleGossip" | "recent";
+export type TrackedCommitment = "processed" | "confirmed";
 
 export type TransactionStatus = "success" | "timeout" | "pending";
 
@@ -110,7 +101,7 @@ type UpdateIds = {
 
 type TrackTransaction = {
   type: "track";
-  commitmentName: CommitmentName;
+  commitment: TrackedCommitment;
   trackingId: number;
   slot: number;
   timestamp: number;
@@ -263,7 +254,7 @@ function reducer(state: State, action: Action): State {
               },
               timing: {
                 ...tx.timing,
-                [action.commitmentName]: action.timestamp,
+                [action.commitment]: action.timestamp,
               },
               pending: tx.pending,
             };
@@ -272,7 +263,7 @@ function reducer(state: State, action: Action): State {
               ...tx,
               timing: {
                 ...tx.timing,
-                [action.commitmentName]: action.timestamp,
+                [action.commitment]: action.timestamp,
               },
             };
           }
@@ -307,12 +298,11 @@ function reducer(state: State, action: Action): State {
         const id = Math.floor(trackingId / partitionCount);
         if (tx.status === "pending" && ids.has(id)) {
           // Optimistically confirmed, no need to continue retry
-          if (action.commitment === "singleGossip") {
+          if (action.commitment === "confirmed") {
             clearInterval(tx.pending.retryId);
             clearTimeout(tx.pending.timeoutId);
           }
 
-          const commitmentName = getCommitmentName(action.commitment);
           return {
             status: "success",
             details: tx.details,
@@ -323,7 +313,7 @@ function reducer(state: State, action: Action): State {
             },
             timing: {
               ...tx.timing,
-              [commitmentName]: timeElapsed(
+              [action.commitment]: timeElapsed(
                 tx.timing.subscribed,
                 action.receivedAt
               ),
@@ -332,14 +322,13 @@ function reducer(state: State, action: Action): State {
           };
         } else if (tx.status === "success") {
           if (ids.has(id)) {
-            const commitmentName = getCommitmentName(action.commitment);
             // Already recorded conf time
-            if (tx.timing[commitmentName] !== undefined) {
+            if (tx.timing[action.commitment] !== undefined) {
               return tx;
             }
 
             // Optimistically confirmed, no need to continue retry
-            if (tx.pending && action.commitment === "singleGossip") {
+            if (tx.pending && action.commitment === "confirmed") {
               clearInterval(tx.pending.retryId);
               clearTimeout(tx.pending.timeoutId);
             }
@@ -348,14 +337,14 @@ function reducer(state: State, action: Action): State {
               ...tx,
               timing: {
                 ...tx.timing,
-                [commitmentName]: timeElapsed(
+                [action.commitment]: timeElapsed(
                   tx.timing.subscribed,
                   action.receivedAt
                 ),
               },
             };
           } else if (
-            action.commitment === "recent" &&
+            action.commitment === "processed" &&
             tx.pending &&
             !ids.has(id)
           ) {

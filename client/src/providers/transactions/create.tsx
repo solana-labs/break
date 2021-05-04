@@ -3,7 +3,6 @@ import { Blockhash, PublicKey, Connection } from "@solana/web3.js";
 import bs58 from "bs58";
 import {
   Dispatch,
-  getCommitmentName,
   PendingTransaction,
   TransactionDetails,
   useDispatch,
@@ -57,8 +56,18 @@ export function CreateTxProvider({ children }: ProviderProps) {
         !config ||
         !accounts ||
         !targetSlotRef.current
-      )
+      ) {
+        console.error("failed to send tx", {
+          connection,
+          blockhash,
+          socket,
+          config,
+          accounts,
+          targetSlot: targetSlotRef.current,
+        });
         return;
+      }
+
       const id = idCounter.current;
       if (id < accounts.accountCapacity * accounts.programAccounts.length) {
         idCounter.current++;
@@ -187,10 +196,9 @@ export function createTransaction(
               (notification, context) => {
                 const timestamp = latestTimestamp.current;
                 if (timestamp && notification.type === "status") {
-                  const commitmentName = getCommitmentName(commitment);
                   dispatch({
                     type: "track",
-                    commitmentName,
+                    commitment,
                     trackingId,
                     slot: context.slot,
                     timestamp,
