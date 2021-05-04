@@ -32,18 +32,22 @@ npm install
 _Note: If the cluster you connect to doesn't provide a faucet, you will need to supply the server with a payer key. (See 'Configuration' below)._
 
 ```
-cd server
-
 # Start local node
 solana-test-validator
 
+# Deploy program to local node
+cd program
+cargo build-bpf
+solana program deploy target/deploy/break_solana_program.so --url localhost
+
 # Connect to local node
+cd server
 npm run start:dev
 ```
 
 #### Configuration
 
-By default, the Break server will connect to a local node for RPC and will use a faucet to fund game play. To configure this behavior, set the following environment variables when running the server:
+By default, the Break server will connect to a local node for RPC. To configure this behavior, set the following environment variables when running the server:
 
 ##### `PORT`
 
@@ -79,22 +83,6 @@ LIVE=true CLUSTER=testnet npm run start:dev
 LIVE=true CLUSTER=mainnet-beta npm run start:dev
 ```
 
-##### `ENCODED_PAYER_KEY`
-
-Set this option if the chosen cluster doesn't provide a faucet. The provided key must be a Base64 encoded private key and it will be used to fund game play.
-
-```
-ENCODED_PAYER_KEY=<BASE64 ENCODED PRIVATE KEY> npm run start:dev
-```
-
-##### `ENCODED_PROGRAM_KEY`
-
-Set this option to deploy the Break Solana program. The provided key must be a Base64 encoded private key and the corresponding public key will be used to store the executable program. If the program is already deployed, the existing program will be used.
-
-```
-ENCODED_PROGRAM_KEY=<BASE64 ENCODED PRIVATE KEY> npm run start:dev
-```
-
 ##### `DEPLOYED_PROGRAM_ADDRESS`
 
 Set this option to use an existing loaded Break Solana program rather than load a new version.  If the program doesn't exist, the server will exit with an error.
@@ -108,36 +96,12 @@ To use the Break Solana program that's used on https://break.solana.com, use the
 DEPLOYED_PROGRAM_ADDRESS=BrEAK7zGZ6dM71zUDACDqJnekihmwF15noTddWTsknjC npm run start:dev
 ```
 
-##### `REQUIRE_PAYMENT`
-
-Enable this option to require the user to cover transaction fees before playing the game.
-
-```
-REQUIRE_PAYMENT=true npm run start:dev
-```
-
 ##### `SEND_TO_RPC`
 
 Enable this option to send transactions to the RPC API rather than directly to a validator TPU port.
 
 ```
 SEND_TO_RPC=true npm run start:dev
-```
-
-##### `CREATE_ACCOUNT_BATCH_SIZE`
-
-Set this option to modify how the server refills its supply of game accounts. The default is 10 accounts per batch for local clusters and 2 accounts for remote clusters.
-
-```
-CREATE_ACCOUNT_BATCH_SIZE=10 npm run start:dev
-```
-
-##### `TX_PER_ACCOUNT`
-
-Set this option to modify the max number of transactions a single Break program account can track for confirmation. Default is 1000 accounts. The Break app tracks transaction confirmations with a bit vector in the account state, the default configuration will result in 125 byte program accounts.
-
-```
-TX_PER_ACCOUNT=1000 npm run start:dev
 ```
 
 ### Run Client
@@ -161,11 +125,11 @@ https://break.solana.com/game?cluster=devnet
 
 ##### `commitment`
 
-Set this parameter to set the commitment level used for confirming transactions. Default is `'singleGossip'` but `'single'`
-and `'recent'` are also supported.
+Set this parameter to set the commitment level used for confirming transactions. Default is `'confirmed'` but `'processed'`
+is also supported.
 
 ```
-https://break.solana.com/game?commitment=recent
+https://break.solana.com/game?commitment=processed
 ```
 
 ##### `debug`
