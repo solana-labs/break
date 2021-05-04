@@ -1,10 +1,8 @@
-use solana_sdk::{
-    account_info::AccountInfo, entrypoint_deprecated, entrypoint_deprecated::ProgramResult,
-    pubkey::Pubkey,
+use solana_program::{
+    account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, pubkey::Pubkey,
 };
 
-entrypoint_deprecated!(process_instruction);
-
+entrypoint!(process_instruction);
 fn process_instruction<'a>(
     _program_id: &Pubkey,
     accounts: &'a [AccountInfo<'a>],
@@ -26,7 +24,7 @@ fn process_instruction<'a>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use solana_sdk::clock::Epoch;
+    use solana_program::clock::Epoch;
 
     #[test]
     fn test_xor() {
