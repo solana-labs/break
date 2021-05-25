@@ -16,6 +16,7 @@ import { useBlockhash } from "providers/rpc/blockhash";
 import { useAccountsState } from "providers/accounts";
 import { useConfig } from "providers/server/http";
 import { useGameState } from "providers/game";
+import { reportError } from "utils";
 
 export function lamportsToSolString(
   lamports: number,
@@ -87,6 +88,8 @@ export function PaymentCard({ account }: { account: Account }) {
       (async () => {
         try {
           await connection.requestAirdrop(account.publicKey, LAMPORTS_PER_SOL);
+        } catch (err) {
+          reportError(err, "Failed to airdrop");
         } finally {
           airdropLock.current = false;
           // intentionally not called so that "Airdropping" message
