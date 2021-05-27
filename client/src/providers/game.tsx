@@ -51,7 +51,7 @@ export function GameStateProvider({ children }: Props) {
 
   React.useEffect(() => {
     setGameStatus("loading");
-    setCountdownStart(undefined)
+    setCountdownStart(undefined);
   }, [connection]);
 
   React.useEffect(() => {
