@@ -34,6 +34,7 @@ const GameStateContext = React.createContext<GameState | undefined>(undefined);
 type Props = { children: React.ReactNode };
 export function GameStateProvider({ children }: Props) {
   const [status, setGameStatus] = React.useState<GameStatus>("loading");
+  const [countdownStartTime, setCountdownStart] = React.useState<number>();
   const connection = useConnection();
   const blockhash = useBlockhash();
   const config = useConfig();
@@ -50,6 +51,7 @@ export function GameStateProvider({ children }: Props) {
 
   React.useEffect(() => {
     setGameStatus("loading");
+    setCountdownStart(undefined);
   }, [connection]);
 
   React.useEffect(() => {
@@ -61,7 +63,6 @@ export function GameStateProvider({ children }: Props) {
   const history = useHistory();
   const location = useLocation();
   const resultsTimerRef = React.useRef<NodeJS.Timer>();
-  const [countdownStartTime, setCountdownStart] = React.useState<number>();
   React.useEffect(() => {
     if (countdownStartTime !== undefined) {
       if (!resultsTimerRef.current) {

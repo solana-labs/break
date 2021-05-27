@@ -32,9 +32,9 @@ export function WalletProvider({ children }: Props) {
 
   React.useEffect(() => {
     if (config?.airdropEnabled) {
-      selectWallet(LOCAL_WALLET);
+      setWallet(LOCAL_WALLET);
     } else {
-      selectWallet(undefined);
+      setWallet(undefined);
     }
   }, [config?.airdropEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 

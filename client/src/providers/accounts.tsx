@@ -56,6 +56,8 @@ export function AccountsProvider({ children }: Props) {
 
   React.useEffect(() => {
     calculationCounter.current++;
+    setStatus("initializing");
+    setAccounts(undefined);
     if (!connection) return;
     const savedCounter = calculationCounter.current;
     (async () => {
