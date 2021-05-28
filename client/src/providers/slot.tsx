@@ -29,6 +29,12 @@ export type SlotStats = {
   maxTransactionsPerEntry: number;
 };
 
+export type SlotProgress = {
+  votedStakePercent: number
+  gossipOnlyStakePercent: number
+  replayOnlyStakePercent: number
+}
+
 export type SlotTiming = {
   firstShred: number;
   parent?: number;
@@ -40,6 +46,7 @@ export type SlotTiming = {
   confirmed?: number;
   rooted?: number;
   stats?: SlotStats;
+  progress?: SlotProgress;
 };
 
 export function useTargetSlotRef() {
@@ -189,6 +196,14 @@ export function SlotProvider({ children }: ProviderProps) {
             if (!slotTiming.rooted) {
               slotTiming.rooted = timestamp;
             }
+            break;
+          }
+          case "confirmationProgress": {
+            slotTiming.progress = {
+              votedStakePercent: notification.progress[0],
+              gossipOnlyStakePercent: notification.progress[1],
+              replayOnlyStakePercent: notification.progress[2],
+            };
             break;
           }
         }

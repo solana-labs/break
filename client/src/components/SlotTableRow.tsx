@@ -62,6 +62,13 @@ export function SlotTableRow({ slot, timing }: Props) {
     avgTpe = (txCount / timing?.stats.numTransactionEntries).toFixed(1);
   }
 
+  const displayPercent = (percent: number | undefined) => {
+    if (percent) {
+      return `${percent}%`;
+    }
+    return "-";
+  };
+
   return (
     <tr className="debug-row text-monospace">
       <td>{leader ? leader.slice(0, 7) : "-"}</td>
@@ -85,6 +92,9 @@ export function SlotTableRow({ slot, timing }: Props) {
         <>
           <TdTimestamp time={timing?.frozen} />
           <TdTimestamp time={timing?.confirmed} />
+          <td>{displayPercent(timing?.progress?.votedStakePercent)}</td>
+          <td>{displayPercent(timing?.progress?.gossipOnlyStakePercent)}</td>
+          <td>{displayPercent(timing?.progress?.replayOnlyStakePercent)}</td>
           <TdTimestamp time={timing?.rooted} />
         </>
       ) : (

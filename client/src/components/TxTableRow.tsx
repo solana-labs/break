@@ -56,6 +56,13 @@ export function TxTableRow({ transaction }: Props) {
     avgTpe = (txCount / slotTiming?.stats.numTransactionEntries).toFixed(1);
   }
 
+  const displayPercent = (percent: number | undefined) => {
+    if (percent) {
+      return `${percent}%`;
+    }
+    return "-";
+  };
+
   return (
     <tr
       className="debug-row text-monospace"
@@ -75,6 +82,9 @@ export function TxTableRow({ transaction }: Props) {
       <td>{timeElapsed(timing?.subscribed, slotTiming?.createdBank) || "-"}</td>
       <td>{timeElapsed(timing?.subscribed, slotTiming?.frozen) || "-"}</td>
       <td>{timeElapsed(timing?.subscribed, slotTiming?.confirmed) || "-"}</td>
+      <td>{displayPercent(slotTiming?.progress?.votedStakePercent)}</td>
+      <td>{displayPercent(slotTiming?.progress?.gossipOnlyStakePercent)}</td>
+      <td>{displayPercent(slotTiming?.progress?.replayOnlyStakePercent)}</td>
       <td>{timeElapsed(timing?.subscribed, slotTiming?.rooted) || "-"}</td>
     </tr>
   );

@@ -55,6 +55,9 @@ function SlotTable() {
                 <th className="text-muted sticky">Bank Created</th>
                 <th className="text-muted sticky">Bank Frozen / Dead</th>
                 <th className="text-muted sticky">Confirmed</th>
+                <th className="text-muted sticky">Conf %</th>
+                <th className="text-muted sticky">Gossip Conf %</th>
+                <th className="text-muted sticky">Replay Conf %</th>
                 <th className="text-muted sticky">Rooted</th>
               </tr>
             </thead>
