@@ -24,7 +24,7 @@
   "dependencies": {
     "@sentry/node": "^6.4.1",
     "@sentry/tracing": "^6.5.0",
-    "@solana/web3.js": "^1.15.0",
+    "@solana/web3.js": "^1.16.1",
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.12",
     "@types/node": "^15.6.2",
