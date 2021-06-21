@@ -13,7 +13,7 @@
   },
   "testnetDefaultChannel": "edge",
   "dependencies": {
-    "@react-hook/debounce": "^3.0.0",
+    "@react-hook/debounce": "^4.0.0",
     "@react-hook/throttle": "^2.2.0",
     "@sentry/react": "^5.26.0",
     "@sentry/tracing": "^5.26.0",
