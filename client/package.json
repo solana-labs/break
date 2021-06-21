@@ -24,7 +24,7 @@
     "@toruslabs/fetch-node-details": "^2.6.1",
     "@toruslabs/torus.js": "^2.3.2",
     "@types/bs58": "^4.0.1",
-    "@types/chai": "^4.2.18",
+    "@types/chai": "^4.2.19",
     "@types/chart.js": "^2.9.32",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.12.4",
