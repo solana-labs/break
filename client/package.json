@@ -25,7 +25,7 @@
     "@toruslabs/torus.js": "^2.4.0",
     "@types/bs58": "^4.0.1",
     "@types/chai": "^4.2.19",
-    "@types/chart.js": "^2.9.32",
+    "@types/chart.js": "^2.9.33",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.12.4",
     "@types/qrcode.react": "^1.0.1",
