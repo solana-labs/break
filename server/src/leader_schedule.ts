@@ -53,6 +53,11 @@ export default class LeaderScheduleService {
     if (slot >= this.scheduleFirstSlot && slot <= this.lastSlot()) {
       return this.leaderAddresses[slot - this.scheduleFirstSlot];
     } else {
+      console.error(
+        `getSlotLeader failed: Either ${slot} < ${
+          this.scheduleFirstSlot
+        } OR ${slot} > ${this.lastSlot()}`
+      );
       return null;
     }
   };
