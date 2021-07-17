@@ -13,7 +13,6 @@ export default class WebSocketServer {
     wss.on("connection", function connection(ws) {
       let isAlive = true;
       function heartbeat() {
-        console.log("heartbeat");
         isAlive = true;
       }
 
