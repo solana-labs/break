@@ -11,11 +11,12 @@ export default class LeaderTrackerService {
   constructor(
     private connection: Connection,
     private currentSlot: number,
-    callback: (slot: number) => void
+    callback: (slot: number) => Promise<void>
   ) {
     this.recentSlots.push(currentSlot);
 
     let receivedShredNotification = false;
+    let processingCallback = false;
     this.connection.onSlotUpdate((update) => {
       const previousCurrentSlot = this.currentSlot;
       let newCurrentSlot = this.currentSlot;
@@ -41,7 +42,22 @@ export default class LeaderTrackerService {
       }
 
       if (newCurrentSlot != previousCurrentSlot) {
-        callback(newCurrentSlot);
+        console.debug(`Leader tracker detected new slot: ${newCurrentSlot}`);
+        if (!processingCallback) {
+          processingCallback = true;
+          callback(newCurrentSlot)
+            .then(() => {
+              console.debug(
+                `Leader tracker handled new slot: ${newCurrentSlot}`
+              );
+            })
+            .catch((err) => {
+              console.error("Failed to handle new slot", err);
+            })
+            .finally(() => {
+              processingCallback = false;
+            });
+        }
       }
     });
   }

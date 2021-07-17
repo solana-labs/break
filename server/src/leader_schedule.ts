@@ -53,6 +53,11 @@ export default class LeaderScheduleService {
     if (slot >= this.scheduleFirstSlot && slot <= this.lastSlot()) {
       return this.leaderAddresses[slot - this.scheduleFirstSlot];
     } else {
+      console.error(
+        `getSlotLeader failed: Either ${slot} < ${
+          this.scheduleFirstSlot
+        } OR ${slot} > ${this.lastSlot()}`
+      );
       return null;
     }
   };
@@ -70,7 +75,9 @@ export default class LeaderScheduleService {
     if (this.refreshing) return;
     this.refreshing = true;
     try {
-      const leaderAddresses = await this.fetchLeaders(currentSlot);
+      const leaderAddresses = await this.fetchLeaders(
+        Math.max(0, currentSlot - PAST_SLOT_SEARCH)
+      );
       this.scheduleFirstSlot = currentSlot;
       this.leaderAddresses = leaderAddresses;
     } catch (err) {
