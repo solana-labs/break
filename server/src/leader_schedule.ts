@@ -75,7 +75,9 @@ export default class LeaderScheduleService {
     if (this.refreshing) return;
     this.refreshing = true;
     try {
-      const leaderAddresses = await this.fetchLeaders(currentSlot);
+      const leaderAddresses = await this.fetchLeaders(
+        Math.max(0, currentSlot - PAST_SLOT_SEARCH)
+      );
       this.scheduleFirstSlot = currentSlot;
       this.leaderAddresses = leaderAddresses;
     } catch (err) {
