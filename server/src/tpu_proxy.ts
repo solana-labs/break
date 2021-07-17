@@ -19,6 +19,7 @@ export default class TpuProxy {
   lastSlot = 0;
   tpuAddresses = new Array<string>();
   sockets: Map<TpuAddress, dgram.Socket> = new Map();
+  socketPool: Array<dgram.Socket> = [];
 
   constructor(private connection: Connection) {}
 
@@ -128,7 +129,16 @@ export default class TpuProxy {
     for (const tpu of this.tpuAddresses) {
       const [host, portStr] = tpu.split(":");
       const port = Number.parseInt(portStr);
-      const socket = dgram.createSocket("udp4");
+
+      const poolSocket = this.socketPool.pop();
+      let socket: dgram.Socket;
+      if (poolSocket) {
+        poolSocket.removeAllListeners("error");
+        socket = poolSocket;
+      } else {
+        socket = dgram.createSocket("udp4");
+      }
+
       await new Promise((resolve) => {
         socket.on("error", (err) => this.onTpuResult(tpu, err));
         socket.connect(port, host, () => resolve(undefined));
@@ -144,14 +154,20 @@ export default class TpuProxy {
     this.sockets = sockets;
 
     oldSockets.forEach((socket) => {
-      socket.close();
+      socket.disconnect();
+      this.socketPool.push(socket);
     });
   };
 
   private onTpuResult = (address: string, err: Error | null): void => {
     if (err) {
       reportError(err, "Error proxying transaction to TPU");
-      this.sockets.delete(address);
+      const socket = this.sockets.get(address);
+      if (socket) {
+        this.sockets.delete(address);
+        socket.disconnect();
+        this.socketPool.push(socket);
+      }
     }
   };
 }
