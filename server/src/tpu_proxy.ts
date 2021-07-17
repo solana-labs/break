@@ -33,11 +33,11 @@ export default class TpuProxy {
         connection,
         currentSlot
       );
-      new LeaderTrackerService(connection, currentSlot, (currentSlot) => {
+      new LeaderTrackerService(connection, currentSlot, async (currentSlot) => {
         if (leaderService.shouldRefresh(currentSlot)) {
-          leaderService.refresh(currentSlot);
+          await leaderService.refresh(currentSlot);
         }
-        proxy.refreshAddresses(leaderService, nodesService, currentSlot);
+        await proxy.refreshAddresses(leaderService, nodesService, currentSlot);
       });
       await proxy.refreshAddresses(leaderService, nodesService, currentSlot);
     }
@@ -114,7 +114,7 @@ export default class TpuProxy {
         if (tpu) {
           tpuAddresses.push(tpu);
         } else {
-          console.error("NO TPU FOUND", leader);
+          console.warn("NO TPU FOUND", leader);
         }
       }
     }
@@ -136,7 +136,9 @@ export default class TpuProxy {
       sockets.set(tpu, socket);
     }
 
-    if (sockets.size === 0) throw new Error("No sockets found");
+    if (sockets.size === 0) {
+      reportError(new Error("No sockets found"), "not forwarding packets");
+    }
 
     const oldSockets = this.sockets;
     this.sockets = sockets;
