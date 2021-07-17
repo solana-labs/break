@@ -75,10 +75,9 @@ export default class LeaderScheduleService {
     if (this.refreshing) return;
     this.refreshing = true;
     try {
-      const leaderAddresses = await this.fetchLeaders(
-        Math.max(0, currentSlot - PAST_SLOT_SEARCH)
-      );
-      this.scheduleFirstSlot = currentSlot;
+      const firstSlot = Math.max(0, currentSlot - PAST_SLOT_SEARCH);
+      const leaderAddresses = await this.fetchLeaders(firstSlot);
+      this.scheduleFirstSlot = firstSlot;
       this.leaderAddresses = leaderAddresses;
     } catch (err) {
       reportError(err, "failed to refresh slot leaders");
