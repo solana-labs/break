@@ -21,7 +21,7 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
     "@testing-library/user-event": "^13.2.0",
-    "@toruslabs/fetch-node-details": "^2.6.1",
+    "@toruslabs/fetch-node-details": "^2.7.0",
     "@toruslabs/torus.js": "^2.4.1",
     "@types/bs58": "^4.0.1",
     "@types/chai": "^4.2.21",
