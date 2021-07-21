@@ -20,7 +20,7 @@
     "@solana/web3.js": "^1.20.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
-    "@testing-library/user-event": "^13.1.9",
+    "@testing-library/user-event": "^13.2.0",
     "@toruslabs/fetch-node-details": "^2.6.1",
     "@toruslabs/torus.js": "^2.4.1",
     "@types/bs58": "^4.0.1",
