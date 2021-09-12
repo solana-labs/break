@@ -29,7 +29,7 @@
     "@types/jest": "^27.0.1",
     "@types/node": "^16.6.1",
     "@types/qrcode.react": "^1.0.2",
-    "@types/react": "^17.0.8",
+    "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
     "bootstrap": "^4.6.0",
