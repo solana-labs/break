@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: automatic merge on CI success
     conditions:
-      - status-success=Travis CI - Pull Request
+      - status-success=Node.js CI
       - label=automerge
     actions:
       merge:
@@ -9,7 +9,7 @@ pull_request_rules:
         strict: true
   - name: remove automerge label on CI failure
     conditions:
-      - status-failure=Travis CI - Pull Request
+      - status-failure=Node.js CI
       - label=automerge
     actions:
       label:
@@ -17,7 +17,7 @@ pull_request_rules:
           - automerge
   - name: remove outdated reviews
     conditions:
-      - base=master
+      - base=main
     actions:
       dismiss_reviews:
         changes_requested: true

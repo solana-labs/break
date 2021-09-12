@@ -1,0 +1,27 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        package: [client, server]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: cd ${{ matrix.package }}
+      - run: npm ci
+      - run: npm run format
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test
