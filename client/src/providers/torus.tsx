@@ -58,9 +58,8 @@ const StateContext = React.createContext<State | undefined>(undefined);
 type Props = { children: React.ReactNode };
 export function TorusProvider({ children }: Props) {
   const [fetchStatus, setFetchStatus] = React.useState<FetchStatus>();
-  const [googleResponse, setGoogleResponse] = React.useState<
-    GoogleLoginResponse
-  >();
+  const [googleResponse, setGoogleResponse] =
+    React.useState<GoogleLoginResponse>();
   const [nodeDetails, setNodeDetails] = React.useState<NodeDetails>();
   const [wallet, setWallet] = React.useState<Account>();
   const [error, setError] = React.useState<string>();
