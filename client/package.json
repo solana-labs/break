@@ -32,6 +32,7 @@
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
     "@types/react-router-dom": "^5.1.8",
+    "@types/ua-parser-js": "^0.7.36",
     "bootstrap": "^4.6.0",
     "bs58": "^4.0.1",
     "buffer": "^6.0.3",
@@ -49,6 +50,7 @@
     "react-scripts": "^4.0.3",
     "tweetnacl": "^1.0.3",
     "typescript": "^4.3.5",
+    "ua-parser-js": "^0.7.28",
     "worker-loader": "^3.0.8"
   },
   "eslintConfig": {
@@ -65,6 +67,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {}
+  }
 }

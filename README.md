@@ -1,4 +1,4 @@
-## Break Solana Game [![Build Status](https://travis-ci.org/solana-labs/break.svg?branch=master)](https://travis-ci.org/solana-labs/break)
+## Break Solana Game [![Build Status](https://github.com/solana-labs/break/actions/workflows/node-ci.yml/badge.svg?branch=main)](https://github.com/solana-labs/break/actions/workflows/node-ci.yml?query=branch%3Amain)
 
 ### How it works
 
