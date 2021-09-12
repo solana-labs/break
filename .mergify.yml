@@ -1,7 +1,7 @@
 pull_request_rules:
   - name: automatic merge on CI success
     conditions:
-      - status-success=Node.js CI
+      - status-success=Build (matrix)
       - label=automerge
     actions:
       merge:
@@ -9,7 +9,7 @@ pull_request_rules:
         strict: true
   - name: remove automerge label on CI failure
     conditions:
-      - status-failure=Node.js CI
+      - status-failure=Build (matrix)
       - label=automerge
     actions:
       label:
