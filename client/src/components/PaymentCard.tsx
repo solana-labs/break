@@ -1,4 +1,5 @@
 import React from "react";
+import { UAParser } from "ua-parser-js";
 import QRCode from "qrcode.react";
 import {
   Account,
@@ -32,18 +33,9 @@ export function getTrustWalletLink(
   address: string,
   amountSol: number
 ): string | undefined {
-  const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const android = /Android/i.test(navigator.userAgent);
-  if (!iOS && !android) return;
-
-  let trustWalletDeepLink = `https://link.trustwallet.com/send?coin=501&address=${address}`;
-
-  // Only the iOS TW handles amount correctly at the moment
-  if (iOS) {
-    trustWalletDeepLink += "&amount=" + amountSol;
-  }
-
-  return trustWalletDeepLink;
+  const os = new UAParser().getOS().name;
+  if (os !== "iOS" && os !== "android") return;
+  return `https://link.trustwallet.com/send?coin=501&address=${address}&amount=${amountSol}`;
 }
 
 export function PaymentCard({ account }: { account: Account }) {
