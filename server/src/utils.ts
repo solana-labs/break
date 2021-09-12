@@ -27,11 +27,13 @@ export async function endlessRetry<T>(
 }
 
 const cluster = process.env.CLUSTER;
-export function reportError(err: Error, context: string): void {
-  console.error(context, err);
-  if (process.env.NODE_ENV === "production") {
-    Sentry.captureException(err, {
-      tags: { context, cluster },
-    });
+export function reportError(err: unknown, context: string): void {
+  if (err instanceof Error) {
+    console.error(context, err);
+    if (process.env.NODE_ENV === "production") {
+      Sentry.captureException(err, {
+        tags: { context, cluster },
+      });
+    }
   }
 }

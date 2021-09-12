@@ -159,7 +159,7 @@ export default class TpuProxy {
     });
   };
 
-  private onTpuResult = (address: string, err: Error | null): void => {
+  private onTpuResult = (address: string, err: unknown): void => {
     if (err) {
       reportError(err, "Error proxying transaction to TPU");
       const socket = this.sockets.get(address);

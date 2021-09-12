@@ -5,8 +5,10 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function reportError(err: Error, context: string) {
-  console.error(context, err);
+export function reportError(err: unknown, context: string) {
+  if (err instanceof Error) {
+    console.error(context, err);
+  }
   // if (process.env.NODE_ENV === "production") {
   //   const query = new URLSearchParams(window.location.search);
   //   if (query.get("cluster") === "custom") return;
