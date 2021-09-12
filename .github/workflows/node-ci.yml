@@ -7,6 +7,13 @@ on:
     branches: [ main ]
 
 jobs:
+  buildall:
+    runs-on: ubuntu-latest
+    name: Build (matrix)
+    needs: build
+    steps:
+      - run: echo "Done"
+
   build:
     runs-on: ubuntu-latest
 
@@ -14,12 +21,17 @@ jobs:
       matrix:
         package: [client, server]
 
+    defaults:
+      run:
+        working-directory: ${{ matrix.package }}
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - run: cd ${{ matrix.package }}
+          cache: 'npm'
+      - run: npm i -g npm@7
       - run: npm ci
       - run: npm run format
       - run: npm run lint
