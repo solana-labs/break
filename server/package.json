@@ -22,7 +22,7 @@
   },
   "testnetDefaultChannel": "edge",
   "dependencies": {
-    "@sentry/node": "^6.13.1",
+    "@sentry/node": "^6.13.2",
     "@sentry/tracing": "^6.13.2",
     "@solana/web3.js": "^1.29.1",
     "@types/cors": "^2.8.10",
