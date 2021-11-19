@@ -23,6 +23,8 @@ For NVM installation please refer to [manual](https://github.com/creationix/nvm#
 
 ### Install
 
+**`Break` only supports node 14 at this time. Trying to use the latest LTS (Node 16) will fail during install**
+
 ```
 npm install
 ```
