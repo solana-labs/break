@@ -15,12 +15,23 @@ function chooseCluster(): Cluster | undefined {
   return "devnet";
 }
 
+function getApiUrl(cluster: string | undefined, tls: boolean) {
+  const prefix = tls ? "https://" : "http://";
+  switch (cluster) {
+    case "mainnet-beta":
+      return `${prefix}api.internal.mainnet-beta.solana.com`;
+    case "testnet":
+      return `${prefix}api.internal.testnet.solana.com`;
+  }
+  return `${prefix}api.internal.devnet.solana.com`;
+}
+
 export const cluster = chooseCluster();
 
 export const url =
   process.env.RPC_URL ||
-  (process.env.LIVE ? clusterApiUrl(cluster, false) : "http://localhost:8899");
+  (process.env.LIVE ? getApiUrl(cluster, false) : "http://localhost:8899");
 
 export const urlTls =
   process.env.RPC_URL ||
-  (process.env.LIVE ? clusterApiUrl(cluster, true) : "http://localhost:8899");
+  (process.env.LIVE ? getApiUrl(cluster, true) : "http://localhost:8899");
