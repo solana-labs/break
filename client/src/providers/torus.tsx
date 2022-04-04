@@ -108,7 +108,7 @@ export function TorusProvider({ children }: Props) {
     if (!ENABLE_TORUS) return;
 
     let unmounted = false;
-    NODE_DETAILS.getNodeDetails()
+    NODE_DETAILS.getNodeDetails({ skip: true, verifier: "", verifierId: "" })
       .then((details) => {
         !unmounted && setNodeDetails(details);
       })
