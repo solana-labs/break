@@ -1,15 +1,19 @@
 pull_request_rules:
   - name: automatic merge on CI success
     conditions:
-      - status-success=Build (matrix)
+      - status-success=client
+      - status-success=server
       - label=automerge
     actions:
       merge:
         method: rebase
   - name: remove automerge label on CI failure
     conditions:
-      - status-failure=Build (matrix)
       - label=automerge
+      - or:
+        - status-failure=client
+      - or:
+        - status-failure=server
     actions:
       label:
         remove:
