@@ -2,7 +2,7 @@ import React from "react";
 import { UAParser } from "ua-parser-js";
 import QRCode from "qrcode.react";
 import {
-  Account,
+  Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   sendAndConfirmTransaction,
@@ -38,7 +38,7 @@ export function getTrustWalletLink(
   return `https://link.trustwallet.com/send?coin=501&address=${address}&amount=${amountSol}`;
 }
 
-export function PaymentCard({ account }: { account: Account }) {
+export function PaymentCard({ keypair }: { keypair: Keypair }) {
   const config = useConfig();
   const connection = useConnection();
   const recentBlockhash = useBlockhash();
@@ -47,7 +47,7 @@ export function PaymentCard({ account }: { account: Account }) {
   const closingAccounts = accountsState.status === "closing";
   const gameCostLamports = accountsState.creationCost || 0;
   const gameCostSol = gameCostLamports / LAMPORTS_PER_SOL;
-  const address = account.publicKey.toBase58();
+  const address = keypair.publicKey.toBase58();
 
   const balanceState = useBalanceState();
   const balance = balanceState.payer;
@@ -79,7 +79,7 @@ export function PaymentCard({ account }: { account: Account }) {
       setAirdropping(true);
       (async () => {
         try {
-          await connection.requestAirdrop(account.publicKey, LAMPORTS_PER_SOL);
+          await connection.requestAirdrop(keypair.publicKey, LAMPORTS_PER_SOL);
         } catch (err) {
           reportError(err, "Failed to airdrop");
         } finally {
@@ -96,7 +96,7 @@ export function PaymentCard({ account }: { account: Account }) {
     walletState,
     balance,
     trustWalletDeepLink,
-    account,
+    keypair,
     gameCostLamports,
   ]);
 
@@ -133,12 +133,12 @@ export function PaymentCard({ account }: { account: Account }) {
             connection,
             new Transaction({ recentBlockhash }).add(
               SystemProgram.transfer({
-                fromPubkey: account.publicKey,
+                fromPubkey: keypair.publicKey,
                 toPubkey,
                 lamports: balance - 5000,
               })
             ),
-            [account],
+            [keypair],
             { commitment: "singleGossip", preflightCommitment: "singleGossip" }
           );
           setWithdrawMessage("Withdraw succeeded");
@@ -148,7 +148,7 @@ export function PaymentCard({ account }: { account: Account }) {
         }
       })();
     }
-  }, [account, balance, connection, recentBlockhash, toPubkey]);
+  }, [keypair, balance, connection, recentBlockhash, toPubkey]);
 
   React.useEffect(() => {
     if (!copied) return;
@@ -159,12 +159,12 @@ export function PaymentCard({ account }: { account: Account }) {
   }, [copied]);
 
   const keypairUrl = React.useMemo(() => {
-    const keypair = JSON.stringify(
-      Array.prototype.slice.call(account.secretKey)
+    const keypairString = JSON.stringify(
+      Array.prototype.slice.call(keypair.secretKey)
     );
-    const blob = new Blob([keypair], { type: "text/plain" });
+    const blob = new Blob([keypairString], { type: "text/plain" });
     return URL.createObjectURL(blob);
-  }, [account]);
+  }, [keypair]);
 
   return (
     <div className="card mb-0">
@@ -306,7 +306,7 @@ export function PaymentCard({ account }: { account: Account }) {
           <a
             className="btn btn-sm btn-white"
             href={keypairUrl}
-            download={`break-keypair-${account.publicKey.toBase58()}.json`}
+            download={`break-keypair-${keypair.publicKey.toBase58()}.json`}
             onClick={(e) => {
               const confirmed = window.confirm(
                 "Are you sure you want to download this wallet? It must be used with the Solana CLI tooling."

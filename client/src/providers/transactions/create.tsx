@@ -118,12 +118,12 @@ export function createTransaction(
   socket: WebSocket,
   latestTimestamp: React.MutableRefObject<number | undefined>
 ) {
-  const { feeAccounts, programAccounts } = accounts;
+  const { feePayerKeypairs, programAccounts } = accounts;
 
-  const bitId = Math.floor(trackingId / feeAccounts.length);
-  const accountIndex = trackingId % feeAccounts.length;
+  const bitId = Math.floor(trackingId / feePayerKeypairs.length);
+  const accountIndex = trackingId % feePayerKeypairs.length;
   const programDataAccount = programAccounts[accountIndex];
-  const feeAccount = feeAccounts[accountIndex];
+  const feePayerKeypair = feePayerKeypairs[accountIndex];
 
   workerRPC
     .createTransaction({
@@ -132,7 +132,7 @@ export function createTransaction(
       programId: programId.toBase58(),
       programDataAccount: programDataAccount.toBase58(),
       bitId: bitId,
-      feeAccountSecretKey: feeAccount.secretKey,
+      feeAccountSecretKey: feePayerKeypair.secretKey,
     })
     .then(
       (response: CreateTransactionResponseMessage) => {
@@ -148,7 +148,7 @@ export function createTransaction(
         const encodedSignature = bs58.encode(signature);
         const details: TransactionDetails = {
           id: bitId,
-          feeAccount: feeAccount.publicKey,
+          feeAccount: feePayerKeypair.publicKey,
           programAccount: programDataAccount,
           signature: encodedSignature,
         };

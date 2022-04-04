@@ -2,7 +2,7 @@ import * as React from "react";
 import Torus from "@toruslabs/torus.js";
 import NodeDetailsManager from "@toruslabs/fetch-node-details";
 import nacl from "tweetnacl";
-import { Account } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import {
   useGoogleLogin,
   GoogleLoginResponse,
@@ -48,7 +48,7 @@ type State = {
   loaded: boolean;
   loadingWallet: boolean;
   email?: string;
-  wallet?: Account;
+  wallet?: Keypair;
   connect: (mode: ConnectionMode) => void;
   disconnect: () => void;
 };
@@ -61,7 +61,7 @@ export function TorusProvider({ children }: Props) {
   const [googleResponse, setGoogleResponse] =
     React.useState<GoogleLoginResponse>();
   const [nodeDetails, setNodeDetails] = React.useState<NodeDetails>();
-  const [wallet, setWallet] = React.useState<Account>();
+  const [wallet, setWallet] = React.useState<Keypair>();
   const [error, setError] = React.useState<string>();
 
   const responseGoogle = React.useCallback(
@@ -165,7 +165,7 @@ export function TorusProvider({ children }: Props) {
         if (unmounted) return;
         const torusKey = Buffer.from(privKey.toString(), "hex");
         const keyPair = nacl.sign.keyPair.fromSeed(torusKey);
-        setWallet(new Account(keyPair.secretKey));
+        setWallet(Keypair.fromSecretKey(keyPair.secretKey));
         setFetchStatus("success");
       } catch (err) {
         reportError(err, "failed to fetch torus key");

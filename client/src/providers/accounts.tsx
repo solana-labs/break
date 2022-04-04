@@ -1,7 +1,7 @@
 import React from "react";
 import {
-  Account,
   Connection,
+  Keypair,
   PublicKey,
   sendAndConfirmTransaction,
   SystemProgram,
@@ -22,7 +22,7 @@ export type Status =
 
 export interface AccountsConfig {
   programAccounts: PublicKey[];
-  feeAccounts: Account[];
+  feePayerKeypairs: Keypair[];
   accountCapacity: number;
 }
 
@@ -172,7 +172,7 @@ const TX_PER_ACCOUNT = TX_PER_BYTE * PROGRAM_ACCOUNT_SPACE;
 
 const _closeAccounts = async (
   connection: Connection,
-  payer: Account
+  payer: Keypair
 ): Promise<void> => {
   const tx = new Transaction();
   const feePayers = FEE_PAYERS;
@@ -217,7 +217,7 @@ const calculateCosts = async (
 const _createAccounts = async (
   connection: Connection,
   breakProgramId: PublicKey,
-  payer: Account,
+  payer: Keypair,
   costs: AccountCosts
 ): Promise<AccountsConfig> => {
   const tx = new Transaction();
@@ -225,7 +225,7 @@ const _createAccounts = async (
   const programAccounts = [];
 
   for (let i = 0; i < feePayers.length; i++) {
-    programAccounts.push(new Account());
+    programAccounts.push(new Keypair());
     tx.add(
       SystemProgram.createAccount({
         fromPubkey: payer.publicKey,
@@ -248,7 +248,7 @@ const _createAccounts = async (
 
   return {
     accountCapacity: TX_PER_ACCOUNT,
-    feeAccounts: feePayers,
+    feePayerKeypairs: feePayers,
     programAccounts: programAccounts.map((a) => a.publicKey),
   };
 };

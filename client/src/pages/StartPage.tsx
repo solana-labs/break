@@ -16,7 +16,7 @@ export function StartPage() {
     <div className="container d-flex flex-grow-1 flex-column">
       <div className="row flex-grow-1 mb-5">
         <div className="col">
-          <PaymentCard account={payer} />
+          <PaymentCard keypair={payer} />
         </div>
       </div>
     </div>
