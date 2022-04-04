@@ -198,11 +198,10 @@ const _closeAccounts = async (
 const calculateCosts = async (
   connection: Connection
 ): Promise<AccountCosts> => {
-  const programAccountCost = await calculateMinimalRent(
-    connection,
+  const programAccountCost = await connection.getMinimumBalanceForRentExemption(
     PROGRAM_ACCOUNT_SPACE
   );
-  const feeAccountRent = await calculateMinimalRent(connection, 0);
+  const feeAccountRent = await connection.getMinimumBalanceForRentExemption(0);
   const { feeCalculator } = await connection.getRecentBlockhash();
   const signatureFee = feeCalculator.lamportsPerSignature;
   const feeAccountCost = TX_PER_ACCOUNT * signatureFee + feeAccountRent;
@@ -251,27 +250,4 @@ const _createAccounts = async (
     feePayerKeypairs: feePayers,
     programAccounts: programAccounts.map((a) => a.publicKey),
   };
-};
-
-const calculateMinimalRent = async (
-  connection: Connection,
-  space: number
-): Promise<number> => {
-  const rentExemptBalance = await connection.getMinimumBalanceForRentExemption(
-    space
-  );
-  const slotsPerEpoch = 432_000;
-  // const { slotsPerEpoch } = await connection.getEpochSchedule();
-  const slotsPerSecond = 2.5;
-  const slotsPerYear = 365.25 * 24.0 * 60.0 * 60.0 * slotsPerSecond;
-  const epochsPerYear = slotsPerYear / slotsPerEpoch;
-  const paddingMultiplier = 2.0;
-  const rentPerEpoch = Math.round(
-    (paddingMultiplier * rentExemptBalance) / (2.0 * epochsPerYear)
-  );
-
-  // Create accounts with enough rent for 3 epochs. This ensures that even if
-  // accounts are created right before an epoch boundary, they will still be
-  // usable in the next epoch.
-  return Math.ceil(3 * rentPerEpoch);
 };
