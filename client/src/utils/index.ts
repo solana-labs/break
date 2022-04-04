@@ -1,4 +1,4 @@
-import { Account } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 // import * as Sentry from "@sentry/react";
 
 export function sleep(ms: number): Promise<void> {
@@ -22,17 +22,17 @@ export function isLocalHost() {
   return window.location.hostname === "localhost";
 }
 
-export const getLocalStorageKeypair = (key: string): Account => {
+export const getLocalStorageKeypair = (key: string): Keypair => {
   const base64Keypair = window.localStorage.getItem(key);
   if (base64Keypair) {
-    return new Account(Buffer.from(base64Keypair, "base64"));
+    return Keypair.fromSecretKey(Buffer.from(base64Keypair, "base64"));
   } else {
-    const account = new Account();
+    const keypair = new Keypair();
     window.localStorage.setItem(
       key,
-      Buffer.from(account.secretKey).toString("base64")
+      Buffer.from(keypair.secretKey).toString("base64")
     );
-    return account;
+    return keypair;
   }
 };
 

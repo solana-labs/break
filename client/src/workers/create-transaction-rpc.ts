@@ -8,7 +8,7 @@ export interface CreateTransactionMessage {
   blockhash: Blockhash;
   programId: string;
   bitId: number;
-  feeAccountSecretKey: Buffer;
+  feeAccountSecretKey: Uint8Array;
   programDataAccount: string;
 }
 
