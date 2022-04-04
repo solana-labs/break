@@ -12,7 +12,6 @@ pull_request_rules:
       - label=automerge
       - or:
         - status-failure=client
-      - or:
         - status-failure=server
     actions:
       label:
