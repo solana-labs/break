@@ -2,7 +2,6 @@ import * as React from "react";
 import { Keypair } from "@solana/web3.js";
 import { getLocalStorageKeypair } from "utils";
 import { useHistory, useLocation } from "react-router";
-import { useConfig } from "./server/http";
 
 interface State {
   wallet?: Keypair;
@@ -14,7 +13,6 @@ const StateContext = React.createContext<State | undefined>(undefined);
 type Props = { children: React.ReactNode };
 export function WalletProvider({ children }: Props) {
   const [wallet, setWallet] = React.useState<Keypair>();
-  const config = useConfig();
 
   const history = useHistory();
   const location = useLocation();
@@ -29,14 +27,6 @@ export function WalletProvider({ children }: Props) {
     },
     [history, location]
   );
-
-  React.useEffect(() => {
-    if (config?.airdropEnabled) {
-      setWallet(LOCAL_WALLET);
-    } else {
-      setWallet(undefined);
-    }
-  }, [config?.airdropEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const state = React.useMemo(
     () => ({
