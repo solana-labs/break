@@ -30,7 +30,7 @@
     "@types/node": "^16.10.3",
     "@types/ws": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.31.1",
+    "@typescript-eslint/parser": "^4.33.0",
     "cors": "^2.8.5",
     "eslint": "^7.27.0",
     "express": "^4.17.1",
