@@ -78,9 +78,11 @@ export default class TpuProxy {
 
   onTransaction = (data: string | Uint8Array | Buffer): void => {
     if (PROXY_DISABLED && typeof data !== "string") {
-      this.connection.sendRawTransaction(data).catch((err) => {
-        reportError(err, "Failed to send transaction over HTTP");
-      });
+      this.connection
+        .sendRawTransaction(data, { skipPreflight: true })
+        .catch((err) => {
+          reportError(err, "Failed to send transaction over HTTP");
+        });
       return;
     }
 
