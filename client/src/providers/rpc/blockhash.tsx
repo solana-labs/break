@@ -99,7 +99,7 @@ async function refresh(
   let reported = false;
   while (blockhash === undefined && connection === connectionRef.current) {
     try {
-      blockhash = (await connection.getRecentBlockhash()).blockhash;
+      blockhash = (await connection.getLatestBlockhash()).blockhash;
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
       if (!reported) reportError(err, "Failed to refresh blockhash");
