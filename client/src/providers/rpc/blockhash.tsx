@@ -3,7 +3,7 @@ import { Blockhash, Connection } from "@solana/web3.js";
 import { sleep, reportError } from "utils";
 import { useConnection } from ".";
 
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 2000;
 
 export enum ActionType {
   Start,
