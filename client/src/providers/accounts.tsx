@@ -243,7 +243,24 @@ const _createAccounts = async (
     );
   }
 
-  await sendAndConfirmTransaction(connection, tx, [payer, ...programAccounts]);
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      await sendAndConfirmTransaction(
+        connection,
+        tx,
+        [payer, ...programAccounts],
+        { skipPreflight: true }
+      );
+      break;
+    } catch (err) {
+      retries -= 1;
+      console.error(
+        `Failed to create accounts, retries remaining: ${retries}`,
+        err
+      );
+    }
+  }
 
   return {
     accountCapacity: TX_PER_ACCOUNT,
