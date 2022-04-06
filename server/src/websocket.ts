@@ -1,6 +1,7 @@
 import WebSocket from "ws";
 import http from "http";
 import TpuProxy from "./tpu_proxy";
+import { reportError } from "./utils";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function noop() {}
@@ -12,6 +13,8 @@ export default class WebSocketServer {
     const wss = new WebSocket.Server({ server: httpServer });
     wss.on("connection", function connection(ws) {
       let isAlive = true;
+      let useTpuProxy = false;
+
       function heartbeat() {
         isAlive = true;
       }
@@ -27,7 +30,22 @@ export default class WebSocketServer {
         clearInterval(interval);
         activeUsers--;
       });
-      ws.on("message", tpuProxy.onTransaction);
+      ws.on("message", (message: string | Uint8Array) => {
+        if (typeof message === "string") {
+          if (message === "tpu") useTpuProxy = true;
+          if (message === "rpc") useTpuProxy = false;
+        } else {
+          if (!useTpuProxy) {
+            tpuProxy.connection
+              .sendRawTransaction(message, { skipPreflight: true })
+              .catch((err) => {
+                reportError(err, "Failed to send transaction over HTTP");
+              });
+          } else {
+            tpuProxy.onTransaction(message);
+          }
+        }
+      });
       ws.on("pong", heartbeat);
     });
 

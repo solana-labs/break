@@ -8,8 +8,6 @@ import LeaderScheduleService, {
 } from "./leader_schedule";
 import LeaderTrackerService from "./leader_tracker";
 
-const PROXY_DISABLED = process.env.SEND_TO_RPC === "true";
-
 type TpuAddress = string;
 
 // Proxy for sending transactions to the TPU port because
@@ -21,32 +19,30 @@ export default class TpuProxy {
   sockets: Map<TpuAddress, dgram.Socket> = new Map();
   socketPool: Array<dgram.Socket> = [];
 
-  constructor(private connection: Connection) {}
+  constructor(public connection: Connection) {}
 
   static async create(connection: Connection): Promise<TpuProxy> {
     const proxy = new TpuProxy(connection);
-    if (!PROXY_DISABLED) {
-      const currentSlot = (
-        await endlessRetry("getEpochInfo", () => connection.getEpochInfo())
-      ).absoluteSlot;
-      const nodesService = await AvailableNodesService.start(connection);
-      const leaderService = await LeaderScheduleService.start(
-        connection,
-        currentSlot
-      );
-      new LeaderTrackerService(connection, currentSlot, async (currentSlot) => {
-        if (leaderService.shouldRefresh(currentSlot)) {
-          await leaderService.refresh(currentSlot);
-        }
-        await proxy.refreshAddresses(leaderService, nodesService, currentSlot);
-      });
+    const currentSlot = (
+      await endlessRetry("getEpochInfo", () => connection.getEpochInfo())
+    ).absoluteSlot;
+    const nodesService = await AvailableNodesService.start(connection);
+    const leaderService = await LeaderScheduleService.start(
+      connection,
+      currentSlot
+    );
+    new LeaderTrackerService(connection, currentSlot, async (currentSlot) => {
+      if (leaderService.shouldRefresh(currentSlot)) {
+        await leaderService.refresh(currentSlot);
+      }
       await proxy.refreshAddresses(leaderService, nodesService, currentSlot);
-    }
+    });
+    await proxy.refreshAddresses(leaderService, nodesService, currentSlot);
     return proxy;
   }
 
   connected = (): boolean => {
-    return this.activeProxies() > 0 || PROXY_DISABLED;
+    return this.activeProxies() > 0;
   };
 
   activeProxies = (): number => {
@@ -54,10 +50,6 @@ export default class TpuProxy {
   };
 
   connect = async (): Promise<void> => {
-    if (PROXY_DISABLED) {
-      console.log("TPU Proxy disabled");
-      return;
-    }
     if (this.connecting) return;
     this.connecting = true;
 
@@ -77,15 +69,6 @@ export default class TpuProxy {
   };
 
   onTransaction = (data: string | Uint8Array | Buffer): void => {
-    if (PROXY_DISABLED && typeof data !== "string") {
-      this.connection
-        .sendRawTransaction(data, { skipPreflight: true })
-        .catch((err) => {
-          reportError(err, "Failed to send transaction over HTTP");
-        });
-      return;
-    }
-
     if (!this.connected()) {
       this.connect();
       return;

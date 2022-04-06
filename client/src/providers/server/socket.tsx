@@ -1,3 +1,4 @@
+import { useClientConfig } from "providers/config";
 import * as React from "react";
 import { useServer } from ".";
 
@@ -20,11 +21,18 @@ type SocketProviderProps = { children: React.ReactNode };
 export function SocketProvider({ children }: SocketProviderProps) {
   let [socket, setSocket] = React.useState<ServerSocket | undefined>(undefined);
   let [activeUsers, setActiveUsers] = React.useState<number>(1);
+  let [clientConfig] = useClientConfig();
 
   const { webSocketUrl } = useServer();
   React.useEffect(() => {
     newSocket(webSocketUrl, setSocket, setActiveUsers);
   }, [webSocketUrl]);
+
+  React.useEffect(() => {
+    if (socket) {
+      socket.socket.send(clientConfig.useTpu ? "tpu" : "rpc");
+    }
+  }, [socket, clientConfig.useTpu]);
 
   return (
     <SocketContext.Provider value={socket?.socket}>

@@ -8,6 +8,7 @@ export interface ClientConfig {
   countdownSeconds: number;
   retryTransactionEnabled: boolean;
   autoSendTransactions: boolean;
+  useTpu: boolean;
 }
 
 const DEFAULT_CONFIG: ClientConfig = {
@@ -17,6 +18,7 @@ const DEFAULT_CONFIG: ClientConfig = {
   retryTransactionEnabled: false,
   autoSendTransactions: false,
   countdownSeconds: 15,
+  useTpu: false,
 };
 
 type SetConfig = React.Dispatch<React.SetStateAction<ClientConfig>>;
