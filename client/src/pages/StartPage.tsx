@@ -13,8 +13,8 @@ export function StartPage() {
   }
 
   return (
-    <div className="container d-flex flex-grow-1 flex-column">
-      <div className="row flex-grow-1 mb-5">
+    <div className="container-fluid d-flex flex-column">
+      <div className="row flex-grow-1 my-4">
         <div className="col">
           <PaymentCard keypair={payer} />
         </div>

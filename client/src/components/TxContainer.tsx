@@ -2,15 +2,17 @@ import React, { useRef, useEffect, useCallback } from "react";
 
 import { TransactionSquare } from "./TxSquare";
 import { useCreateTxRef, useTransactions } from "providers/transactions";
-import { useGameState, COUNTDOWN_SECS } from "providers/game";
+import { useGameState } from "providers/game";
 import { TxTableRow } from "./TxTableRow";
-import { DEBUG_MODE } from "providers/transactions/confirmed";
+import { useClientConfig } from "providers/config";
 
 export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   const createTxRef = useCreateTxRef();
   const gameState = useGameState();
   const [rapidFire, setRapidFire] = React.useState(false);
   const countdownStart = gameState.countdownStartTime;
+  const [{ showDebugTable, countdownSeconds, autoSendTransactions }] =
+    useClientConfig();
 
   const makeTransaction = useCallback(() => {
     if (enabled) {
@@ -45,12 +47,11 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   }, [rapidFire, enabled, makeTransaction]);
 
   useEffect(() => {
-    const testMode = new URLSearchParams(window.location.search).has("test");
-    if (!testMode) return;
+    if (!autoSendTransactions) return;
     makeTransaction();
     const testInterval = window.setInterval(() => makeTransaction(), 1000);
     return () => clearInterval(testInterval);
-  }, [makeTransaction]);
+  }, [makeTransaction, autoSendTransactions]);
 
   useEffect(() => {
     document.addEventListener("keyup", makeTransaction);
@@ -70,7 +71,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
           {enabled ? "Press any key to send a transaction" : "Game finished"}
         </div>
       </div>
-      {DEBUG_MODE ? (
+      {showDebugTable ? (
         <DebugTable />
       ) : (
         <div className="card-body">
@@ -79,7 +80,7 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
               <div className="d-flex h-100 justify-content-center align-items-center p-3">
                 <h2 className="text-center">
                   Try to break Solana's network by sending as many transactions
-                  as you can in {COUNTDOWN_SECS} seconds!
+                  as you can in {countdownSeconds} seconds!
                 </h2>
               </div>
             ) : null}

@@ -3,7 +3,8 @@ import { AccountInfo } from "@solana/web3.js";
 
 import { useWalletState } from "providers/wallet";
 import { useConnection } from "providers/rpc";
-import { FEE_PAYERS, reportError } from "utils";
+import { getFeePayers, reportError } from "utils";
+import { useClientConfig } from "providers/config";
 
 type Balance = number | "loading";
 
@@ -17,8 +18,9 @@ const StateContext = React.createContext<State | undefined>(undefined);
 type Props = { children: React.ReactNode };
 export function BalanceProvider({ children }: Props) {
   const [balance, setBalance] = React.useState<Balance>("loading");
+  const [{ parallelization }] = useClientConfig();
   const [feePayerBalances, setFeePayerBalances] = React.useState(
-    Array(FEE_PAYERS.length).fill(0)
+    Array(parallelization).fill(0)
   );
   const payer = useWalletState().wallet;
   const connection = useConnection();
@@ -62,6 +64,10 @@ export function BalanceProvider({ children }: Props) {
     };
   }, [payer, connection]);
 
+  const feePayers = React.useMemo(
+    () => getFeePayers(parallelization),
+    [parallelization]
+  );
   const feePayerCounter = React.useRef(0);
   React.useEffect(() => {
     if (!connection) return;
@@ -70,7 +76,7 @@ export function BalanceProvider({ children }: Props) {
 
     (async () => {
       const balances = await Promise.all(
-        FEE_PAYERS.map((feePayer) => {
+        feePayers.map((feePayer) => {
           return connection.getBalance(feePayer.publicKey);
         })
       );
@@ -79,7 +85,7 @@ export function BalanceProvider({ children }: Props) {
       }
     })();
 
-    const subscriptions = FEE_PAYERS.map((feePayer, index) => {
+    const subscriptions = feePayers.map((feePayer, index) => {
       return connection.onAccountChange(
         feePayer.publicKey,
         (accountInfo: AccountInfo<Buffer>) => {
@@ -97,7 +103,7 @@ export function BalanceProvider({ children }: Props) {
         connection.removeAccountChangeListener(subscription);
       });
     };
-  }, [connection]);
+  }, [connection, feePayers]);
 
   const state = React.useMemo(
     () => ({

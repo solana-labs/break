@@ -10,7 +10,7 @@ import {
   useDroppedCount,
   useAvgConfirmationTime,
 } from "providers/transactions";
-import { COUNTDOWN_SECS } from "providers/game";
+import { useClientConfig } from "providers/config";
 
 export function ResultsPage() {
   const createdCount = useCreatedCount();
@@ -21,12 +21,12 @@ export function ResultsPage() {
   }
 
   return (
-    <div className="container d-flex flex-grow-1 flex-column">
+    <div className="container d-flex flex-grow-1 flex-column my-4">
       <div>
         <Stats />
         <Summary />
       </div>
-      <div className="row flex-grow-1 mb-5">
+      <div className="row flex-grow-1">
         <div className="col">
           <TransactionContainer />
         </div>
@@ -38,10 +38,11 @@ export function ResultsPage() {
 
 function Summary() {
   const confirmedCount = useConfirmedCount();
+  const [{ countdownSeconds }] = useClientConfig();
   const capacityUsed = {
-    solana: (100 * confirmedCount) / (COUNTDOWN_SECS * 50000),
-    bitcoin: (100 * confirmedCount) / (COUNTDOWN_SECS * 4.6),
-    ethereum: (100 * confirmedCount) / (COUNTDOWN_SECS * 15),
+    solana: (100 * confirmedCount) / (countdownSeconds * 50000),
+    bitcoin: (100 * confirmedCount) / (countdownSeconds * 4.6),
+    ethereum: (100 * confirmedCount) / (countdownSeconds * 15),
   };
 
   return (
@@ -52,7 +53,7 @@ function Summary() {
           <span className="text-primary font-weight-bold">
             {confirmedCount}
           </span>{" "}
-          transactions in {COUNTDOWN_SECS} seconds you took up{" "}
+          transactions in {countdownSeconds} seconds you took up{" "}
           <span className="text-primary font-weight-bold">
             {capacityUsed.solana.toFixed(3)}%
           </span>{" "}
@@ -79,6 +80,7 @@ function Stats() {
   const confirmedCount = useConfirmedCount();
   const droppedCount = useDroppedCount();
   const avgConfTime = useAvgConfirmationTime();
+  const [{ countdownSeconds }] = useClientConfig();
 
   const hasTxData = createdCount > 0;
   let processingCount = createdCount - confirmedCount - droppedCount;
@@ -95,7 +97,7 @@ function Stats() {
   };
 
   const hasCapacityData = confirmedCount > 0;
-  const capacityUsed = (100 * confirmedCount) / (COUNTDOWN_SECS * 50000);
+  const capacityUsed = (100 * confirmedCount) / (countdownSeconds * 50000);
   const roundCapacityUsed = hasCapacityData
     ? Math.max(0.5, parseFloat(capacityUsed.toFixed(2)))
     : 0;

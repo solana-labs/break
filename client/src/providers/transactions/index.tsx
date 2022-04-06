@@ -1,12 +1,13 @@
 import * as React from "react";
 import { useThrottle } from "@react-hook/throttle";
 import { TransactionSignature, PublicKey } from "@solana/web3.js";
-import { ConfirmedHelper, DEBUG_MODE } from "./confirmed";
+import { ConfirmedHelper } from "./confirmed";
 import { TpsProvider, TpsContext } from "./tps";
 import { CreateTxContext, CreateTxProvider } from "./create";
 import { SelectedTxProvider } from "./selected";
 import { useConnection } from "providers/rpc";
 import { useSlotTiming } from "providers/slot";
+import { useClientConfig } from "providers/config";
 
 export type ReceivedRecord = {
   timestamp: number;
@@ -57,23 +58,6 @@ type SuccessState = {
   pending?: PendingTransaction;
 };
 
-export const COMMITMENT_PARAM = ((): TrackedCommitment => {
-  const commitment = new URLSearchParams(window.location.search).get(
-    "commitment"
-  );
-  switch (commitment) {
-    case "recent": {
-      return "processed";
-    }
-    case "processed": {
-      return commitment;
-    }
-    default: {
-      return "confirmed";
-    }
-  }
-})();
-
 export type TrackedCommitment = "processed" | "confirmed";
 
 export type TransactionStatus = "success" | "timeout" | "pending";
@@ -85,6 +69,7 @@ type NewTransaction = {
   trackingId: number;
   details: TransactionDetails;
   pendingTransaction: PendingTransaction;
+  subscribed: number | undefined;
 };
 
 type UpdateIds = {
@@ -155,11 +140,7 @@ type State = TransactionState[];
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "new": {
-      const { details, pendingTransaction } = action;
-      let subscribed: number | undefined;
-      if (!DEBUG_MODE) {
-        subscribed = performance.now();
-      }
+      const { details, pendingTransaction, subscribed } = action;
       return [
         ...state,
         {
@@ -423,6 +404,7 @@ type ProviderProps = { children: React.ReactNode };
 export function TransactionsProvider({ children }: ProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, []);
   const connection = useConnection();
+  const [clientConfig] = useClientConfig();
   const stateRef = React.useRef(state);
 
   React.useEffect(() => {
@@ -440,7 +422,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
     });
 
     // Poll for signature statuses to determine which slot a tx landed in
-    const intervalId = DEBUG_MODE
+    const intervalId = clientConfig.showDebugTable
       ? setInterval(async () => {
           const fetchStatuses: string[] = [];
           stateRef.current.forEach((tx) => {
@@ -472,7 +454,7 @@ export function TransactionsProvider({ children }: ProviderProps) {
       connection.removeRootChangeListener(rootSubscription);
       intervalId !== undefined && clearInterval(intervalId);
     };
-  }, [connection]);
+  }, [connection, clientConfig]);
 
   const [throttledState, setThrottledState] = useThrottle(state, 10);
   React.useEffect(() => {
@@ -551,12 +533,13 @@ export function useAvgConfirmationTime() {
     );
   }
 
+  const [{ showDebugTable }] = useClientConfig();
   const confirmedTimes = state.reduce((confirmedTimes: number[], tx) => {
     if (tx.status === "success") {
       const subscribed = tx.timing.subscribed;
       if (subscribed !== undefined) {
         let confTime: number | undefined;
-        if (!DEBUG_MODE && tx.timing.confirmed !== undefined) {
+        if (!showDebugTable && tx.timing.confirmed !== undefined) {
           confTime = tx.timing.confirmed;
         } else if (tx.slot.landed !== undefined) {
           const slotTiming = slotMetrics.current.get(tx.slot.landed);

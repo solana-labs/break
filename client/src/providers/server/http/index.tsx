@@ -1,5 +1,5 @@
 import React from "react";
-import { Config } from "./config";
+import { Config as ServerConfig } from "./config";
 import { useServer } from "providers/server";
 import { fetchWithRetry } from "./request";
 import { Connection } from "@solana/web3.js";
@@ -13,13 +13,13 @@ export enum ConfigStatus {
 
 interface State {
   status: ConfigStatus;
-  config?: Config;
+  config?: ServerConfig;
   connection?: Connection;
 }
 
 interface Initialized {
   status: ConfigStatus.Initialized;
-  config: Config;
+  config: ServerConfig;
 }
 
 interface Fetching {
@@ -99,10 +99,10 @@ async function initConfig(
   return fetchWithRetry(dispatch, httpUrlRef);
 }
 
-export function useConfig() {
+export function useServerConfig() {
   const context = React.useContext(StateContext);
   if (!context) {
-    throw new Error(`useConfig must be used within a ApiProvider`);
+    throw new Error(`useServerConfig must be used within a ApiProvider`);
   }
   return context.config;
 }

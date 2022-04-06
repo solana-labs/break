@@ -15,6 +15,7 @@ import { RpcProvider } from "providers/rpc";
 import { SlotProvider } from "providers/slot";
 import { AccountsProvider } from "providers/accounts";
 import { TorusProvider } from "providers/torus";
+import { ConfigProvider } from "providers/config";
 
 // if (process.env.NODE_ENV === "production") {
 //   Sentry.init({
@@ -26,24 +27,26 @@ import { TorusProvider } from "providers/torus";
 // }
 
 ReactDOM.render(
-  <BrowserRouter>
-    <ServerProvider>
-      <TorusProvider>
-        <WalletProvider>
-          <RpcProvider>
-            <AccountsProvider>
-              <SlotProvider>
-                <TransactionsProvider>
-                  <GameStateProvider>
-                    <App />
-                  </GameStateProvider>
-                </TransactionsProvider>
-              </SlotProvider>
-            </AccountsProvider>
-          </RpcProvider>
-        </WalletProvider>
-      </TorusProvider>
-    </ServerProvider>
-  </BrowserRouter>,
+  <ConfigProvider>
+    <BrowserRouter>
+      <ServerProvider>
+        <TorusProvider>
+          <WalletProvider>
+            <RpcProvider>
+              <AccountsProvider>
+                <SlotProvider>
+                  <TransactionsProvider>
+                    <GameStateProvider>
+                      <App />
+                    </GameStateProvider>
+                  </TransactionsProvider>
+                </SlotProvider>
+              </AccountsProvider>
+            </RpcProvider>
+          </WalletProvider>
+        </TorusProvider>
+      </ServerProvider>
+    </BrowserRouter>
+  </ConfigProvider>,
   document.getElementById("root")
 );

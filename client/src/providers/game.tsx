@@ -1,15 +1,13 @@
 import React from "react";
 import { useHistory, useLocation } from "react-router-dom";
 
-import { useConfig } from "providers/server/http";
+import { useServerConfig } from "providers/server/http";
 import { useSocket } from "providers/server/socket";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useDispatch as useTransactionsDispatch } from "providers/transactions";
-import { DEBUG_MODE } from "providers/transactions/confirmed";
 import { useAccountsState } from "./accounts";
 import { useConnection } from "./rpc";
-
-export const COUNTDOWN_SECS = DEBUG_MODE ? 1500 : 15;
+import { useClientConfig } from "./config";
 
 type GameStatus = "loading" | "setup" | "play" | "finished";
 export type LoadingPhase =
@@ -37,22 +35,23 @@ export function GameStateProvider({ children }: Props) {
   const [countdownStartTime, setCountdownStart] = React.useState<number>();
   const connection = useConnection();
   const blockhash = useBlockhash();
-  const config = useConfig();
+  const serverConfig = useServerConfig();
+  const [clientConfig] = useClientConfig();
   const socket = useSocket();
   const accountsState = useAccountsState();
   const loadingPhase: LoadingPhase = React.useMemo(() => {
-    if (!config) return "config";
+    if (!serverConfig) return "config";
     if (!blockhash) return "blockhash";
     if (!accountsState.creationCost) return "costs";
     if (!socket) return "socket";
     if (accountsState.status === "creating") return "creating-accounts";
     return "complete";
-  }, [blockhash, config, socket, accountsState]);
+  }, [blockhash, serverConfig, socket, accountsState]);
 
   React.useEffect(() => {
     setGameStatus("loading");
     setCountdownStart(undefined);
-  }, [connection]);
+  }, [connection, clientConfig]);
 
   React.useEffect(() => {
     if (status === "loading" && loadingPhase === "complete") {
@@ -69,13 +68,13 @@ export function GameStateProvider({ children }: Props) {
         resultsTimerRef.current = setTimeout(() => {
           setGameStatus("finished");
           history.push({ ...location, pathname: "/results" });
-        }, COUNTDOWN_SECS * 1000);
+        }, clientConfig.countdownSeconds * 1000);
       }
     } else if (resultsTimerRef.current) {
       clearTimeout(resultsTimerRef.current);
       resultsTimerRef.current = undefined;
     }
-  }, [countdownStartTime, history, location]);
+  }, [countdownStartTime, history, location, clientConfig.countdownSeconds]);
 
   const startGame = React.useCallback(() => {
     setCountdownStart(performance.now());

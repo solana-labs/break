@@ -4,6 +4,7 @@ import bs58 from "bs58";
 import {
   Dispatch,
   PendingTransaction,
+  TrackedCommitment,
   TransactionDetails,
   useDispatch,
 } from "./index";
@@ -11,14 +12,15 @@ import {
   CreateTransactionRPC,
   CreateTransactionResponseMessage,
 } from "../../workers/create-transaction-rpc";
-import { useConfig } from "providers/server/http";
+import { useServerConfig } from "providers/server/http";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useSocket } from "providers/server/socket";
 import { reportError } from "utils";
 import { useConnection } from "providers/rpc";
-import { DEBUG_MODE, subscribedCommitments } from "./confirmed";
+import { subscribedCommitments } from "./confirmed";
 import { useLatestTimestamp, useTargetSlotRef } from "providers/slot";
 import { useAccountsState, AccountsConfig } from "providers/accounts";
+import { useClientConfig } from "providers/config";
 
 const SEND_TIMEOUT_MS = 45000;
 const RETRY_INTERVAL_MS = 500;
@@ -31,7 +33,9 @@ export const CreateTxContext = React.createContext<
 type ProviderProps = { children: React.ReactNode };
 export function CreateTxProvider({ children }: ProviderProps) {
   const createTx = React.useRef(() => {});
-  const config = useConfig();
+  const [{ trackedCommitment, showDebugTable, retryTransactionEnabled }] =
+    useClientConfig();
+  const serverConfig = useServerConfig();
   const accounts = useAccountsState().accounts;
   const idCounter = React.useRef<number>(0);
   const targetSlotRef = useTargetSlotRef();
@@ -53,7 +57,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
         !connection ||
         !blockhash ||
         !socket ||
-        !config ||
+        !serverConfig ||
         !accounts ||
         !targetSlotRef.current
       ) {
@@ -61,7 +65,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
           connection,
           blockhash,
           socket,
-          config,
+          serverConfig,
           accounts,
           targetSlot: targetSlotRef.current,
         });
@@ -71,13 +75,21 @@ export function CreateTxProvider({ children }: ProviderProps) {
       const id = idCounter.current;
       if (id < accounts.accountCapacity * accounts.programAccounts.length) {
         idCounter.current++;
+
+        const params: CreateTransactionParams = {
+          blockhash,
+          confirmationCommitment: trackedCommitment,
+          targetSlot: targetSlotRef.current,
+          programId: serverConfig.programId,
+          accounts,
+          trackingId: id,
+        };
+
         createTransaction(
           connection,
-          blockhash,
-          targetSlotRef.current,
-          config.programId,
-          accounts,
-          id,
+          params,
+          showDebugTable,
+          retryTransactionEnabled,
           dispatch,
           socket,
           latestTimestamp
@@ -93,11 +105,14 @@ export function CreateTxProvider({ children }: ProviderProps) {
     blockhash,
     connection,
     socket,
-    config,
+    serverConfig,
     accounts,
     dispatch,
     targetSlotRef,
     latestTimestamp,
+    showDebugTable,
+    trackedCommitment,
+    retryTransactionEnabled,
   ]);
 
   return (
@@ -107,17 +122,32 @@ export function CreateTxProvider({ children }: ProviderProps) {
   );
 }
 
+type CreateTransactionParams = {
+  blockhash: Blockhash;
+  confirmationCommitment: TrackedCommitment;
+  targetSlot: number;
+  programId: PublicKey;
+  accounts: AccountsConfig;
+  trackingId: number;
+};
+
 export function createTransaction(
   connection: Connection,
-  blockhash: Blockhash,
-  targetSlot: number,
-  programId: PublicKey,
-  accounts: AccountsConfig,
-  trackingId: number,
+  params: CreateTransactionParams,
+  debugMode: boolean,
+  retryEnabled: boolean,
   dispatch: Dispatch,
   socket: WebSocket,
   latestTimestamp: React.MutableRefObject<number | undefined>
 ) {
+  const {
+    blockhash,
+    confirmationCommitment,
+    targetSlot,
+    programId,
+    accounts,
+    trackingId,
+  } = params;
   const { feePayerKeypairs, programAccounts } = accounts;
 
   const bitId = Math.floor(trackingId / feePayerKeypairs.length);
@@ -153,14 +183,20 @@ export function createTransaction(
           signature: encodedSignature,
         };
 
+        let subscribed: number | undefined;
+        if (!debugMode) {
+          subscribed = performance.now();
+        }
+
         dispatch({
           type: "new",
           details,
           trackingId,
           pendingTransaction,
+          subscribed,
         });
 
-        if (DEBUG_MODE) {
+        if (debugMode) {
           const timestamp = latestTimestamp.current;
           if (timestamp) {
             dispatch({
@@ -189,7 +225,10 @@ export function createTransaction(
             }
           );
 
-          const commitments = subscribedCommitments();
+          const commitments = subscribedCommitments(
+            confirmationCommitment,
+            debugMode
+          );
           commitments.forEach((commitment) => {
             connection.onSignatureWithOptions(
               encodedSignature,
@@ -210,8 +249,7 @@ export function createTransaction(
           });
         }
 
-        const retry = new URLSearchParams(window.location.search).get("retry");
-        if (retry === null || retry !== "disabled") {
+        if (retryEnabled) {
           pendingTransaction.retryId = window.setInterval(() => {
             if (socket.readyState === WebSocket.OPEN) {
               socket.send(serializedTransaction);

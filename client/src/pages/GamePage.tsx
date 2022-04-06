@@ -30,9 +30,9 @@ export function GamePage() {
   }
 
   return (
-    <div className="container d-flex flex-grow-1 flex-column px-3">
+    <div className="container-fluid d-flex flex-fill flex-column my-4 min-width-0">
       {showStats && <Stats />}
-      <div className="row flex-grow-1 mb-5">
+      <div className="row flex-grow-1">
         <div className="col">
           <TransactionContainer enabled />
         </div>
