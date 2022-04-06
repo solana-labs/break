@@ -15,6 +15,7 @@ export function ConfigurationSidebar() {
       </div>
       <hr />
       <div className="sidebar-body">
+        <ProxyModeInput />
         <ServerConfigInfo />
       </div>
     </aside>
@@ -70,6 +71,37 @@ function DebugModeInput() {
       <p className="text-muted font-size-sm mt-3">
         Enable this setting to view a detailed table of transaction and block
         timing information.
+      </p>
+    </>
+  );
+}
+
+function ProxyModeInput() {
+  const [config, setConfig] = useClientConfig();
+  const onChange = (enabled: boolean) => {
+    setConfig((config: ClientConfig) => ({
+      ...config,
+      useTpu: enabled,
+    }));
+  };
+
+  return (
+    <>
+      <div className="d-flex justify-content-between">
+        <span className="me-3">Send to TPU</span>
+        <div className="form-check form-switch">
+          <input
+            type="checkbox"
+            defaultChecked={config.useTpu}
+            className="form-check-input"
+            id="tpuToggle"
+            onChange={(e) => onChange(e.target.checked)}
+          />
+          <label className="form-check-label" htmlFor="tpuToggle"></label>
+        </div>
+      </div>
+      <p className="text-muted font-size-sm mt-3">
+        Send transactions directly to the leader TPU port.
       </p>
     </>
   );
