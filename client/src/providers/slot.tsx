@@ -1,8 +1,8 @@
 import { LeaderSchedule } from "@solana/web3.js";
 import React from "react";
 import { useRouteMatch } from "react-router";
+import { useClientConfig } from "./config";
 import { useConnection } from "./rpc";
-import { DEBUG_MODE } from "./transactions/confirmed";
 
 const SlotContext = React.createContext<
   React.MutableRefObject<number | undefined> | undefined
@@ -88,6 +88,7 @@ export function SlotProvider({ children }: ProviderProps) {
   const leaderSchedule = React.useRef<[number, LeaderSchedule]>();
   const latestTimestamp = React.useRef<number>();
   const isSlotsPage = !!useRouteMatch("/slots")?.isExact;
+  const [{ showDebugTable }] = useClientConfig();
 
   const leaderScheduleCounter = React.useRef(0);
   React.useEffect(() => {
@@ -129,7 +130,7 @@ export function SlotProvider({ children }: ProviderProps) {
       setCounter((c) => c + 1);
     }, 1000);
 
-    if (DEBUG_MODE || isSlotsPage) {
+    if (showDebugTable || isSlotsPage) {
       slotUpdateSubscription = connection.onSlotUpdate((notification) => {
         // Remove if slot update api is active
         if (slotSubscription !== undefined) {
@@ -204,7 +205,7 @@ export function SlotProvider({ children }: ProviderProps) {
         connection.removeSlotUpdateListener(slotUpdateSubscription);
       }
     };
-  }, [connection, isSlotsPage]);
+  }, [connection, isSlotsPage, showDebugTable]);
 
   return (
     <SlotContext.Provider value={targetSlot}>

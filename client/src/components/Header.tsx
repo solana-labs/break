@@ -2,14 +2,15 @@ import * as React from "react";
 
 import breakSvg from "images/break.svg";
 import solanaSvg from "images/solana.svg";
-import { useGameState, COUNTDOWN_SECS } from "providers/game";
+import { useGameState } from "providers/game";
 import ClusterStatusButton from "./ClusterStatusButton";
+import { useClientConfig } from "providers/config";
 
 export function Header() {
   return (
     <div className="header solana-header">
       <div className="header-body border-dark-purple py-3">
-        <div className="container">
+        <div className="container-fluid">
           <div className="row align-items-center justify-content-between">
             <div className="col-auto d-flex flex-column d-md-block align-items-center">
               <img src={breakSvg} alt="break" className="break mr-3" />
@@ -49,6 +50,7 @@ function HeaderCTA() {
   const [, setRefresh] = React.useState<boolean>(false);
   const countdownStart = gameState.countdownStartTime;
   const gameStatus = gameState.status;
+  const [{ countdownSeconds }] = useClientConfig();
 
   React.useEffect(() => {
     if (countdownStart !== undefined) {
@@ -71,11 +73,11 @@ function HeaderCTA() {
     );
   }
 
-  let secondsRemaining = COUNTDOWN_SECS;
+  let secondsRemaining = countdownSeconds;
   if (countdownStart !== undefined) {
     secondsRemaining = Math.max(
       0,
-      COUNTDOWN_SECS - Math.floor((performance.now() - countdownStart) / 1000)
+      countdownSeconds - Math.floor((performance.now() - countdownStart) / 1000)
     );
   }
 

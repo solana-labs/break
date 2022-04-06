@@ -15,7 +15,7 @@ import { useWalletState } from "providers/wallet";
 import { useConnection } from "providers/rpc";
 import { useBlockhash } from "providers/rpc/blockhash";
 import { useAccountsState } from "providers/accounts";
-import { useConfig } from "providers/server/http";
+import { useServerConfig } from "providers/server/http";
 import { useGameState } from "providers/game";
 import { reportError } from "utils";
 
@@ -39,7 +39,7 @@ export function getTrustWalletLink(
 }
 
 export function PaymentCard({ keypair }: { keypair: Keypair }) {
-  const config = useConfig();
+  const config = useServerConfig();
   const connection = useConnection();
   const recentBlockhash = useBlockhash();
   const walletState = useWalletState();
@@ -67,6 +67,13 @@ export function PaymentCard({ keypair }: { keypair: Keypair }) {
 
   const [airdropping, setAirdropping] = React.useState(false);
   const airdropLock = React.useRef(false);
+
+  // Configuration changes bring the user back to the payment card and at that point
+  // accounts should be deactivated so that they can be created with the new configuration
+  React.useEffect(() => {
+    accountsState.deactivate();
+  }, [accountsState]);
+
   React.useEffect(() => {
     if (!config || !connection) return;
 

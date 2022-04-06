@@ -1,6 +1,6 @@
 import React from "react";
 import { Connection } from "@solana/web3.js";
-import { useConfig } from "providers/server/http";
+import { useServerConfig } from "providers/server/http";
 import { BlockhashProvider } from "./blockhash";
 import { BalanceProvider } from "./balance";
 
@@ -22,7 +22,7 @@ export function RpcProvider({ children }: ProviderProps) {
   const [rpcUrl, setRpcUrl] = state;
 
   // Reset rpc url whenever config is fetched
-  const configRpcUrl = useConfig()?.rpcUrl;
+  const configRpcUrl = useServerConfig()?.rpcUrl;
   React.useEffect(() => {
     setRpcUrl(configRpcUrl);
   }, [configRpcUrl, setRpcUrl]);

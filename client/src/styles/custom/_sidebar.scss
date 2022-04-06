@@ -1,0 +1,17 @@
+.page-sidebar {
+  min-width: 250px;
+  max-width: 300px;
+  width: 25vw;
+  background-color: $gray-800-dark;
+  border-right: 1px solid $purple;
+}
+
+.sidebar-body {
+  margin: 1rem;
+}
+
+@media screen and (max-width: 768px) {
+  .page-sidebar {
+    display: none;
+  }
+}

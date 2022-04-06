@@ -11,7 +11,7 @@ import {
   useCustomUrl,
 } from "../providers/server";
 import { useRpcUrlState } from "providers/rpc";
-import { useConfig } from "providers/server/http";
+import { useServerConfig } from "providers/server/http";
 
 export function ClusterModal() {
   const [show, setShow] = useClusterModal();
@@ -50,7 +50,7 @@ export function ClusterModal() {
 function CustomRpcInput() {
   const [rpcUrl, setRpcUrl] = useRpcUrlState();
   const [editing, setEditing] = React.useState(false);
-  const configRpcUrl = useConfig()?.rpcUrl;
+  const configRpcUrl = useServerConfig()?.rpcUrl;
   const active = configRpcUrl !== rpcUrl;
 
   const customClass = (prefix: string) => (active ? `${prefix}-info` : "");

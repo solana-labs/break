@@ -4,6 +4,7 @@
 @import "custom/header";
 @import "custom/payment-card";
 @import "custom/results";
+@import "custom/sidebar";
 @import "custom/tx-container";
 @import "custom/tx-square";
 
@@ -138,7 +139,12 @@
 
 .debug-row {
   cursor: pointer;
+
   &:hover {
     background: #111;
   }
+}
+
+.min-width-0 {
+  min-width: 0;
 }

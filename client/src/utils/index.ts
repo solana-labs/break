@@ -36,20 +36,10 @@ export const getLocalStorageKeypair = (key: string): Keypair => {
   }
 };
 
-const SPLIT = ((): number => {
-  const split = parseInt(
-    new URLSearchParams(window.location.search).get("split") || ""
-  );
-  if (!isNaN(split)) {
-    return Math.min(split, 12);
-  }
-  return 4;
-})();
-
-export const FEE_PAYERS = (() => {
+export const getFeePayers = (num: number) => {
   const accounts = [];
-  for (let i = 0; i < SPLIT; i++) {
+  for (let i = 0; i < num; i++) {
     accounts.push(getLocalStorageKeypair(`feePayerKey${i + 1}`));
   }
   return accounts;
-})();
+};

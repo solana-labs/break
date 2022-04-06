@@ -13,6 +13,7 @@ import { LoadingModal } from "components/LoadingModal";
 import { useGameState } from "providers/game";
 import { useClusterModal } from "providers/server";
 import { Header } from "components/Header";
+import { ConfigurationSidebar } from "components/ConfigurationSidebar";
 
 export default function App() {
   const isHomePage = !!useRouteMatch("/")?.isExact;
@@ -33,20 +34,24 @@ export default function App() {
   const isInitializing =
     gameState.loadingPhase === "config" && !isWalletPage && !isSlotsPage;
   const showLoadingModal = isLoading && !isWalletPage && !isSlotsPage;
+  const showConfigSidebar = !isHomePage && !isWalletPage;
   return (
     <div className="main-content">
       <div className="min-vh-100 d-flex flex-column">
         <Header />
-        {!isInitializing && (
-          <Switch>
-            <Route path="/game" exact component={GamePage} />
-            <Route path="/slots" exact component={SlotsPage} />
-            <Route path="/wallet" exact component={WalletPage} />
-            <Route path="/results" exact component={ResultsPage} />
-            <Route path="/start" exact component={StartPage} />
-            <Redirect from="*" to="/" exact />
-          </Switch>
-        )}
+        <div className="d-flex flex-row flex-grow-1">
+          {showConfigSidebar && <ConfigurationSidebar />}
+          {!isInitializing && (
+            <Switch>
+              <Route path="/game" exact component={GamePage} />
+              <Route path="/slots" exact component={SlotsPage} />
+              <Route path="/wallet" exact component={WalletPage} />
+              <Route path="/results" exact component={ResultsPage} />
+              <Route path="/start" exact component={StartPage} />
+              <Redirect from="*" to="/" exact />
+            </Switch>
+          )}
+        </div>
       </div>
       <LoadingModal show={showLoadingModal} phase={gameState.loadingPhase} />
       <ClusterModal />
