@@ -27,12 +27,17 @@ export function TxTableRow({ transaction }: Props) {
   let landedSlot: number | undefined;
   let timing;
   let received;
+  let targetSlotOverride: string | undefined;
   if (transaction.status === "success") {
     targetSlot = transaction.slot.target;
     landedSlot = transaction.slot.landed;
     timing = transaction.timing;
     received = transaction.received;
-  } else if (transaction.status === "timeout") {
+  } else if (
+    transaction.status === "timeout" ||
+    transaction.status === "failed"
+  ) {
+    targetSlotOverride = transaction.status.toUpperCase();
   } else {
     targetSlot = transaction.pending.targetSlot;
     timing = transaction.timing;
@@ -62,7 +67,7 @@ export function TxTableRow({ transaction }: Props) {
       onClick={() => selectTransaction(signature)}
     >
       <td>{signature.slice(0, 7)}…</td>
-      <td>{targetSlot || "-"}</td>
+      <td>{targetSlot || targetSlotOverride || "-"}</td>
       <td>{landedSlot || "-"}</td>
       <td>{txCount || "-"}</td>
       <td>{txSuccessRate || "-"}</td>

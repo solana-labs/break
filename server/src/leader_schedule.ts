@@ -50,16 +50,20 @@ export default class LeaderScheduleService {
   };
 
   getSlotLeader = (slot: number): string | null => {
-    if (slot >= this.scheduleFirstSlot && slot <= this.lastSlot()) {
-      return this.leaderAddresses[slot - this.scheduleFirstSlot];
-    } else {
+    const firstSlot = this.scheduleFirstSlot;
+    const lastSlot = this.lastSlot();
+    if (slot < firstSlot) {
       console.error(
-        `getSlotLeader failed: Either ${slot} < ${
-          this.scheduleFirstSlot
-        } OR ${slot} > ${this.lastSlot()}`
+        `getSlotLeader failed: Tried to get ${slot} before first schedule slot ${firstSlot}`
       );
-      return null;
+    } else if (slot > lastSlot) {
+      console.error(
+        `getSlotLeader failed: Tried to get ${slot} after last schedule slot ${lastSlot}`
+      );
+    } else {
+      return this.leaderAddresses[slot - this.scheduleFirstSlot];
     }
+    return null;
   };
 
   private lastSlot = (): number => {

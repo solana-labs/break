@@ -47,11 +47,11 @@ export function TransactionContainer({ enabled }: { enabled?: boolean }) {
   }, [rapidFire, enabled, makeTransaction]);
 
   useEffect(() => {
-    if (!autoSendTransactions) return;
+    if (!enabled || !autoSendTransactions) return;
     makeTransaction();
     const testInterval = window.setInterval(() => makeTransaction(), 1000);
     return () => clearInterval(testInterval);
-  }, [makeTransaction, autoSendTransactions]);
+  }, [makeTransaction, enabled, autoSendTransactions]);
 
   useEffect(() => {
     document.addEventListener("keyup", makeTransaction);

@@ -1,4 +1,5 @@
 import { Connection } from "@solana/web3.js";
+import bs58 from "bs58";
 import dgram from "dgram";
 import { endlessRetry, reportError, sleep } from "./utils";
 import AvailableNodesService from "./available_nodes";
@@ -23,9 +24,9 @@ export default class TpuProxy {
 
   static async create(connection: Connection): Promise<TpuProxy> {
     const proxy = new TpuProxy(connection);
-    const currentSlot = (
-      await endlessRetry("getEpochInfo", () => connection.getEpochInfo())
-    ).absoluteSlot;
+    const currentSlot = await endlessRetry("getSlot", () =>
+      connection.getSlot("processed")
+    );
     const nodesService = await AvailableNodesService.start(connection);
     const leaderService = await LeaderScheduleService.start(
       connection,
@@ -55,7 +56,6 @@ export default class TpuProxy {
 
     do {
       try {
-        console.log("TPU Proxy refreshing...");
         await this.reconnect();
       } catch (err) {
         reportError(err, "TPU Proxy failed to connect, reconnecting");
@@ -63,20 +63,52 @@ export default class TpuProxy {
       }
     } while (!this.connected());
 
-    const activeProxies = this.activeProxies();
-    console.log(activeProxies, "TPU port(s) connected");
+    // console.log(this.activeProxies(), "TPU port(s) connected");
     this.connecting = false;
   };
 
-  onTransaction = (data: string | Uint8Array | Buffer): void => {
+  sendRawTransaction = (
+    rawTransaction: Uint8Array,
+    useRpc: boolean,
+    rpcOverride: string | undefined,
+    sendResponse: (message: string) => void
+  ): void => {
     if (!this.connected()) {
       this.connect();
       return;
     }
 
+    if (useRpc) {
+      let connection = this.connection;
+      if (rpcOverride) {
+        try {
+          connection = new Connection(rpcOverride);
+        } catch (err) {
+          // invalid rpc url
+        }
+      }
+
+      connection.sendRawTransaction(rawTransaction).catch((err: Error) => {
+        if (rawTransaction.length < 65) {
+          return;
+        }
+
+        sendResponse(
+          JSON.stringify({
+            type: "failure",
+            signature: bs58.encode(rawTransaction.slice(1, 65)),
+            reason: err.message,
+          })
+        );
+
+        reportError(err, "Failed to send transaction over HTTP");
+      });
+      return;
+    }
+
     this.sockets.forEach((socket, address) => {
       try {
-        socket.send(data, (err) => this.onTpuResult(address, err));
+        socket.send(rawTransaction, (err) => this.onTpuResult(address, err));
       } catch (err) {
         this.onTpuResult(address, err);
       }
@@ -99,7 +131,8 @@ export default class TpuProxy {
         const tpu = nodesService.nodes.get(leader);
         if (tpu) {
           tpuAddresses.push(tpu);
-        } else {
+        } else if (!nodesService.delinquents.has(leader)) {
+          nodesService.delinquents.add(leader);
           console.warn("NO TPU FOUND", leader);
         }
       }

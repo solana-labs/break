@@ -42,14 +42,14 @@ export default class LeaderTrackerService {
       }
 
       if (newCurrentSlot != previousCurrentSlot) {
-        console.debug(`Leader tracker detected new slot: ${newCurrentSlot}`);
+        // console.debug(`Leader tracker detected new slot: ${newCurrentSlot}`);
         if (!processingCallback) {
           processingCallback = true;
           callback(newCurrentSlot)
             .then(() => {
-              console.debug(
-                `Leader tracker handled new slot: ${newCurrentSlot}`
-              );
+              // console.debug(
+              //   `Leader tracker handled new slot: ${newCurrentSlot}`
+              // );
             })
             .catch((err) => {
               console.error("Failed to handle new slot", err);
