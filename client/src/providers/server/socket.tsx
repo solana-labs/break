@@ -28,7 +28,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
   let [socket, setSocket] = React.useState<ServerSocket | undefined>(undefined);
   let failureCallbackRef = React.useRef(() => {});
   let [activeUsers, setActiveUsers] = React.useState<number>(1);
-  let [clientConfig] = useClientConfig();
+  let [{ useTpu, rpcOverride }] = useClientConfig();
 
   const { webSocketUrl } = useServer();
   React.useEffect(() => {
@@ -37,9 +37,15 @@ export function SocketProvider({ children }: SocketProviderProps) {
 
   React.useEffect(() => {
     if (socket) {
-      socket.socket.send(clientConfig.useTpu ? "tpu" : "rpc");
+      socket.socket.send(useTpu ? "tpu" : "rpc");
     }
-  }, [socket, clientConfig.useTpu]);
+  }, [socket, useTpu]);
+
+  React.useEffect(() => {
+    if (socket && rpcOverride) {
+      socket.socket.send(rpcOverride);
+    }
+  }, [socket, rpcOverride]);
 
   return (
     <SocketContext.Provider value={socket?.socket}>

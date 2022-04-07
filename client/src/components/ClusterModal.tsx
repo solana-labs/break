@@ -56,7 +56,12 @@ function CustomRpcInput() {
   const customClass = (prefix: string) => (active ? `${prefix}-info` : "");
   const onUrlInput = useDebounceCallback((url: string) => {
     if (url.length > 0) {
-      setRpcUrl(url);
+      try {
+        new URL(url);
+        setRpcUrl(url);
+      } catch (err) {
+        // ignore bad url
+      }
     } else if (configRpcUrl) {
       setRpcUrl(configRpcUrl);
     }

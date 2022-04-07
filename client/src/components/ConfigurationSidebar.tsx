@@ -1,4 +1,6 @@
+import { useDebounceCallback } from "@react-hook/debounce";
 import { ClientConfig, useClientConfig } from "providers/config";
+import { useRpcUrlState } from "providers/rpc";
 import { useServerConfig } from "providers/server/http";
 import React from "react";
 
@@ -12,7 +14,6 @@ export function ConfigurationSidebar() {
         <ToggleAutoSendInput />
         <ProxyModeInput />
         {clientConfig.useTpu && <ToggleRetryInput />}
-        {!clientConfig.useTpu && <ServerConfigInfo />}
       </div>
       <hr />
       <h3 className="m-4 font-weight-bold">New Game Options</h3>
@@ -20,25 +21,42 @@ export function ConfigurationSidebar() {
       <div className="sidebar-body">
         <DebugModeInput />
         <ParallelizationInput />
+        {!clientConfig.useTpu && <RpcOverrideInput />}
       </div>
     </aside>
   );
 }
 
-function ServerConfigInfo() {
-  const serverConfig = useServerConfig();
+function RpcOverrideInput() {
+  const configRpcUrl = useServerConfig()?.rpcUrl;
+  const [rpcUrl, setRpcUrl] = useRpcUrlState();
+
+  const onUrlInput = useDebounceCallback((url: string) => {
+    if (url.length > 0) {
+      try {
+        new URL(url);
+        setRpcUrl(url);
+      } catch (err) {
+        // ignore bad url
+      }
+    } else if (configRpcUrl) {
+      setRpcUrl(configRpcUrl);
+    }
+  }, 500);
+
+  const defaultValue = rpcUrl || configRpcUrl;
   return (
     <>
-      <span className="me-3">Break Server RPC</span>
+      <span className="me-3">RPC Endpoint</span>
       <input
         type="url"
-        defaultValue={serverConfig?.rpcUrl}
+        defaultValue={defaultValue}
         className="form-control mt-4"
-        readOnly={true}
+        onInput={(e) => onUrlInput(e.currentTarget.value)}
       />
       <p className="text-muted font-size-sm mt-3">
-        This RPC endpoint is used by the server when proxying transactions to
-        the cluster.
+        This RPC endpoint is used by the client and by the server when proxying
+        transactions to the cluster.
       </p>
     </>
   );

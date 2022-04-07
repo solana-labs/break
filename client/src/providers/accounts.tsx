@@ -280,7 +280,7 @@ const _createAccountBatch = async (
         connection,
         tx,
         [payer, ...newProgramAccounts],
-        { skipPreflight: true }
+        { preflightCommitment: "confirmed" }
       );
       break;
     } catch (err) {
