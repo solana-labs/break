@@ -77,8 +77,8 @@ export function AccountsProvider({ children }: Props) {
               }
               return status;
             });
-            return;
           }
+          return;
         } catch (err) {
           console.error("Failed to calculate account costs, retrying", err);
         }
@@ -138,6 +138,8 @@ export function AccountsProvider({ children }: Props) {
         setAccounts(newAccounts);
         setStatus("active");
       } catch (err) {
+        console.error("Failed to create accounts", err);
+        setAccounts(undefined);
         setStatus("inactive");
       } finally {
         creationLock.current = false;
@@ -237,24 +239,26 @@ const calculateCosts = async (
   };
 };
 
-const _createAccounts = async (
+const _createAccountBatch = async (
   connection: Connection,
   breakProgramId: PublicKey,
   payer: Keypair,
   costs: AccountCosts,
-  parallelization: number
-): Promise<AccountsConfig> => {
-  const tx = new Transaction();
-  const programAccountSpace = calculateProgramAccountSpace(parallelization);
-  const feePayers = getFeePayers(parallelization);
-  const programAccounts = [];
+  newFeePayers: Keypair[],
+  newProgramAccounts: Keypair[],
+  programAccountSpace: number
+) => {
+  const batchSize = newProgramAccounts.length;
+  if (batchSize !== newFeePayers.length) {
+    throw new Error("Internal error");
+  }
 
-  for (let i = 0; i < feePayers.length; i++) {
-    programAccounts.push(new Keypair());
+  const tx = new Transaction();
+  for (let i = 0; i < batchSize; i++) {
     tx.add(
       SystemProgram.createAccount({
         fromPubkey: payer.publicKey,
-        newAccountPubkey: programAccounts[i].publicKey,
+        newAccountPubkey: newProgramAccounts[i].publicKey,
         lamports: costs.programAccountCost,
         space: programAccountSpace,
         programId: breakProgramId,
@@ -263,7 +267,7 @@ const _createAccounts = async (
     tx.add(
       SystemProgram.transfer({
         fromPubkey: payer.publicKey,
-        toPubkey: feePayers[i].publicKey,
+        toPubkey: newFeePayers[i].publicKey,
         lamports: costs.feeAccountCost,
       })
     );
@@ -275,17 +279,51 @@ const _createAccounts = async (
       await sendAndConfirmTransaction(
         connection,
         tx,
-        [payer, ...programAccounts],
+        [payer, ...newProgramAccounts],
         { skipPreflight: true }
       );
       break;
     } catch (err) {
       retries -= 1;
+      if (retries === 0) {
+        throw new Error("Couldn't confirm transaction");
+      }
       console.error(
         `Failed to create accounts, retries remaining: ${retries}`,
         err
       );
     }
+  }
+};
+
+const _createAccounts = async (
+  connection: Connection,
+  breakProgramId: PublicKey,
+  payer: Keypair,
+  costs: AccountCosts,
+  parallelization: number
+): Promise<AccountsConfig> => {
+  const programAccountSpace = calculateProgramAccountSpace(parallelization);
+  const feePayers = getFeePayers(parallelization);
+  const programAccounts = Array(parallelization)
+    .fill(0)
+    .map(() => new Keypair());
+
+  const BATCH_SIZE = 5; // max size that can fit in one transaction
+
+  let accountIndex = 0;
+  while (accountIndex < parallelization) {
+    await _createAccountBatch(
+      connection,
+      breakProgramId,
+      payer,
+      costs,
+      feePayers.slice(accountIndex, accountIndex + BATCH_SIZE),
+      programAccounts.slice(accountIndex, accountIndex + BATCH_SIZE),
+      programAccountSpace
+    );
+
+    accountIndex += BATCH_SIZE;
   }
 
   const txPerAccount = calculateTransactionsPerAccount(programAccountSpace);

@@ -151,6 +151,9 @@ export function TransactionDetails({
     if (transaction.status === "timeout") {
       return <span className="text-warning">Timed out</span>;
     }
+    if (transaction.status === "failed") {
+      return <span className="text-danger">Failed: {transaction.reason}</span>;
+    }
     if (transaction.status === "success") {
       const subscribed = transaction.timing.subscribed;
       if (subscribed !== undefined) {

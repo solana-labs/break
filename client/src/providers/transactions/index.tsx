@@ -8,6 +8,7 @@ import { SelectedTxProvider } from "./selected";
 import { useConnection } from "providers/rpc";
 import { useSlotTiming } from "providers/slot";
 import { useClientConfig } from "providers/config";
+import { useFailureCallback } from "providers/server/socket";
 
 export type ReceivedRecord = {
   timestamp: number;
@@ -38,6 +39,12 @@ type TimeoutState = {
   details: TransactionDetails;
 };
 
+type FailedState = {
+  status: "failed";
+  reason: string;
+  details: TransactionDetails;
+};
+
 type PendingState = {
   status: "pending";
   details: TransactionDetails;
@@ -60,9 +67,13 @@ type SuccessState = {
 
 export type TrackedCommitment = "processed" | "confirmed";
 
-export type TransactionStatus = "success" | "timeout" | "pending";
+export type TransactionStatus = "success" | "timeout" | "pending" | "failed";
 
-export type TransactionState = SuccessState | TimeoutState | PendingState;
+export type TransactionState =
+  | SuccessState
+  | TimeoutState
+  | PendingState
+  | FailedState;
 
 type NewTransaction = {
   type: "new";
@@ -97,6 +108,12 @@ type TimeoutTransaction = {
   trackingId: number;
 };
 
+type FailTransaction = {
+  type: "fail";
+  signature: string;
+  reason: string;
+};
+
 type ResetState = {
   type: "reset";
 };
@@ -129,6 +146,7 @@ type Action =
   | NewTransaction
   | UpdateIds
   | TimeoutTransaction
+  | FailTransaction
   | ResetState
   | RecordRoot
   | TrackTransaction
@@ -161,7 +179,7 @@ function reducer(state: State, action: Action): State {
       const transaction = state[trackingId];
       return state.map((tx) => {
         if (tx.details.signature === transaction.details.signature) {
-          if (tx.status !== "timeout") {
+          if (tx.status !== "timeout" && tx.status !== "failed") {
             return {
               ...tx,
               timing: {
@@ -181,7 +199,7 @@ function reducer(state: State, action: Action): State {
       const transaction = state[trackingId];
       return state.map((tx) => {
         if (tx.details.signature === transaction.details.signature) {
-          if (tx.status !== "timeout") {
+          if (tx.status !== "timeout" && tx.status !== "failed") {
             return {
               ...tx,
               received: [
@@ -265,6 +283,20 @@ function reducer(state: State, action: Action): State {
           return {
             status: "timeout",
             details: tx.details,
+          };
+        } else {
+          return tx;
+        }
+      });
+    }
+
+    case "fail": {
+      return state.map((tx) => {
+        if (tx.details.signature === action.signature) {
+          return {
+            status: "failed",
+            details: tx.details,
+            reason: action.reason,
           };
         } else {
           return tx;
@@ -406,6 +438,17 @@ export function TransactionsProvider({ children }: ProviderProps) {
   const connection = useConnection();
   const [clientConfig] = useClientConfig();
   const stateRef = React.useRef(state);
+  const failureCallback = useFailureCallback();
+
+  React.useEffect(() => {
+    failureCallback.current = (signature, reason) => {
+      dispatch({
+        type: "fail",
+        reason,
+        signature,
+      });
+    };
+  }, [failureCallback, dispatch]);
 
   React.useEffect(() => {
     stateRef.current = state;
@@ -454,7 +497,12 @@ export function TransactionsProvider({ children }: ProviderProps) {
       connection.removeRootChangeListener(rootSubscription);
       intervalId !== undefined && clearInterval(intervalId);
     };
-  }, [connection, clientConfig]);
+  }, [
+    connection,
+    clientConfig.showDebugTable,
+    clientConfig.parallelization,
+    clientConfig.trackedCommitment,
+  ]);
 
   const [throttledState, setThrottledState] = useThrottle(state, 10);
   React.useEffect(() => {

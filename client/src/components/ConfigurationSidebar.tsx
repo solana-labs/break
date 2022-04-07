@@ -3,20 +3,23 @@ import { useServerConfig } from "providers/server/http";
 import React from "react";
 
 export function ConfigurationSidebar() {
+  const [clientConfig] = useClientConfig();
   return (
     <aside className="page-sidebar">
-      <h3 className="m-4 font-weight-bold">Configuration</h3>
+      <h3 className="m-4 font-weight-bold">Live Game Options</h3>
+      <hr />
+      <div className="sidebar-body">
+        <ToggleAutoSendInput />
+        <ProxyModeInput />
+        {clientConfig.useTpu && <ToggleRetryInput />}
+        {!clientConfig.useTpu && <ServerConfigInfo />}
+      </div>
+      <hr />
+      <h3 className="m-4 font-weight-bold">New Game Options</h3>
       <hr />
       <div className="sidebar-body">
         <DebugModeInput />
-        <ToggleAutoSendInput />
         <ParallelizationInput />
-        <ToggleRetryInput />
-      </div>
-      <hr />
-      <div className="sidebar-body">
-        <ProxyModeInput />
-        <ServerConfigInfo />
       </div>
     </aside>
   );
@@ -88,7 +91,7 @@ function ProxyModeInput() {
   return (
     <>
       <div className="d-flex justify-content-between">
-        <span className="me-3">Send to TPU</span>
+        <span className="me-3">Skip RPC Server</span>
         <div className="form-check form-switch">
           <input
             type="checkbox"

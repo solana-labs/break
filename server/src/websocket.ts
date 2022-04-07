@@ -1,7 +1,6 @@
 import WebSocket from "ws";
 import http from "http";
 import TpuProxy from "./tpu_proxy";
-import { reportError } from "./utils";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 function noop() {}
@@ -13,7 +12,8 @@ export default class WebSocketServer {
     const wss = new WebSocket.Server({ server: httpServer });
     wss.on("connection", function connection(ws) {
       let isAlive = true;
-      let useTpuProxy = false;
+      let useRpc = true;
+      let rpcOverride: string;
 
       function heartbeat() {
         isAlive = true;
@@ -30,20 +30,33 @@ export default class WebSocketServer {
         clearInterval(interval);
         activeUsers--;
       });
-      ws.on("message", (message: string | Uint8Array) => {
+      ws.on("message", (data: Buffer, isBinary: boolean) => {
+        const message = isBinary ? data : data.toString();
         if (typeof message === "string") {
-          if (message === "tpu") useTpuProxy = true;
-          if (message === "rpc") useTpuProxy = false;
-        } else {
-          if (!useTpuProxy) {
-            tpuProxy.connection
-              .sendRawTransaction(message, { skipPreflight: true })
-              .catch((err) => {
-                reportError(err, "Failed to send transaction over HTTP");
-              });
+          if (message === "tpu") {
+            console.log("Client switched to TPU mode");
+            useRpc = false;
+          } else if (message === "rpc") {
+            console.log("Client switched to RPC mode");
+            useRpc = true;
           } else {
-            tpuProxy.onTransaction(message);
+            try {
+              const rpcEndpoint = new URL(message);
+              rpcOverride = rpcEndpoint.toString();
+              console.log("Client overrode RPC endpoint to", rpcEndpoint);
+            } catch (err) {
+              console.warn("Ignoring client message", message);
+            }
           }
+        } else {
+          tpuProxy.sendRawTransaction(
+            message,
+            useRpc,
+            rpcOverride,
+            (message: string) => {
+              ws.send(message);
+            }
+          );
         }
       });
       ws.on("pong", heartbeat);
@@ -53,7 +66,7 @@ export default class WebSocketServer {
     setInterval(() => {
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({ activeUsers }));
+          client.send(JSON.stringify({ type: "heartbeat", activeUsers }));
         }
       });
     }, 1000);

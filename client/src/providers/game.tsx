@@ -51,7 +51,12 @@ export function GameStateProvider({ children }: Props) {
   React.useEffect(() => {
     setGameStatus("loading");
     setCountdownStart(undefined);
-  }, [connection, clientConfig]);
+  }, [
+    connection,
+    clientConfig.showDebugTable,
+    clientConfig.parallelization,
+    clientConfig.trackedCommitment,
+  ]);
 
   React.useEffect(() => {
     if (status === "loading" && loadingPhase === "complete") {
@@ -94,6 +99,14 @@ export function GameStateProvider({ children }: Props) {
     accountsState.createAccounts();
     history.push({ ...location, pathname: "/game" });
   }, [accountsState, history, location]);
+
+  const accountsStatus = accountsState.status;
+  React.useEffect(() => {
+    const shouldReset = status === "play" && accountsStatus === "inactive";
+    if (shouldReset) {
+      resetGame();
+    }
+  }, [status, accountsStatus, resetGame]);
 
   const gameState: GameState = React.useMemo(
     () => ({
