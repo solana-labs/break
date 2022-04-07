@@ -43,7 +43,7 @@ export default class WebSocketServer {
             try {
               const rpcEndpoint = new URL(message);
               rpcOverride = rpcEndpoint.toString();
-              console.log("Client overrode RPC endpoint to", rpcEndpoint);
+              console.log("Client overrode RPC endpoint to", rpcEndpoint.href);
             } catch (err) {
               console.warn("Ignoring client message", message);
             }

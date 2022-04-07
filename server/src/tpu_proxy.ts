@@ -88,21 +88,25 @@ export default class TpuProxy {
         }
       }
 
-      connection.sendRawTransaction(rawTransaction).catch((err: Error) => {
-        if (rawTransaction.length < 65) {
-          return;
-        }
+      connection
+        .sendRawTransaction(rawTransaction, {
+          preflightCommitment: "confirmed",
+        })
+        .catch((err: Error) => {
+          if (rawTransaction.length < 65) {
+            return;
+          }
 
-        sendResponse(
-          JSON.stringify({
-            type: "failure",
-            signature: bs58.encode(rawTransaction.slice(1, 65)),
-            reason: err.message,
-          })
-        );
+          sendResponse(
+            JSON.stringify({
+              type: "failure",
+              signature: bs58.encode(rawTransaction.slice(1, 65)),
+              reason: err.message,
+            })
+          );
 
-        reportError(err, "Failed to send transaction over HTTP");
-      });
+          reportError(err, "Failed to send transaction over HTTP");
+        });
       return;
     }
 
