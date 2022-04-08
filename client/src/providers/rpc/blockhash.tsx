@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Blockhash, Connection } from "@solana/web3.js";
+import { Blockhash, Commitment, Connection } from "@solana/web3.js";
 import { sleep, reportError } from "utils";
 import { useConnection } from ".";
 
@@ -84,6 +84,18 @@ export function useBlockhash() {
   return state.blockhash;
 }
 
+async function nodeProgress(
+  connection: Connection,
+  commitment: Commitment
+): Promise<{ blockhash: Blockhash; slot: number }> {
+  const [{ blockhash }, slot] = await Promise.all([
+    connection.getLatestBlockhash(commitment),
+    connection.getSlot(commitment),
+  ]);
+
+  return { blockhash, slot };
+}
+
 async function refresh(
   dispatch: Dispatch,
   connectionRef: React.MutableRefObject<Connection | undefined>,
@@ -99,16 +111,21 @@ async function refresh(
   let reported = false;
   while (blockhash === undefined && connection === connectionRef.current) {
     try {
-      const response = await connection.getLatestBlockhash("finalized");
-      blockhash = response.blockhash;
-      const currentBlockheight = await connection.getBlockHeight("processed");
-      const remainingSlots = Math.max(
-        0,
-        response.lastValidBlockHeight - currentBlockheight
-      );
+      const processedProgress = await nodeProgress(connection, "processed");
+      const confirmedProgress = await nodeProgress(connection, "confirmed");
+      const finalizedProgress = await nodeProgress(connection, "finalized");
       console.log(
-        `fetched finalized blockhash ${blockhash} which expires in ${remainingSlots} slots`
+        `[${processedProgress.slot}, ${confirmedProgress.slot}, ${
+          finalizedProgress.slot
+        }], [${processedProgress.blockhash.slice(
+          0,
+          5
+        )}, ${confirmedProgress.blockhash.slice(
+          0,
+          5
+        )}, ${finalizedProgress.blockhash.slice(0, 5)}]`
       );
+      blockhash = finalizedProgress.blockhash;
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
       if (!reported) reportError(err, "Failed to refresh blockhash");
