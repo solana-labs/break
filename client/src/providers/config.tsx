@@ -9,7 +9,7 @@ export interface ClientConfig {
   retryTransactionEnabled: boolean;
   autoSendTransactions: boolean;
   useTpu: boolean;
-  rpcOverride?: string;
+  rpcUrl?: string;
 }
 
 const DEFAULT_CONFIG: ClientConfig = {

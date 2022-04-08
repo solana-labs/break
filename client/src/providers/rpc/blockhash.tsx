@@ -99,7 +99,16 @@ async function refresh(
   let reported = false;
   while (blockhash === undefined && connection === connectionRef.current) {
     try {
-      blockhash = (await connection.getLatestBlockhash("finalized")).blockhash;
+      const response = await connection.getLatestBlockhash("finalized");
+      blockhash = response.blockhash;
+      const currentBlockheight = await connection.getBlockHeight("processed");
+      const remainingSlots = Math.max(
+        0,
+        response.lastValidBlockHeight - currentBlockheight
+      );
+      console.log(
+        `fetched finalized blockhash ${blockhash} which expires in ${remainingSlots} slots`
+      );
       dispatch({ type: ActionType.Update, blockhash });
     } catch (err) {
       if (!reported) reportError(err, "Failed to refresh blockhash");
