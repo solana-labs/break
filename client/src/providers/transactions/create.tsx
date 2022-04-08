@@ -168,6 +168,7 @@ export function createTransaction(
       (response: CreateTransactionResponseMessage) => {
         const { signature, serializedTransaction } = response;
 
+        console.log("send transaction using blockhash", blockhash);
         socket.send(serializedTransaction);
 
         const pendingTransaction: PendingTransaction = { targetSlot };

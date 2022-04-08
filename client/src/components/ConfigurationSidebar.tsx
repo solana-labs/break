@@ -21,26 +21,29 @@ export function ConfigurationSidebar() {
       <div className="sidebar-body">
         <DebugModeInput />
         <ParallelizationInput />
-        {!clientConfig.useTpu && <RpcOverrideInput />}
+        {!clientConfig.useTpu && <RpcEndpointInput />}
       </div>
     </aside>
   );
 }
 
-function RpcOverrideInput() {
+function RpcEndpointInput() {
   const configRpcUrl = useServerConfig()?.rpcUrl;
   const [rpcUrl, setRpcUrl] = useRpcUrlState();
+  const [, setClientConfig] = useClientConfig();
 
   const onUrlInput = useDebounceCallback((url: string) => {
     if (url.length > 0) {
       try {
         new URL(url);
         setRpcUrl(url);
+        setClientConfig((config) => ({ ...config, rpcUrl }));
       } catch (err) {
         // ignore bad url
       }
     } else if (configRpcUrl) {
       setRpcUrl(configRpcUrl);
+      setClientConfig((config) => ({ ...config, rpcUrl: configRpcUrl }));
     }
   }, 500);
 

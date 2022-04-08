@@ -3,7 +3,6 @@ import { Connection } from "@solana/web3.js";
 import { useServerConfig } from "providers/server/http";
 import { BlockhashProvider } from "./blockhash";
 import { BalanceProvider } from "./balance";
-import { useClientConfig } from "providers/config";
 
 type SetUrl = (url: string) => void;
 type State = [string | undefined, SetUrl];
@@ -20,7 +19,6 @@ const ConnectionContext = React.createContext<ConnectionState | undefined>(
 type ProviderProps = { children: React.ReactNode };
 export function RpcProvider({ children }: ProviderProps) {
   const state = React.useState<string>();
-  const [, setClientConfig] = useClientConfig();
   const [rpcUrl, setRpcUrl] = state;
 
   // Reset rpc url whenever config is fetched
@@ -28,19 +26,6 @@ export function RpcProvider({ children }: ProviderProps) {
   React.useEffect(() => {
     setRpcUrl(configRpcUrl);
   }, [configRpcUrl, setRpcUrl]);
-
-  // Update config with latest rpc url so that the socket provider
-  // can tell the server which rpc to use
-  React.useEffect(() => {
-    let rpcOverride: string | undefined;
-    if (configRpcUrl !== rpcUrl) {
-      rpcOverride = rpcUrl;
-    }
-    setClientConfig((config) => ({
-      ...config,
-      rpcOverride,
-    }));
-  }, [rpcUrl, configRpcUrl, setClientConfig]);
 
   const connection: ConnectionState = React.useMemo(() => {
     if (rpcUrl === undefined) return {};
