@@ -22,7 +22,7 @@ import { useLatestTimestamp, useTargetSlotRef } from "providers/slot";
 import { useAccountsState, AccountsConfig } from "providers/accounts";
 import { useClientConfig } from "providers/config";
 
-const SEND_TIMEOUT_MS = 45000;
+const SEND_TIMEOUT_MS = 90000;
 const RETRY_INTERVAL_MS = 500;
 
 const workerRPC = new CreateTransactionRPC();
