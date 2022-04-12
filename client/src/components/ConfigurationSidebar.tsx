@@ -37,7 +37,7 @@ function RpcEndpointInput() {
       try {
         new URL(url);
         setRpcUrl(url);
-        setClientConfig((config) => ({ ...config, rpcUrl }));
+        setClientConfig((config) => ({ ...config, rpcUrl: url }));
       } catch (err) {
         // ignore bad url
       }
