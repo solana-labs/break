@@ -14,6 +14,7 @@ export function ConfigurationSidebar() {
         <ToggleAutoSendInput />
         <ProxyModeInput />
         {clientConfig.useTpu && <ToggleRetryInput />}
+        <AdditionalFeeInput />
       </div>
       <hr />
       <h3 className="m-4 font-weight-bold">New Game Options</h3>
@@ -225,6 +226,42 @@ function ParallelizationInput() {
       <p className="text-muted font-size-sm mt-3">
         Number of transactions that can be in-flight without write-lock
         conflicts by using different fee payer and state accounts.
+      </p>
+    </>
+  );
+}
+
+function AdditionalFeeInput() {
+  const [config, setConfig] = useClientConfig();
+  const [error, setError] = React.useState<string>();
+
+  const onInput = (input: string) => {
+    const additionalFee = Number(input);
+    if (
+      Number.isNaN(additionalFee) ||
+      Math.floor(additionalFee) !== additionalFee
+    ) {
+      setError("Input must be an integer");
+    } else if (additionalFee < 0 || additionalFee >= Math.pow(2, 32)) {
+      setError("Input must be in the range [0, 2^32)");
+    } else {
+      setError(undefined);
+      setConfig((config: ClientConfig) => ({ ...config, additionalFee }));
+    }
+  };
+
+  return (
+    <>
+      <span className="me-3">Additional Transaction Fee (lamports)</span>
+      <input
+        type="number"
+        defaultValue={config.additionalFee}
+        className="form-control mt-4"
+        onInput={(e) => onInput(e.currentTarget.value)}
+      />
+      {error && <p className="text-warning font-size-sm mt-3">{error}</p>}
+      <p className="text-muted font-size-sm mt-3">
+        Add a fee to increase transaction processing prioritization.
       </p>
     </>
   );
