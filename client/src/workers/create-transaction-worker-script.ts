@@ -18,6 +18,7 @@ function createTransaction(message: CreateTransactionMessage) {
     feeAccountSecretKey,
     programDataAccount,
     additionalFee,
+    extraWriteAccount,
   } = message;
 
   const transaction = new Transaction();
@@ -29,14 +30,22 @@ function createTransaction(message: CreateTransactionMessage) {
       })
     );
   }
+  const breakAccountInputs = [
+    {
+      pubkey: new PublicKey(programDataAccount),
+      isWritable: true,
+      isSigner: false,
+    },
+  ];
+  if (extraWriteAccount) {
+    breakAccountInputs.push({
+      pubkey: new PublicKey(extraWriteAccount),
+      isWritable: true,
+      isSigner: false,
+    });
+  }
   transaction.add({
-    keys: [
-      {
-        pubkey: new PublicKey(programDataAccount),
-        isWritable: true,
-        isSigner: false,
-      },
-    ],
+    keys: breakAccountInputs,
     programId: new PublicKey(programId),
     data: Buffer.from(Bytes.instructionDataFromId(bitId)),
   });

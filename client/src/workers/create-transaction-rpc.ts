@@ -11,6 +11,7 @@ export interface CreateTransactionMessage {
   feeAccountSecretKey: Uint8Array;
   programDataAccount: string;
   additionalFee: number;
+  extraWriteAccount?: string;
 }
 
 export interface CreateTransactionResponseMessage {

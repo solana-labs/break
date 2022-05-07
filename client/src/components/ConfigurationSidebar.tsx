@@ -1,4 +1,5 @@
 import { useDebounceCallback } from "@react-hook/debounce";
+import { PublicKey } from "@solana/web3.js";
 import { ClientConfig, useClientConfig } from "providers/config";
 import { useRpcUrlState } from "providers/rpc";
 import { useServerConfig } from "providers/server/http";
@@ -15,6 +16,7 @@ export function ConfigurationSidebar() {
         <ProxyModeInput />
         {clientConfig.useTpu && <ToggleRetryInput />}
         <AdditionalFeeInput />
+        <ExtraWriteAccountInput />
       </div>
       <hr />
       <h3 className="m-4 font-weight-bold">New Game Options</h3>
@@ -262,6 +264,45 @@ function AdditionalFeeInput() {
       {error && <p className="text-warning font-size-sm mt-3">{error}</p>}
       <p className="text-muted font-size-sm mt-3">
         Add a fee to increase transaction processing prioritization.
+      </p>
+    </>
+  );
+}
+
+function ExtraWriteAccountInput() {
+  const [config, setConfig] = useClientConfig();
+  const [error, setError] = React.useState<string>();
+
+  const onInput = (extraWriteAccount: string) => {
+    if (extraWriteAccount.length === 0) {
+      setError(undefined);
+      setConfig((config: ClientConfig) => ({
+        ...config,
+        extraWriteAccount: undefined,
+      }));
+    } else {
+      try {
+        new PublicKey(extraWriteAccount);
+        setError(undefined);
+        setConfig((config: ClientConfig) => ({ ...config, extraWriteAccount }));
+      } catch (err) {
+        setError("Input must be a valid base58 address");
+      }
+    }
+  };
+
+  return (
+    <>
+      <span className="me-3">Extra Transaction Write Account</span>
+      <input
+        defaultValue={config.extraWriteAccount}
+        className="form-control mt-4"
+        onInput={(e) => onInput(e.currentTarget.value)}
+      />
+      {error && <p className="text-warning font-size-sm mt-3">{error}</p>}
+      <p className="text-muted font-size-sm mt-3">
+        Add an extra writable account to each transaction for debugging
+        write-lock contention.
       </p>
     </>
   );
