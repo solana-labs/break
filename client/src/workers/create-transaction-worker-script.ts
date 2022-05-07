@@ -1,8 +1,8 @@
 import {
   Transaction,
-  TransactionInstruction,
   PublicKey,
-  Account,
+  Keypair,
+  ComputeBudgetProgram,
 } from "@solana/web3.js";
 import * as Bytes from "utils/bytes";
 import { CreateTransactionMessage } from "./create-transaction-rpc";
@@ -17,9 +17,19 @@ function createTransaction(message: CreateTransactionMessage) {
     bitId,
     feeAccountSecretKey,
     programDataAccount,
+    additionalFee,
   } = message;
 
-  const instruction = new TransactionInstruction({
+  const transaction = new Transaction();
+  if (additionalFee) {
+    transaction.add(
+      ComputeBudgetProgram.requestUnits({
+        units: 100_000,
+        additionalFee,
+      })
+    );
+  }
+  transaction.add({
     keys: [
       {
         pubkey: new PublicKey(programDataAccount),
@@ -30,11 +40,8 @@ function createTransaction(message: CreateTransactionMessage) {
     programId: new PublicKey(programId),
     data: Buffer.from(Bytes.instructionDataFromId(bitId)),
   });
-
-  const transaction = new Transaction();
-  transaction.add(instruction);
   transaction.recentBlockhash = blockhash;
-  transaction.sign(new Account(feeAccountSecretKey));
+  transaction.sign(Keypair.fromSecretKey(feeAccountSecretKey));
 
   const signatureBuffer = transaction.signature;
 

@@ -33,8 +33,14 @@ export const CreateTxContext = React.createContext<
 type ProviderProps = { children: React.ReactNode };
 export function CreateTxProvider({ children }: ProviderProps) {
   const createTx = React.useRef(() => {});
-  const [{ trackedCommitment, showDebugTable, retryTransactionEnabled }] =
-    useClientConfig();
+  const [
+    {
+      trackedCommitment,
+      showDebugTable,
+      retryTransactionEnabled,
+      additionalFee,
+    },
+  ] = useClientConfig();
   const serverConfig = useServerConfig();
   const accounts = useAccountsState().accounts;
   const idCounter = React.useRef<number>(0);
@@ -83,6 +89,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
           programId: serverConfig.programId,
           accounts,
           trackingId: id,
+          additionalFee,
         };
 
         createTransaction(
@@ -113,6 +120,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
     showDebugTable,
     trackedCommitment,
     retryTransactionEnabled,
+    additionalFee,
   ]);
 
   return (
@@ -129,6 +137,7 @@ type CreateTransactionParams = {
   programId: PublicKey;
   accounts: AccountsConfig;
   trackingId: number;
+  additionalFee: number;
 };
 
 export function createTransaction(
@@ -147,6 +156,7 @@ export function createTransaction(
     programId,
     accounts,
     trackingId,
+    additionalFee,
   } = params;
   const { feePayerKeypairs, programAccounts } = accounts;
 
@@ -157,12 +167,13 @@ export function createTransaction(
 
   workerRPC
     .createTransaction({
-      trackingId: trackingId,
-      blockhash: blockhash,
+      trackingId,
+      blockhash,
       programId: programId.toBase58(),
       programDataAccount: programDataAccount.toBase58(),
-      bitId: bitId,
+      bitId,
       feeAccountSecretKey: feePayerKeypair.secretKey,
+      additionalFee,
     })
     .then(
       (response: CreateTransactionResponseMessage) => {

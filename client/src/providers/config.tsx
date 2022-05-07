@@ -2,6 +2,7 @@ import React from "react";
 import { TrackedCommitment } from "./transactions";
 
 export interface ClientConfig {
+  additionalFee: number;
   parallelization: number;
   trackedCommitment: TrackedCommitment;
   showDebugTable: boolean;
@@ -13,6 +14,7 @@ export interface ClientConfig {
 }
 
 const DEFAULT_CONFIG: ClientConfig = {
+  additionalFee: 0,
   parallelization: 4,
   trackedCommitment: "confirmed",
   showDebugTable: false,
