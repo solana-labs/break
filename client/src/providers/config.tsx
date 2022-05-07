@@ -11,6 +11,7 @@ export interface ClientConfig {
   autoSendTransactions: boolean;
   useTpu: boolean;
   rpcUrl?: string;
+  extraWriteAccount?: string;
 }
 
 const DEFAULT_CONFIG: ClientConfig = {
