@@ -17,15 +17,20 @@ function createTransaction(message: CreateTransactionMessage) {
     bitId,
     feeAccountSecretKey,
     programDataAccount,
-    additionalFee,
+    computeUnitPrice,
     extraWriteAccount,
   } = message;
 
   const transaction = new Transaction();
-  if (additionalFee) {
+  if (computeUnitPrice) {
+    const units = 1000;
+    const MICRO_LAMPORTS_PER_LAMPORT = 1_000_000;
+    const additionalFee = Math.ceil(
+      (computeUnitPrice * units) / MICRO_LAMPORTS_PER_LAMPORT
+    );
     transaction.add(
       ComputeBudgetProgram.requestUnits({
-        units: 100_000,
+        units,
         additionalFee,
       })
     );

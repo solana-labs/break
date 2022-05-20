@@ -15,7 +15,7 @@ export function ConfigurationSidebar() {
         <ToggleAutoSendInput />
         <ProxyModeInput />
         {clientConfig.useTpu && <ToggleRetryInput />}
-        <AdditionalFeeInput />
+        <SetComputeUnitPriceInput />
         <ExtraWriteAccountInput />
       </div>
       <hr />
@@ -233,31 +233,35 @@ function ParallelizationInput() {
   );
 }
 
-function AdditionalFeeInput() {
+function SetComputeUnitPriceInput() {
   const [config, setConfig] = useClientConfig();
   const [error, setError] = React.useState<string>();
 
   const onInput = (input: string) => {
-    const additionalFee = Number(input);
+    const computeUnitPrice = Number(input);
     if (
-      Number.isNaN(additionalFee) ||
-      Math.floor(additionalFee) !== additionalFee
+      Number.isNaN(computeUnitPrice) ||
+      Math.floor(computeUnitPrice) !== computeUnitPrice
     ) {
-      setError("Input must be an integer");
-    } else if (additionalFee < 0 || additionalFee >= Math.pow(2, 32)) {
-      setError("Input must be in the range [0, 2^32)");
+      setError("Price must be an integer");
+    } else if (computeUnitPrice < 0 || computeUnitPrice >= Math.pow(2, 32)) {
+      setError("Price must be in the range [0, 2^32)");
     } else {
       setError(undefined);
-      setConfig((config: ClientConfig) => ({ ...config, additionalFee }));
+      setConfig((config: ClientConfig) => ({
+        ...config,
+        computeUnitPrice: computeUnitPrice,
+      }));
     }
   };
 
   return (
     <>
-      <span className="me-3">Additional Transaction Fee (lamports)</span>
+      <span className="me-3">Compute Unit Price (micro-lamports)</span>
       <input
         type="number"
-        defaultValue={config.additionalFee}
+        defaultValue={config.computeUnitPrice}
+        placeholder="1M recommended (1 lamport/cu)"
         className="form-control mt-4"
         onInput={(e) => onInput(e.currentTarget.value)}
       />

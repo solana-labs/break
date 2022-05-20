@@ -38,7 +38,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
       trackedCommitment,
       showDebugTable,
       retryTransactionEnabled,
-      additionalFee,
+      computeUnitPrice,
       extraWriteAccount,
     },
   ] = useClientConfig();
@@ -90,7 +90,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
           programId: serverConfig.programId,
           accounts,
           trackingId: id,
-          additionalFee,
+          computeUnitPrice,
           extraWriteAccount,
         };
 
@@ -122,7 +122,7 @@ export function CreateTxProvider({ children }: ProviderProps) {
     showDebugTable,
     trackedCommitment,
     retryTransactionEnabled,
-    additionalFee,
+    computeUnitPrice,
     extraWriteAccount,
   ]);
 
@@ -140,7 +140,7 @@ type CreateTransactionParams = {
   programId: PublicKey;
   accounts: AccountsConfig;
   trackingId: number;
-  additionalFee: number;
+  computeUnitPrice?: number;
   extraWriteAccount?: string;
 };
 
@@ -160,7 +160,7 @@ export function createTransaction(
     programId,
     accounts,
     trackingId,
-    additionalFee,
+    computeUnitPrice,
     extraWriteAccount,
   } = params;
   const { feePayerKeypairs, programAccounts } = accounts;
@@ -178,7 +178,7 @@ export function createTransaction(
       programDataAccount: programDataAccount.toBase58(),
       bitId,
       feeAccountSecretKey: feePayerKeypair.secretKey,
-      additionalFee,
+      computeUnitPrice,
       extraWriteAccount,
     })
     .then(
