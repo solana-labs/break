@@ -10,7 +10,7 @@ export interface CreateTransactionMessage {
   bitId: number;
   feeAccountSecretKey: Uint8Array;
   programDataAccount: string;
-  additionalFee: number;
+  computeUnitPrice?: number;
   extraWriteAccount?: string;
 }
 
