@@ -1,0 +1,26 @@
+Differences:
+1.)
+// Establish connection to the cluster
+await establishConnection(); similar to line#57 const connection = useConnection();
+but user has an option to choose which infrastructure to play with (devnet, Testnet, mainnet)
+
+2.) 
+no sol airdropped to the payer wallet
+
+3.)
+Can modify Program address not just reading from a deployed program
+
+4.)
+Account created doesnt use any SEED (SystemProgram.createAccount vs SystemProgram.createAccountWithSeed)
+
+5.)
+Uses Torus for wallet management so user can select local wallet or wallet generated from logged email
+
+6.) 
+Uses WebSocket in sending serialized transaction
+
+7.)
+Observes a watchdog timer for pending transactions (90 sec)
+
+8.)
+Retries(once) when previous sending of transaction fails
