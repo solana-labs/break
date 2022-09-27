@@ -22,7 +22,7 @@
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^14.2.0",
     "@toruslabs/fetch-node-details": "^6.0.1",
-    "@toruslabs/torus.js": "^6.0.0",
+    "@toruslabs/torus.js": "^6.2.0",
     "@types/bs58": "^4.0.1",
     "@types/chai": "^4.3.1",
     "@types/chart.js": "^2.9.34",
