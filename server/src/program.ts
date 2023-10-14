@@ -6,10 +6,9 @@ const DEPLOYED_PROGRAM_ADDRESS = process.env.DEPLOYED_PROGRAM_ADDRESS;
 
 const PROGRAM_KEYPAIR_PATH = path.resolve(
   "..",
-  "program",
   "target",
   "deploy",
-  "break_solana_program-keypair.json"
+  "orca_whirlpool_dca-keypair.json"
 );
 
 export const PROGRAM_ID = (() => {

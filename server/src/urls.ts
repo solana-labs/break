@@ -19,8 +19,8 @@ export const cluster = chooseCluster();
 
 export const url =
   process.env.RPC_URL ||
-  (process.env.LIVE ? clusterApiUrl(cluster, false) : "http://localhost:8899");
+  (process.env.LIVE ? clusterApiUrl(cluster, false) : "https://rpc.helius.xyz/?api-key=174bd3e2-d17b-492f-902b-710feb5d18bc");
 
 export const urlTls =
   process.env.RPC_URL ||
-  (process.env.LIVE ? clusterApiUrl(cluster, true) : "http://localhost:8899");
+  (process.env.LIVE ? clusterApiUrl(cluster, true) : "https://rpc.helius.xyz/?api-key=174bd3e2-d17b-492f-902b-710feb5d18bc");

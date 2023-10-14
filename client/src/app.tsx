@@ -1,3 +1,4 @@
+import "./components/bufferFill"
 import * as React from "react";
 import { Route, Switch, Redirect, useRouteMatch } from "react-router-dom";
 

@@ -34,8 +34,8 @@ const VERIFIER = "breaksolana-google";
 
 const NODE_DETAILS = USE_TORUS_TESTNET
   ? new NodeDetailsManager({
+    // @ts-ignore
       network: "ropsten",
-      proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183",
     })
   : (new (NodeDetailsManager as any)() as NodeDetailsManager);
 
@@ -108,7 +108,7 @@ export function TorusProvider({ children }: Props) {
     if (!ENABLE_TORUS) return;
 
     let unmounted = false;
-    NODE_DETAILS.getNodeDetails({ skip: true, verifier: "", verifierId: "" })
+    NODE_DETAILS.getNodeDetails({ verifier: "", verifierId: "" })
       .then((details) => {
         !unmounted && setNodeDetails(details);
       })

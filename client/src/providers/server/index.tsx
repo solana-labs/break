@@ -111,7 +111,7 @@ export function useServer() {
     throw new Error(`useServer must be used within a ServerProvider`);
   }
   const { server, customUrl } = context;
-  const httpUrl = getServerUrl(server, customUrl);
+  const httpUrl = "https://potential-adventure-p77rrqwx4g7c649p-8080.app.github.dev"
   const webSocketUrl = httpUrl.replace("http", "ws");
 
   return {

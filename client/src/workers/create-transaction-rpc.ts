@@ -1,9 +1,11 @@
 // eslint-disable-next-line import/no-webpack-loader-syntax
 import CreateTransactionWorker from "worker-loader!./create-transaction-worker-script";
 
-import { Blockhash } from "@solana/web3.js";
+import { Blockhash, Keypair } from "@solana/web3.js";
+import { AnchorProvider, Program } from "@coral-xyz/anchor";
 
 export interface CreateTransactionMessage {
+  wallet: Keypair,
   trackingId: number;
   blockhash: Blockhash;
   programId: string;
@@ -12,6 +14,9 @@ export interface CreateTransactionMessage {
   programDataAccount: string;
   computeUnitPrice?: number;
   extraWriteAccount?: string;
+  program?: Program,
+  threadProgram?: Program
+  threadName?: string
 }
 
 export interface CreateTransactionResponseMessage {

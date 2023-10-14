@@ -1,0 +1,17 @@
+[package]
+name = "orca-whirlpool-dca-client"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+delete = []
+
+[dependencies]
+orca-whirlpool-dca = { path = "../programs/orca_whirlpool_dca", features = ["no-entrypoint"], version = "0.1.0" }
+clockwork-client = "1.4.2"
+anchor-lang = "0.26.0"
+anchor-spl = "0.26.0"
+solana-sdk = "1.14.12"
+solana-cli-config = "1.14.12"
+whirlpool = { path = "../crates/whirlpool" }

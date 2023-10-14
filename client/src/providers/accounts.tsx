@@ -13,7 +13,9 @@ import { useConnection } from "providers/rpc";
 import { useWalletState } from "./wallet";
 import { getFeePayers, sleep } from "utils";
 import { useClientConfig } from "./config";
-
+const CLOCKWORK_THREAD_PROGRAM_ID = new PublicKey(
+  '3XXuUFfweXBwFgFfYaejLvZE4cGZiHgKiGfMtdxNzYmv',
+);
 export type Status =
   | "initializing"
   | "inactive"
@@ -255,26 +257,11 @@ const _createAccountBatch = async (
 
   const tx = new Transaction();
   for (let i = 0; i < batchSize; i++) {
-    tx.add(
-      SystemProgram.createAccount({
-        fromPubkey: payer.publicKey,
-        newAccountPubkey: newProgramAccounts[i].publicKey,
-        lamports: costs.programAccountCost,
-        space: programAccountSpace,
-        programId: breakProgramId,
-      })
-    );
-    tx.add(
-      SystemProgram.transfer({
-        fromPubkey: payer.publicKey,
-        toPubkey: newFeePayers[i].publicKey,
-        lamports: costs.feeAccountCost,
-      })
-    );
+   
   }
 
   let retries = 3;
-  while (retries > 0) {
+  while (false) {
     try {
       await sendAndConfirmTransaction(
         connection,
@@ -305,20 +292,27 @@ const _createAccounts = async (
 ): Promise<AccountsConfig> => {
   const programAccountSpace = calculateProgramAccountSpace(parallelization);
   const feePayers = getFeePayers(parallelization);
-  const programAccounts = Array(parallelization)
-    .fill(0)
-    .map(() => new Keypair());
+  var threadName = (Math.floor(Math.random()*99999)).toString()
+  const SEED_QUEUE = 'thread';
 
-  const BATCH_SIZE = 5; // max size that can fit in one transaction
+  var [hydra] = PublicKey.findProgramAddressSync(
+    [Buffer.from(SEED_QUEUE, 'utf-8'), feePayers[0].publicKey.toBuffer(), Buffer.from(threadName, 'utf-8')],
+    CLOCKWORK_THREAD_PROGRAM_ID,
+  );
+  console.log(hydra.toBase58())
+
+  const programAccounts = [hydra]
+  const BATCH_SIZE = 1; // max size that can fit in one transaction
 
   let accountIndex = 0;
-  while (accountIndex < parallelization) {
+  while (false) {
     await _createAccountBatch(
       connection,
       breakProgramId,
       payer,
       costs,
       feePayers.slice(accountIndex, accountIndex + BATCH_SIZE),
+       // @ts-ignore
       programAccounts.slice(accountIndex, accountIndex + BATCH_SIZE),
       programAccountSpace
     );
@@ -330,6 +324,6 @@ const _createAccounts = async (
   return {
     accountCapacity: txPerAccount,
     feePayerKeypairs: feePayers,
-    programAccounts: programAccounts.map((a) => a.publicKey),
+    programAccounts: programAccounts,
   };
 };

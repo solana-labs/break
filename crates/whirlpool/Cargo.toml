@@ -1,0 +1,15 @@
+[package]
+name = "whirlpool"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["cpi"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+
+[dependencies]
+anchor-lang = "0.26.0"
+anchor-gen = { git = "https://github.com/eliascm17/anchor-gen", version = "^0.3.1", features = ["compat-program-result"] }

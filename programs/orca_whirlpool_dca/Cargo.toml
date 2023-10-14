@@ -1,0 +1,22 @@
+[package]
+name = "orca-whirlpool-dca"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "orca_whirlpool_dca"
+
+[features]
+no-entrypoint = []
+no-idl = []
+delete = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.26.0"
+clockwork-sdk = "1.4.2"
+clockwork-macros = "1.4.0"
