@@ -16,10 +16,9 @@ within a Break program account, so each transaction can be uniquely identified b
 
 ### Prerequisites
 
-Solana CLI Tooling: https://docs.solana.com/cli/install-solana-cli-tools
-For running this application you need to have [NodeJs](https://nodejs.org/en/) and [NPM](https://www.npmjs.com/).
-We recommend to use [NVM](https://github.com/creationix/nvm) for managing NodeJs versions
-For NVM installation please refer to [manual](https://github.com/creationix/nvm#install--update-script)
+\*[Solana CLI Tooling](https://docs.solana.com/cli/install-solana-cli-tools)
+
+\*[NodeJS](https://nodejs.org/en/) and [NPM](https://www.npmjs.com/): You need these to run the application. We recommend using [NVM](https://github.com/creationix/nvm) for managing NodeJS versions. For NVM installation please refer to [manual](https://github.com/creationix/nvm#install--update-script).
 
 ### Install
 
@@ -85,13 +84,14 @@ LIVE=true CLUSTER=mainnet-beta npm run start:dev
 
 ##### `DEPLOYED_PROGRAM_ADDRESS`
 
-Set this option to use an existing loaded Break Solana program rather than load a new version.  If the program doesn't exist, the server will exit with an error.
+Set this option to use an existing loaded Break Solana program rather than load a new version. If the program doesn't exist, the server will exit with an error.
 
 ```
 DEPLOYED_PROGRAM_ADDRESS=<BASE58 ENCODED ADDRESS> npm run start:dev
 ```
 
 To use the Break Solana program that's used on https://break.solana.com, use the following address:
+
 ```
 DEPLOYED_PROGRAM_ADDRESS=BrEAK7zGZ6dM71zUDACDqJnekihmwF15noTddWTsknjC npm run start:dev
 ```
